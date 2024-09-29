@@ -6,4 +6,5 @@
 ```cmd 
 ./configure
 make
+omnetpp
 ```
