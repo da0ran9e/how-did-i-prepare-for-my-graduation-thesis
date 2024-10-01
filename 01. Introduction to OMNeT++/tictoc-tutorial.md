@@ -99,6 +99,20 @@
              send(msg, "out"); // send out the message
          }
         ```
+        - The `Txc1` simple module type is represented by the C++ class `Txc1`.
+        - The `Txc1` class needs to subclass from OMNeT++'s `cSimpleModule` class, and needs to be registered in OMNeT++ with the `Define_Module()` macro.
+
+         > [!NOTE]
+         > Don't forget the `Define_Module()`
+         
+         - We redefine two methods from `cSimpleModule`: `initialize()` and `handleMessage()`. They are invoked from the simulation kernel: the first one only once, and the second one whenever a message arrives at the module.
+         - In `initialize()` we create a message object (`cMessage`), and send it out.
+         - Since this gate is connected to the other module's input gate, the simulation kernel will deliver this message to the other module in the argument to `handleMessage()` -- after a 100ms propagation delay assigned to the link in the NED file. The other module just sends it back (another 100ms delay), so it will result in a continuous ping-pong.
+         - Messages (packets, frames, jobs, etc) and events (timers, timeouts) are all represented by `cMessage` objects (or its subclasses) in OMNeT++.
+         - After you send or schedule them, they will be held by the simulation kernel in the "scheduled events" or "future events" list until their time comes and they are delivered to the modules via handleMessage().
+
+         > [!NOTE]
+         > Note that there is no stopping condition built into this simulation: it would continue forever. You will be able to stop it from the GUI. (You could also specify a simulation time limit or CPU time limit in the configuration file, but we don't do that in the tutorial.)
    7. Adding omnetpp.ini
 8. Running the Simulation:
 9. Enhancing the 2-node TicToc:
