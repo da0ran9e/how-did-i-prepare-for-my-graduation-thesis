@@ -22,7 +22,7 @@
       - Right-click the project directory and <mark>choose New -> Network Description File (NED)</mark> from the menu.
       - Enter `tictoc1.ned` as the name.
       - Switch into Source mode, and enter:
-        ``` c
+      ``` c
         simple Txc1
         {
             gates:
@@ -43,12 +43,12 @@
                 tic.out --> {  delay = 100ms; } --> toc.in;
                 tic.in <-- {  delay = 100ms; } <-- toc.out;
         }
-        ```
-    - switch back to Design mode:
-    ![image](https://github.com/user-attachments/assets/8b1c4ee1-9beb-4b40-9e0d-a47eaae39dc2)
-    - The first block in the file declares `Txc1` as a simple module type.
-    - `Txc1` has an input gate named `in`, and an output gate named `out`.
-    - The second block declares Tictoc1 as a network.
+      ```
+       - switch back to Design mode:
+       ![image](https://github.com/user-attachments/assets/8b1c4ee1-9beb-4b40-9e0d-a47eaae39dc2)
+       - The first block in the file declares `Txc1` as a simple module type.
+       - `Txc1` has an input gate named `in`, and an output gate named `out`.
+       - The second block declares Tictoc1 as a network.
     
    5. Adding the C++ files
       - Create a file named `txc1.cc` by choosing <mark>New -> Source File</mark>
