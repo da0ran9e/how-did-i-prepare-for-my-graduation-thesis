@@ -103,7 +103,7 @@
         - The `Txc1` class needs to subclass from OMNeT++'s `cSimpleModule` class, and needs to be registered in OMNeT++ with the `Define_Module()` macro.
 
          > [!NOTE]
-         > Don't forget the `Define_Module()`
+         > **Don't forget the `Define_Module()`**
          
          - We redefine two methods from `cSimpleModule`: `initialize()` and `handleMessage()`. They are invoked from the simulation kernel: the first one only once, and the second one whenever a message arrives at the module.
          - In `initialize()` we create a message object (`cMessage`), and send it out.
@@ -124,7 +124,27 @@
       network = Tictoc1
       ```
       - Save and compile the project.
-8. Running the Simulation:
+## Running the Simulation:
+   1. Launching the simulation program
+      - Select `omnetpp.ini`
+      - Press the Run button
+      >
+      >If you want to build the simulation executable on the command-line, create a Makefile using the opp_makemake command, then enter make to build the project. It will produce an executable that can be run by entering ./tictoc
+   2. Running the simulation
+      - Press the Run button on the toolbar to start the simulation.
+      - You can stop the simulation by hitting F8 (equivalent to the STOP button on the toolbar), single-step through it (F4), run it with (F5) or without (F6) animation. F7 (express mode) completely turns off tracing features for maximum speed.
+   3. Debugging
+      - Click the Debug button on the IDE's main toolbar.
+      - The simulation program will be launched under a debugger (usually gdb).
+      - The IDE will switch into "Debug perspective"
+   4. The Debug/Run dialog
+      - clicking the little down arrow next to the Run (Debug) toolbar button to open a menu, and choosing Run (Debug) Configurations...
+      - Click the name of a launch configuration (e.g. `tictoc`) while holding down the `Ctrl`
+   5. Visualizing on a Sequence Chart
+      - The OMNeT++ simulation kernel can record the message exchanges during the simulation into an event log file.
+      - Check the Record eventlog checkbox in the launch configuration dialog
+      - Alternatively, you can specify record-eventlog = true in omnetpp.ini, or even, use the Record button in the Qtenv graphical runtime environment after launching.
+      - The results directory in the project folder contains the .elog file.
 9. Enhancing the 2-node TicToc:
 10. Turning it Into a Real Network:
 11. Adding Statistics Collection:
