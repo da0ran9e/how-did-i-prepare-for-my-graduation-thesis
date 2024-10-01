@@ -145,9 +145,19 @@
       - Check the Record eventlog checkbox in the launch configuration dialog
       - Alternatively, you can specify record-eventlog = true in omnetpp.ini, or even, use the Record button in the Qtenv graphical runtime environment after launching.
       - The results directory in the project folder contains the .elog file.
-9. Enhancing the 2-node TicToc:
-10. Turning it Into a Real Network:
-11. Adding Statistics Collection:
-12. Visualizing the Results: 
-13. Parameter Studies:
-14. Closing words:
+## Enhancing the 2-node TicToc:
+   1. Adding icons
+   2. Adding logging
+   3. Adding state variables
+   4. Adding parameters
+   5. Using NED inheritance
+   6. Modeling processing delay
+   7. Random numbers and parameters
+   8. Timeout, cancelling timers
+   9. Retransmitting the same message
+ 
+11. Turning it Into a Real Network:
+12. Adding Statistics Collection:
+13. Visualizing the Results: 
+14. Parameter Studies:
+15. Closing words:
