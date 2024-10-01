@@ -113,7 +113,17 @@
 
          > [!NOTE]
          > Note that there is no stopping condition built into this simulation: it would continue forever. You will be able to stop it from the GUI. (You could also specify a simulation time limit or CPU time limit in the configuration file, but we don't do that in the tutorial.)
-   7. Adding omnetpp.ini
+   5. Adding omnetpp.ini
+      - To be able to run the simulation, we need to create an `omnetpp.ini` file.
+      - `omnetpp.ini` tells the simulation program which network you want to simulate (as NED files may contain several networks).
+      - Create an `omnetpp.ini` file using the <mark>File -> New -> Initialization</mark> file (INI) menu item.
+      - The Inifile Editor also has two modes, Form and Source.
+      - For now, just switch to Source mode and enter the following:
+      ```
+      [General]
+      network = Tictoc1
+      ```
+      - Save and compile the project.
 8. Running the Simulation:
 9. Enhancing the 2-node TicToc:
 10. Turning it Into a Real Network:
