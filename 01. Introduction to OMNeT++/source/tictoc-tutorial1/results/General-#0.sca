@@ -1,0 +1,36 @@
+version 3
+run General-0-20241002-17:50:32-20456
+attr configname General
+attr datetime 20241002-17:50:32
+attr datetimef 20241002-175032
+attr experiment General
+attr inifile omnetpp.ini
+attr iterationvars ""
+attr iterationvarsd ""
+attr iterationvarsf ""
+attr measurement ""
+attr network Tictoc3
+attr processid 20456
+attr repetition 0
+attr replication #0
+attr resultdir results
+attr runnumber 0
+attr seedset 0
+config network Tictoc3
+
+par Tictoc3.tic.out.channel typename "\"ned.DelayChannel\""
+par Tictoc3.tic.out.channel disabled false
+attr mutable ""
+par Tictoc3.tic.out.channel delay 0.1s
+attr mutable ""
+attr unit s
+par Tictoc3.toc.out.channel typename "\"ned.DelayChannel\""
+par Tictoc3.toc.out.channel disabled false
+attr mutable ""
+par Tictoc3.toc.out.channel delay 0.1s
+attr mutable ""
+attr unit s
+par Tictoc3.tic typename "\"Txc3\""
+par Tictoc3.toc typename "\"Txc3\""
+par Tictoc3 typename "\"Tictoc3\""
+
