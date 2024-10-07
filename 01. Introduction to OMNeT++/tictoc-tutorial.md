@@ -276,9 +276,77 @@
     if (msg->isSelfMessage())
     ```
    7. Random numbers and parameters
+   - We change the delay from 1s to a random value which can be set from the NED file or from omnetpp.ini. 
+   - Module parameters are able to return random variables
+   - To make use of this feature we have to read the parameter in handleMessage() every time we use it.
+   ```c
+    // The "delayTime" module parameter can be set to values like
+    // "exponential(5)" (tictoc7.ned, omnetpp.ini), and then here
+    // we'll get a different delay every time.
+    simtime_t delay = par("delayTime");
+
+    EV << "Message arrived, starting to wait " << delay << " secs...\n";
+    tictocMsg = msg;
+   ```
+   - We'll "lose" (delete) the packet with a small probability
+   ```c
+    if (uniform(0, 1) < 0.1) {
+        EV << "\"Losing\" message\n";
+        delete msg;
+    }
+    ```
+    - We'll assign the parameters in omnetpp.ini:
+    ```java
+    Tictoc7.tic.delayTime = exponential(3s)
+    Tictoc7.toc.delayTime = truncnormal(3s,1s)
+    ```
+    - You can experiment with different seeds 
+    ``` sql
+    [General]
+    seed-0-mt=532569  # or any other 32-bit value
+    ```
    8. Timeout, cancelling timers
+   - Transform model into a stop-and-wait simulation.
+   - `toc` will "lose" the message with some nonzero probability, and in that case `tic` will have to resend it.
+   ```c
+   void Toc8::handleMessage(cMessage *msg)
+    {
+        if (uniform(0, 1) < 0.1) {
+            EV << "\"Losing\" message.\n";
+            bubble("message lost");  // making animation more informative...
+            delete msg;
+        }
+        else {
+    ```
+    - `bubble()` call to display the message.
+    - `tic` will start a timer whenever it sends the message. When the timer expires, we'll assume the message was lost and send another one. If toc's reply arrives, the timer has to be cancelled. The timer will be (what else?) a self-message.
+    ```c
+    scheduleAt(simTime()+timeout, timeoutEvent);
+    ```
+    - Cancelling the timer will be done with the cancelEvent() call. Note that this does not prevent us from being able to reuse the same timeout message over and over.
+    ```c
+    cancelEvent(timeoutEvent);
+    ```
+
    9. Retransmitting the same message
- 
+    - Keep the original packet and send only copies of it. We delete the original when toc's acknowledgement arrives. To make it easier to visually verify the model, we'll include a message sequence number in the message names.
+    - To avoid `handleMessage()` growing too large, we'll put the corresponding code into two new functions, `generateNewMessage()` and `sendCopyOf()` and call them from `handleMessage()`.
+    ```c
+    cMessage *Tic9::generateNewMessage()
+    {
+        // Generate a message with a different name every time.
+        char msgname[20];
+        sprintf(msgname, "tic-%d", ++seq);
+        cMessage *msg = new cMessage(msgname);
+        return msg;
+    }
+    void Tic9::sendCopyOf(cMessage *msg)
+    {
+        // Duplicate message and send the copy.
+        cMessage *copy = (cMessage *)msg->dup();
+        send(copy, "out");
+    }                   
+    ```
 ## Turning it Into a Real Network:
    1. More than two nodes
    2. More than two nodes
