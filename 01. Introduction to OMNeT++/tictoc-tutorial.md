@@ -349,9 +349,138 @@
     ```
 ## Turning it Into a Real Network:
    1. More than two nodes
-   2. More than two nodes
-   3. More than two nodes
-   4. More than two nodes
+   - the Txc module will need to have multiple input and output gates:
+   ```c
+       simple Txc10
+    {
+        parameters:
+            @display("i=block/routing");
+        gates:
+            input in[];  // declare in[] and out[] to be vector gates
+            output out[];
+    }
+   ```
+   - The size of the vector (the number of gates) will be determined where we use Txc to build the network.
+   ```c++
+    network Tictoc10
+    {
+        submodules:
+            tic[6]: Txc10;
+        connections:
+            tic[0].out++ --> {  delay = 100ms; } --> tic[1].in++;
+            tic[0].in++ <-- {  delay = 100ms; } <-- tic[1].out++;
+
+            tic[1].out++ --> {  delay = 100ms; } --> tic[2].in++;
+            tic[1].in++ <-- {  delay = 100ms; } <-- tic[2].out++;
+
+            tic[1].out++ --> {  delay = 100ms; } --> tic[4].in++;
+            tic[1].in++ <-- {  delay = 100ms; } <-- tic[4].out++;
+
+            tic[3].out++ --> {  delay = 100ms; } --> tic[4].in++;
+            tic[3].in++ <-- {  delay = 100ms; } <-- tic[4].out++;
+
+            tic[4].out++ --> {  delay = 100ms; } --> tic[5].in++;
+            tic[4].in++ <-- {  delay = 100ms; } <-- tic[5].out++;
+    }
+   ```
+   - `getIndex()` function which returns the index of the module in the vector.
+   - `forwardMessage()` function which is invoked from `handleMessage()` whenever a message arrives at the node. It draws a random gate number, and sends out message on that gate.
+   ```c
+   void Txc10::forwardMessage(cMessage *msg)
+    {
+        // In this example, we just pick a random gate to send it on.
+        // We draw a random number between 0 and the size of gate `out[]'.
+        int n = gateSize("out");
+        int k = intuniform(0, n-1);
+
+        EV << "Forwarding message " << msg << " on port out[" << k << "]\n";
+        send(msg, "out", k);
+    }
+   ```
+   2. Channels and inner type definitions
+   - create a channel type which specifies the delay parameter and we will use that type for all connections in the network
+   ```c
+   network Tictoc11
+    {
+        types:
+            channel Channel extends ned.DelayChannel {
+                delay = 100ms;
+            }
+        submodules:
+   ```
+   ```c
+   connections:
+        tic[0].out++ --> Channel --> tic[1].in++;
+        tic[0].in++ <-- Channel <-- tic[1].out++;
+
+        tic[1].out++ --> Channel --> tic[2].in++;
+        tic[1].in++ <-- Channel <-- tic[2].out++;
+
+        tic[1].out++ --> Channel --> tic[4].in++;
+        tic[1].in++ <-- Channel <-- tic[4].out++;
+
+        tic[3].out++ --> Channel --> tic[4].in++;
+        tic[3].in++ <-- Channel <-- tic[4].out++;
+
+        tic[4].out++ --> Channel --> tic[5].in++;
+        tic[4].in++ <-- Channel <-- tic[5].out++;
+   ```
+   3. Using two-way connections
+   -  define two-way (or so called inout) gates instead of the separate input and output gates we used previously.
+   ```c
+    simple Txc12
+    {
+        parameters:
+            @display("i=block/routing");
+        gates:
+            inout gate[];  // declare two way connections
+    }
+   ```
+   ```c
+    connections:
+        tic[0].gate++ <--> Channel <--> tic[1].gate++;
+        tic[1].gate++ <--> Channel <--> tic[2].gate++;
+        tic[1].gate++ <--> Channel <--> tic[4].gate++;
+        tic[3].gate++ <--> Channel <--> tic[4].gate++;
+        tic[4].gate++ <--> Channel <--> tic[5].gate++;
+   ```
+   ```c
+   void Txc12::forwardMessage(cMessage *msg)
+    {
+        // In this example, we just pick a random gate to send it on.
+        // We draw a random number between 0 and the size of gate `gate[]'.
+        int n = gateSize("gate");
+        int k = intuniform(0, n-1);
+
+        EV << "Forwarding message " << msg << " on gate[" << k << "]\n";
+        // $o and $i suffix is used to identify the input/output part of a two way gate
+        send(msg, "gate$o", k);
+    }
+    ```
+   4. Defining our message class
+   - subclass cMessage and add destination as a data member
+   ```c
+   message TicTocMsg13
+    {
+        int source;
+        int destination;
+        int hopCount = 0;
+    }
+    ```
+    ```c
+    TicTocMsg13 *msg = new TicTocMsg13(msgname);
+    msg->setSource(src);
+    msg->setDestination(dest);
+    return msg;
+    ```
+    ```c
+    void Txc13::handleMessage(cMessage *msg)
+    {
+        TicTocMsg13 *ttmsg = check_and_cast<TicTocMsg13 *>(msg);
+
+        if (ttmsg->getDestination() == getIndex()) {
+    ```
+    - include tictoc13_m.h into our C++ code `#include "tictoc13_m.h"`
 12. Adding Statistics Collection:
 13. Visualizing the Results: 
 14. Parameter Studies:
