@@ -102,7 +102,7 @@
         - The `Txc1` simple module type is represented by the C++ class `Txc1`.
         - The `Txc1` class needs to subclass from OMNeT++'s `cSimpleModule` class, and needs to be registered in OMNeT++ with the `Define_Module()` macro.
 
-         > [!NOTE]
+         > [!NOTE]:
          > **Don't forget the `Define_Module()`**
          
          - We redefine two methods from `cSimpleModule`: `initialize()` and `handleMessage()`. They are invoked from the simulation kernel: the first one only once, and the second one whenever a message arrives at the module.
@@ -111,7 +111,7 @@
          - Messages (packets, frames, jobs, etc) and events (timers, timeouts) are all represented by `cMessage` objects (or its subclasses) in OMNeT++.
          - After you send or schedule them, they will be held by the simulation kernel in the "scheduled events" or "future events" list until their time comes and they are delivered to the modules via handleMessage().
 
-         > [!NOTE]
+         > [!NOTE]:
          > Note that there is no stopping condition built into this simulation: it would continue forever. You will be able to stop it from the GUI. (You could also specify a simulation time limit or CPU time limit in the configuration file, but we don't do that in the tutorial.)
    5. Adding omnetpp.ini
       - To be able to run the simulation, we need to create an `omnetpp.ini` file.
@@ -147,16 +147,143 @@
       - The results directory in the project folder contains the .elog file.
 ## Enhancing the 2-node TicToc:
    1. Adding icons
+	- Make the model look a bit prettier in the GUI. 
+	- We assign the block/routing icon (the file images/block/routing.png), and paint it cyan for tic and yellow for toc. 
+	- This is achieved by adding display strings to the NED file. The i= tag in the display string specifies the icon.
+	```c
+    simple Txc2
+    {
+        parameters:
+            @display("i=block/routing"); // add a default icon
+        gates:
+            input in;
+            output out;
+    }
+    ```
    2. Adding logging
+   - We add log statements to Txc1 so that it prints what it is doing. 
+   - OMNeT++ provides a sophisticated logging facility with log levels, log channels, filtering, etc.
+   - In this model we'll use its simplest form EV:
+   ```c
+   EV << "Received message `" << msg->getName() << "', sending it out again\n";
+   ```
+   - You can also open separate output windows for tic and toc by <mark>right-clicking on their icons and choosing Component log</mark> from the menu.
    3. Adding state variables
+   - In this step we add a counter to the module, and delete the message after ten exchanges.
+   ```c
+       class Txc3 : public cSimpleModule
+    {
+      private:
+        int counter;  // Note the counter here
+
+      protected:
+    ```
+    - set the variable to 10 in `initialize()` and decrement in `handleMessage()`
+    - the line`WATCH(counter);` makes it possible to see the counter value in the graphical runtime environment.
    4. Adding parameters
+   - we'll turn the "magic number" 10 into a parameter and add a boolean parameter to decide whether the module should send out the first message in its initialization code.
+   - Module parameters have to be declared in the NED
+   - The data type can be numeric, string, bool, or xml (the latter is for easy access to XML config files), among others.
+    ```c
+    simple Txc4
+    {
+        parameters:
+            bool sendMsgOnInit = default(false); // whether the module should send out a message on initialization
+            int limit = default(2);   // another parameter with a default value
+            @display("i=block/routing");
+        gates:
+    ```
+    - C++ code to read the parameter in initialize(), and assign it to the counter.
+    ```c
+    counter = par("limit");
+    ```
+    - the second parameter to decide whether to send initial message:
+    ```c
+        if (par("sendMsgOnInit").boolValue() == true) {
+    ```
+    - we assign one parameter in the NED file:
+    ```c
+    network Tictoc4
+    {
+        submodules:
+            tic: Txc4 {
+                parameters:
+                    sendMsgOnInit = true;
+                    @display("i=,cyan");
+            }
+            toc: Txc4 {
+                parameters:
+                    sendMsgOnInit = false;
+                    @display("i=,gold");
+            }
+        connections:
+    ```
+    - and the other in `omnetpp.ini`:
+    ```c
+    Tictoc4.toc.limit = 5
+    ```
+    > [!NOTE]:
+    >  omnetpp.ini supports wildcards, we could have used: ` Tictoc4.t*c.limit=5 ` or `Tictoc4.*.limit=5` or even `**.limit=5`
+
    5. Using NED inheritance
+   - Here is the base module:
+   ```c
+   simple Txc5
+    {
+        parameters:
+            bool sendMsgOnInit = default(false);
+            int limit = default(2);
+            @display("i=block/routing");
+        gates:
+            input in;
+            output out;
+    }
+   ```
+   - And here is the derived module:
+   ```c
+   simple Tic5 extends Txc5
+    {
+        parameters:
+            @display("i=,cyan");
+            sendMsgOnInit = true;   // Tic modules should send a message on init
+    }
+   ``` 
    6. Modeling processing delay
+   - We added two `cMessage *` variables, `event` and `tictocMsg` to the class, to remember the message we use for timing and message whose processing delay we are simulating.
+   ```c
+   class Txc6 : public cSimpleModule
+    {
+      private:
+        // Set the pointers to nullptr, so that the destructor won't crash
+        // even if initialize() doesn't get called because of a runtime
+        // error or user cancellation during the startup process.
+        cMessage *event = nullptr;  // pointer to the event object which we'll use for timing
+        cMessage *tictocMsg = nullptr;  // variable to remember the message until we send it back
+
+      public:
+   ```
+   - We "send" the self-messages with the `scheduleAt()` function, specifying when it should be delivered back to the module.
+   ```c
+   scheduleAt(simTime()+1.0, event);
+   ```
+   - In handleMessage() now we have to differentiate whether a new message has arrived via the input gate or the self-message came back (timer expired). Here we are using
+   ```c
+    if (msg == event)
+   ```
+    - but we could have written
+
+    ```c
+    if (msg->isSelfMessage())
+    ```
    7. Random numbers and parameters
    8. Timeout, cancelling timers
    9. Retransmitting the same message
  
-11. Turning it Into a Real Network:
+## Turning it Into a Real Network:
+   1. More than two nodes
+   2. More than two nodes
+   3. More than two nodes
+   4. More than two nodes
 12. Adding Statistics Collection:
 13. Visualizing the Results: 
 14. Parameter Studies:
