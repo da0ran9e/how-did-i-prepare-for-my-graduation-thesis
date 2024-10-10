@@ -1,0 +1,27 @@
+version 3
+run Tictoc17-0-20241010-10:02:28-7512
+attr configname Tictoc17
+attr datetime 20241010-10:02:28
+attr datetimef 20241010-100228
+attr experiment Tictoc17
+attr inifile omnetpp.ini
+attr iterationvars ""
+attr iterationvarsd ""
+attr iterationvarsf ""
+attr measurement ""
+attr network Tictoc17
+attr processid 7512
+attr repetition 0
+attr replication #0
+attr resultdir results
+attr runnumber 0
+attr seedset 0
+config network Tictoc17
+
+vector 0 Tictoc17.tic[5] hopCount:vector ETV
+attr interpolationmode none
+attr recordingmode vector
+attr source arrival
+attr title "hop count"
+0	18	1.7	17
+
