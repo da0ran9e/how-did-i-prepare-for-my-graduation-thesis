@@ -481,7 +481,18 @@
         if (ttmsg->getDestination() == getIndex()) {
     ```
     - include tictoc13_m.h into our C++ code `#include "tictoc13_m.h"`
-12. Adding Statistics Collection:
+## Adding Statistics Collection:
+1. Display the number of packets sent/received
+    - Add two counters to the module class: `numSent` and `numReceived`
+    ```c
+    class Txc14 : public cSimpleModule
+    {
+      private:
+        long numSent;
+        long numReceived;
+
+      protected:
+    ```
 13. Visualizing the Results: 
 14. Parameter Studies:
 15. Closing words:
