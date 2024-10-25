@@ -22,7 +22,7 @@ network GraphNetwork
             @display("p=647.91,284.83;i=abstract/router");
         }
         node3: Node {
-            @display("p=1777.84,284.83;i=abstract/router");
+            @display("p=1843.57,284.83;i=abstract/router");
         }
         node4: Node {
             @display("p=1467.97,422.55;i=abstract/router");
@@ -37,7 +37,7 @@ network GraphNetwork
             @display("p=647.91,985.95;i=abstract/router");
         }
         node8: Node {
-            @display("p=1417.89,985.95;i=abstract/router");
+            @display("p=1442.9299,985.95;i=abstract/router");
         }
         node9: Node {
             @display("p=1154.97,588.44;i=abstract/router");
@@ -52,16 +52,16 @@ network GraphNetwork
             @display("p=2385.06,56.34;i=abstract/router");
         }
         node13: Node {
-            @display("p=438.19998,1267.65;i=abstract/router");
+            @display("p=391.25,1180.01;i=abstract/router");
         }
         node14: Node {
-            @display("p=863.88,1267.65;i=abstract/router");
+            @display("p=835.70996,1180.01;i=abstract/router");
         }
         node15: Node {
-            @display("p=1345.9,1289.5599;i=abstract/router");
+            @display("p=1345.9,1180.01;i=abstract/router");
         }
         node16: Node {
-            @display("p=1777.84,1289.5599;i=abstract/router");
+            @display("p=1843.57,1180.01;i=abstract/router");
         }
         node17: Node {
             @display("p=2097.0999,1386.59;i=abstract/router");
@@ -73,7 +73,6 @@ network GraphNetwork
             @display("p=2366.28,1082.98;i=abstract/router");
         }
     connections:
-        // Random connections with randomly generated delays between nodes
         node0.gate++ <--> {  delay = 45ms; } <--> node1.gate++;
         node0.gate++ <--> {  delay = 60ms; } <--> node5.gate++;
         node1.gate++ <--> {  delay = 30ms; } <--> node2.gate++;
@@ -95,7 +94,6 @@ network GraphNetwork
         node16.gate++ <--> {  delay = 230ms; } <--> node17.gate++;
         node17.gate++ <--> {  delay = 240ms; } <--> node18.gate++;
         node18.gate++ <--> {  delay = 250ms; } <--> node19.gate++;
-
         node3.gate++ <--> {  delay = 120ms; } <--> node16.gate++;
         node5.gate++ <--> {  delay = 130ms; } <--> node17.gate++;
         node7.gate++ <--> {  delay = 140ms; } <--> node8.gate++;

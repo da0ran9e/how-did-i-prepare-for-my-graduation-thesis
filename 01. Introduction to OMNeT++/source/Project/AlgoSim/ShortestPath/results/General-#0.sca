@@ -1,8 +1,8 @@
 version 3
-run General-0-20241022-17:23:21-968
+run General-0-20241024-21:55:34-3372
 attr configname General
-attr datetime 20241022-17:23:21
-attr datetimef 20241022-172321
+attr datetime 20241024-21:55:34
+attr datetimef 20241024-215534
 attr experiment General
 attr inifile omnetpp.ini
 attr iterationvars ""
@@ -10,7 +10,7 @@ attr iterationvarsd ""
 attr iterationvarsf ""
 attr measurement ""
 attr network GraphNetwork
-attr processid 968
+attr processid 3372
 attr repetition 0
 attr replication #0
 attr resultdir results
@@ -186,22 +186,10 @@ attr mutable ""
 par GraphNetwork.node10.gate$o[0].channel delay 0.16s
 attr mutable ""
 attr unit s
-par GraphNetwork.node10.gate$o[1].channel typename "\"ned.DelayChannel\""
-par GraphNetwork.node10.gate$o[1].channel disabled false
-attr mutable ""
-par GraphNetwork.node10.gate$o[1].channel delay 0.17s
-attr mutable ""
-attr unit s
 par GraphNetwork.node11.gate$o[0].channel typename "\"ned.DelayChannel\""
 par GraphNetwork.node11.gate$o[0].channel disabled false
 attr mutable ""
-par GraphNetwork.node11.gate$o[0].channel delay 0.17s
-attr mutable ""
-attr unit s
-par GraphNetwork.node11.gate$o[1].channel typename "\"ned.DelayChannel\""
-par GraphNetwork.node11.gate$o[1].channel disabled false
-attr mutable ""
-par GraphNetwork.node11.gate$o[1].channel delay 0.18s
+par GraphNetwork.node11.gate$o[0].channel delay 0.18s
 attr mutable ""
 attr unit s
 par GraphNetwork.node12.gate$o[0].channel typename "\"ned.DelayChannel\""
@@ -210,22 +198,10 @@ attr mutable ""
 par GraphNetwork.node12.gate$o[0].channel delay 0.18s
 attr mutable ""
 attr unit s
-par GraphNetwork.node12.gate$o[1].channel typename "\"ned.DelayChannel\""
-par GraphNetwork.node12.gate$o[1].channel disabled false
-attr mutable ""
-par GraphNetwork.node12.gate$o[1].channel delay 0.19s
-attr mutable ""
-attr unit s
 par GraphNetwork.node13.gate$o[0].channel typename "\"ned.DelayChannel\""
 par GraphNetwork.node13.gate$o[0].channel disabled false
 attr mutable ""
-par GraphNetwork.node13.gate$o[0].channel delay 0.19s
-attr mutable ""
-attr unit s
-par GraphNetwork.node13.gate$o[1].channel typename "\"ned.DelayChannel\""
-par GraphNetwork.node13.gate$o[1].channel disabled false
-attr mutable ""
-par GraphNetwork.node13.gate$o[1].channel delay 0.2s
+par GraphNetwork.node13.gate$o[0].channel delay 0.2s
 attr mutable ""
 attr unit s
 par GraphNetwork.node14.gate$o[0].channel typename "\"ned.DelayChannel\""
@@ -292,6 +268,114 @@ par GraphNetwork.node19.gate$o[0].channel typename "\"ned.DelayChannel\""
 par GraphNetwork.node19.gate$o[0].channel disabled false
 attr mutable ""
 par GraphNetwork.node19.gate$o[0].channel delay 0.25s
+attr mutable ""
+attr unit s
+par GraphNetwork.node3.gate$o[3].channel typename "\"ned.DelayChannel\""
+par GraphNetwork.node3.gate$o[3].channel disabled false
+attr mutable ""
+par GraphNetwork.node3.gate$o[3].channel delay 0.12s
+attr mutable ""
+attr unit s
+par GraphNetwork.node16.gate$o[2].channel typename "\"ned.DelayChannel\""
+par GraphNetwork.node16.gate$o[2].channel disabled false
+attr mutable ""
+par GraphNetwork.node16.gate$o[2].channel delay 0.12s
+attr mutable ""
+attr unit s
+par GraphNetwork.node5.gate$o[2].channel typename "\"ned.DelayChannel\""
+par GraphNetwork.node5.gate$o[2].channel disabled false
+attr mutable ""
+par GraphNetwork.node5.gate$o[2].channel delay 0.13s
+attr mutable ""
+attr unit s
+par GraphNetwork.node17.gate$o[2].channel typename "\"ned.DelayChannel\""
+par GraphNetwork.node17.gate$o[2].channel disabled false
+attr mutable ""
+par GraphNetwork.node17.gate$o[2].channel delay 0.13s
+attr mutable ""
+attr unit s
+par GraphNetwork.node7.gate$o[3].channel typename "\"ned.DelayChannel\""
+par GraphNetwork.node7.gate$o[3].channel disabled false
+attr mutable ""
+par GraphNetwork.node7.gate$o[3].channel delay 0.14s
+attr mutable ""
+attr unit s
+par GraphNetwork.node8.gate$o[3].channel typename "\"ned.DelayChannel\""
+par GraphNetwork.node8.gate$o[3].channel disabled false
+attr mutable ""
+par GraphNetwork.node8.gate$o[3].channel delay 0.14s
+attr mutable ""
+attr unit s
+par GraphNetwork.node9.gate$o[3].channel typename "\"ned.DelayChannel\""
+par GraphNetwork.node9.gate$o[3].channel disabled false
+attr mutable ""
+par GraphNetwork.node9.gate$o[3].channel delay 0.15s
+attr mutable ""
+attr unit s
+par GraphNetwork.node2.gate$o[3].channel typename "\"ned.DelayChannel\""
+par GraphNetwork.node2.gate$o[3].channel disabled false
+attr mutable ""
+par GraphNetwork.node2.gate$o[3].channel delay 0.15s
+attr mutable ""
+attr unit s
+par GraphNetwork.node11.gate$o[1].channel typename "\"ned.DelayChannel\""
+par GraphNetwork.node11.gate$o[1].channel disabled false
+attr mutable ""
+par GraphNetwork.node11.gate$o[1].channel delay 0.18s
+attr mutable ""
+attr unit s
+par GraphNetwork.node1.gate$o[3].channel typename "\"ned.DelayChannel\""
+par GraphNetwork.node1.gate$o[3].channel disabled false
+attr mutable ""
+par GraphNetwork.node1.gate$o[3].channel delay 0.18s
+attr mutable ""
+attr unit s
+par GraphNetwork.node12.gate$o[1].channel typename "\"ned.DelayChannel\""
+par GraphNetwork.node12.gate$o[1].channel disabled false
+attr mutable ""
+par GraphNetwork.node12.gate$o[1].channel delay 0.19s
+attr mutable ""
+attr unit s
+par GraphNetwork.node16.gate$o[3].channel typename "\"ned.DelayChannel\""
+par GraphNetwork.node16.gate$o[3].channel disabled false
+attr mutable ""
+par GraphNetwork.node16.gate$o[3].channel delay 0.19s
+attr mutable ""
+attr unit s
+par GraphNetwork.node13.gate$o[1].channel typename "\"ned.DelayChannel\""
+par GraphNetwork.node13.gate$o[1].channel disabled false
+attr mutable ""
+par GraphNetwork.node13.gate$o[1].channel delay 0.2s
+attr mutable ""
+attr unit s
+par GraphNetwork.node5.gate$o[3].channel typename "\"ned.DelayChannel\""
+par GraphNetwork.node5.gate$o[3].channel disabled false
+attr mutable ""
+par GraphNetwork.node5.gate$o[3].channel delay 0.2s
+attr mutable ""
+attr unit s
+par GraphNetwork.node14.gate$o[2].channel typename "\"ned.DelayChannel\""
+par GraphNetwork.node14.gate$o[2].channel disabled false
+attr mutable ""
+par GraphNetwork.node14.gate$o[2].channel delay 0.21s
+attr mutable ""
+attr unit s
+par GraphNetwork.node7.gate$o[4].channel typename "\"ned.DelayChannel\""
+par GraphNetwork.node7.gate$o[4].channel disabled false
+attr mutable ""
+par GraphNetwork.node7.gate$o[4].channel delay 0.21s
+attr mutable ""
+attr unit s
+par GraphNetwork.node17.gate$o[3].channel typename "\"ned.DelayChannel\""
+par GraphNetwork.node17.gate$o[3].channel disabled false
+attr mutable ""
+par GraphNetwork.node17.gate$o[3].channel delay 0.24s
+attr mutable ""
+attr unit s
+par GraphNetwork.node12.gate$o[2].channel typename "\"ned.DelayChannel\""
+par GraphNetwork.node12.gate$o[2].channel disabled false
+attr mutable ""
+par GraphNetwork.node12.gate$o[2].channel delay 0.24s
 attr mutable ""
 attr unit s
 par GraphNetwork.node0 typename "\"Node\""

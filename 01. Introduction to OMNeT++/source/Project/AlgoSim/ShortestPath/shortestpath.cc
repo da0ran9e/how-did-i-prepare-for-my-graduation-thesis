@@ -8,22 +8,23 @@
 #include <omnetpp.h>
 #include <limits>
 
+using namespace omnetpp;
+
 #define ROOT_NODE 2
 
-using namespace omnetpp;
 std::vector<std::string>  sortedNodes;
 std::vector< double > distances;
 
-int INF = std::numeric_limits<int>::max();
+int INF = 9999999;
 
 class Node : public cSimpleModule
 {
-    double totalCost;
-    cMessage *msg1 = new cMessage("message", 1);
-protected:
-    virtual void initialize() override;
-    virtual void handleMessage(cMessage *msg) override;
-    virtual void finish() override;
+        double totalCost;
+        cMessage *msg1 = new cMessage("message", 1);
+    protected:
+        virtual void initialize() override;
+        virtual void handleMessage(cMessage *msg) override;
+        virtual void finish() override;
 };
 
 Define_Module(Node);
@@ -53,7 +54,7 @@ void Node::handleMessage(cMessage *msg)
             sortedNodes.push_back(this->getName());
 
             gate("gate$o", arrival_gate->getIndex())->setDisplayString("ls=green,3");
-                            arrival_gate->getPathStartGate()->setDisplayString("ls=purple,3");
+            arrival_gate->getPathStartGate()->setDisplayString("ls=purple,3");
 
             totalCost = msg->getArrivalTime().dbl();
             distances.push_back(totalCost);
