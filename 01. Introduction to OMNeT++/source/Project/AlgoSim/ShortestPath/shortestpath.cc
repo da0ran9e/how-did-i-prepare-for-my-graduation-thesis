@@ -11,11 +11,12 @@
 using namespace omnetpp;
 
 #define ROOT_NODE 2
+const int INF = 9999999;
 
 std::vector<std::string>  sortedNodes;
 std::vector< double > distances;
 
-int INF = 9999999;
+
 
 class Node : public cSimpleModule
 {
