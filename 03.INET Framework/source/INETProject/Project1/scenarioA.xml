@@ -1,0 +1,6 @@
+<!-- NOT a mobility trace. This file is used by the ScenarioManager. -->
+<scenario>
+    <set-param t="0s" module="host01.app[0]" par="sensorId" value="01"/>
+    <set-param t="0s" module="host01.app[0]" par="sensorData" value="23.12"/>
+
+</scenario>

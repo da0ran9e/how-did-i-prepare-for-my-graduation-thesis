@@ -1,0 +1,3894 @@
+file 162985 1733495114                                          
+version 3
+run Wireless04-0-20241206-21:23:50-8700
+attr configname Wireless04
+attr datetime 20241206-21:23:50
+attr datetimef 20241206-212350
+attr experiment Wireless04
+attr inifile omnetpp.ini
+attr iterationvars ""
+attr iterationvarsd ""
+attr iterationvarsf ""
+attr measurement ""
+attr network WirelessB
+attr processid 8700
+attr repetition 0
+attr replication #0
+attr resultdir results
+attr runnumber 0
+attr seedset 0
+config image-path ../../../../../IoTOMNetpp/omnetpp-6.0.3/samples/inet4.3/images
+config description "More nodes"
+config network WirelessB
+config sim-time-limit 200s
+config *.host*.ipv4.arp.typename GlobalArp
+config *.hostA.numApps 1
+config *.hostA.app[0].typename DataCollectorApp
+config *.hostA.app[0].destAddresses "\"host01\""
+config *.hostA.app[0].destPort 5000
+config *.hostA.app[0].localPort 5001
+config *.hostA.app[0].messageLength 1000B
+config *.hostA.app[0].sendInterval exponential(300s)
+config *.hostA.app[0].packetName "\"UDPData\""
+config *.host0*.numApps 1
+config *.host0*.app[0].typename SensorApp
+config *.host0*.app[0].localPort 5000
+config *.host*.wlan[0].typename AckingWirelessInterface
+config *.host*.wlan[0].mac.useAck false
+config *.host*.wlan[0].mac.fullDuplex false
+config *.host*.wlan[0].radio.transmitter.communicationRange 50m
+config *.host*.wlan[0].radio.receiver.ignoreInterference true
+config *.host*.wlan[0].mac.headerLength 23B
+config *.host*.**.bitrate 1Mbps
+config *.host*.wlan[0].radio.displayCommunicationRange true
+config **.hostA.mobility.typename TurtleMobility
+config **.hostA.mobility.turtleScript "xmldoc(\"movements.xml\", \"movements//movement[@id='2']\")"
+config *.host*.wlan[0].queue.packetCapacity 10
+config *.visualizer.mobilityVisualizer.displayVelocities true
+config *.visualizer.mobilityVisualizer.displayMovementTrails true
+
+vector 0 WirelessB.hostA.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 1 WirelessB.hostA.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 2 WirelessB.hostA.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 3 WirelessB.hostA.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 4 WirelessB.host00.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 5 WirelessB.host00.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 6 WirelessB.host00.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 7 WirelessB.host00.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 8 WirelessB.host01.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 9 WirelessB.host01.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 10 WirelessB.host01.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 11 WirelessB.host01.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 12 WirelessB.host02.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 13 WirelessB.host02.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 14 WirelessB.host02.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 15 WirelessB.host02.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 16 WirelessB.host03.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 17 WirelessB.host03.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 18 WirelessB.host03.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 19 WirelessB.host03.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 20 WirelessB.host04.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 21 WirelessB.host04.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 22 WirelessB.host04.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 23 WirelessB.host04.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 24 WirelessB.host05.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 25 WirelessB.host05.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 26 WirelessB.host05.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 27 WirelessB.host05.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 28 WirelessB.host06.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 29 WirelessB.host06.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 30 WirelessB.host06.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 31 WirelessB.host06.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 32 WirelessB.host07.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 33 WirelessB.host07.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 34 WirelessB.host07.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 35 WirelessB.host07.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 36 WirelessB.host08.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 37 WirelessB.host08.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 38 WirelessB.host08.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 39 WirelessB.host08.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 40 WirelessB.host09.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 41 WirelessB.host09.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 42 WirelessB.host09.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 43 WirelessB.host09.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 44 WirelessB.host10.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 45 WirelessB.host10.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 46 WirelessB.host10.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 47 WirelessB.host10.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 48 WirelessB.host11.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 49 WirelessB.host11.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 50 WirelessB.host11.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 51 WirelessB.host11.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 52 WirelessB.host12.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 53 WirelessB.host12.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 54 WirelessB.host12.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 55 WirelessB.host12.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 56 WirelessB.host13.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 57 WirelessB.host13.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 58 WirelessB.host13.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 59 WirelessB.host13.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 60 WirelessB.host14.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 61 WirelessB.host14.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 62 WirelessB.host14.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 63 WirelessB.host14.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 64 WirelessB.host15.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 65 WirelessB.host15.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 66 WirelessB.host15.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 67 WirelessB.host15.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 68 WirelessB.host16.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 69 WirelessB.host16.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 70 WirelessB.host16.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 71 WirelessB.host16.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 72 WirelessB.host17.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 73 WirelessB.host17.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 74 WirelessB.host17.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 75 WirelessB.host17.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 76 WirelessB.host18.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 77 WirelessB.host18.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 78 WirelessB.host18.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 79 WirelessB.host18.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 80 WirelessB.host19.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 81 WirelessB.host19.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 82 WirelessB.host19.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 83 WirelessB.host19.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 84 WirelessB.host20.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 85 WirelessB.host20.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 86 WirelessB.host20.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 87 WirelessB.host20.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 88 WirelessB.host21.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 89 WirelessB.host21.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 90 WirelessB.host21.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 91 WirelessB.host21.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 92 WirelessB.host22.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 93 WirelessB.host22.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 94 WirelessB.host22.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 95 WirelessB.host22.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 96 WirelessB.host23.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 97 WirelessB.host23.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 98 WirelessB.host23.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 99 WirelessB.host23.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 100 WirelessB.host24.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 101 WirelessB.host24.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 102 WirelessB.host24.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 103 WirelessB.host24.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 104 WirelessB.host25.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 105 WirelessB.host25.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 106 WirelessB.host25.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 107 WirelessB.host25.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 108 WirelessB.host26.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 109 WirelessB.host26.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 110 WirelessB.host26.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 111 WirelessB.host26.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 112 WirelessB.host27.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 113 WirelessB.host27.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 114 WirelessB.host27.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 115 WirelessB.host27.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 116 WirelessB.host28.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 117 WirelessB.host28.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 118 WirelessB.host28.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 119 WirelessB.host28.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 120 WirelessB.host29.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 121 WirelessB.host29.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 122 WirelessB.host29.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 123 WirelessB.host29.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 124 WirelessB.host30.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 125 WirelessB.host30.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 126 WirelessB.host30.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 127 WirelessB.host30.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 128 WirelessB.host31.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 129 WirelessB.host31.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 130 WirelessB.host31.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 131 WirelessB.host31.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 132 WirelessB.host32.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 133 WirelessB.host32.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 134 WirelessB.host32.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 135 WirelessB.host32.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 136 WirelessB.host33.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 137 WirelessB.host33.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 138 WirelessB.host33.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 139 WirelessB.host33.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 140 WirelessB.host34.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 141 WirelessB.host34.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 142 WirelessB.host34.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 143 WirelessB.host34.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 144 WirelessB.host35.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 145 WirelessB.host35.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 146 WirelessB.host35.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 147 WirelessB.host35.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 148 WirelessB.host36.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 149 WirelessB.host36.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 150 WirelessB.host36.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 151 WirelessB.host36.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 152 WirelessB.host37.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 153 WirelessB.host37.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 154 WirelessB.host37.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 155 WirelessB.host37.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 156 WirelessB.host38.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 157 WirelessB.host38.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 158 WirelessB.host38.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 159 WirelessB.host38.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 160 WirelessB.host39.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 161 WirelessB.host39.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 162 WirelessB.host39.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 163 WirelessB.host39.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 164 WirelessB.host40.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 165 WirelessB.host40.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 166 WirelessB.host40.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 167 WirelessB.host40.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 168 WirelessB.host41.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 169 WirelessB.host41.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 170 WirelessB.host41.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 171 WirelessB.host41.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 172 WirelessB.host42.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 173 WirelessB.host42.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 174 WirelessB.host42.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 175 WirelessB.host42.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 176 WirelessB.host43.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 177 WirelessB.host43.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 178 WirelessB.host43.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 179 WirelessB.host43.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 180 WirelessB.host44.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 181 WirelessB.host44.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 182 WirelessB.host44.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 183 WirelessB.host44.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 184 WirelessB.host45.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 185 WirelessB.host45.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 186 WirelessB.host45.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 187 WirelessB.host45.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 188 WirelessB.host46.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 189 WirelessB.host46.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 190 WirelessB.host46.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 191 WirelessB.host46.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 192 WirelessB.host47.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 193 WirelessB.host47.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 194 WirelessB.host47.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 195 WirelessB.host47.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 196 WirelessB.host48.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 197 WirelessB.host48.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 198 WirelessB.host48.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 199 WirelessB.host48.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 200 WirelessB.host49.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 201 WirelessB.host49.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 202 WirelessB.host49.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 203 WirelessB.host49.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 204 WirelessB.host50.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 205 WirelessB.host50.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 206 WirelessB.host50.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 207 WirelessB.host50.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 208 WirelessB.host51.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 209 WirelessB.host51.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 210 WirelessB.host51.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 211 WirelessB.host51.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 212 WirelessB.host52.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 213 WirelessB.host52.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 214 WirelessB.host52.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 215 WirelessB.host52.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 216 WirelessB.host53.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 217 WirelessB.host53.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 218 WirelessB.host53.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 219 WirelessB.host53.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 220 WirelessB.host54.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 221 WirelessB.host54.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 222 WirelessB.host54.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 223 WirelessB.host54.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 224 WirelessB.host55.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 225 WirelessB.host55.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 226 WirelessB.host55.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 227 WirelessB.host55.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 228 WirelessB.host56.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 229 WirelessB.host56.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 230 WirelessB.host56.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 231 WirelessB.host56.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 232 WirelessB.host57.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 233 WirelessB.host57.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 234 WirelessB.host57.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 235 WirelessB.host57.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 236 WirelessB.host58.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 237 WirelessB.host58.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 238 WirelessB.host58.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 239 WirelessB.host58.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 240 WirelessB.host59.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 241 WirelessB.host59.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 242 WirelessB.host59.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 243 WirelessB.host59.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 244 WirelessB.host60.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 245 WirelessB.host60.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 246 WirelessB.host60.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 247 WirelessB.host60.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 248 WirelessB.host61.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 249 WirelessB.host61.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 250 WirelessB.host61.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 251 WirelessB.host61.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 252 WirelessB.host62.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 253 WirelessB.host62.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 254 WirelessB.host62.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 255 WirelessB.host62.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 256 WirelessB.host63.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 257 WirelessB.host63.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 258 WirelessB.host63.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 259 WirelessB.host63.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 260 WirelessB.host64.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 261 WirelessB.host64.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 262 WirelessB.host64.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 263 WirelessB.host64.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 264 WirelessB.host65.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 265 WirelessB.host65.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 266 WirelessB.host65.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 267 WirelessB.host65.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 268 WirelessB.host66.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 269 WirelessB.host66.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 270 WirelessB.host66.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 271 WirelessB.host66.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 272 WirelessB.host67.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 273 WirelessB.host67.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 274 WirelessB.host67.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 275 WirelessB.host67.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 276 WirelessB.host68.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 277 WirelessB.host68.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 278 WirelessB.host68.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 279 WirelessB.host68.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 280 WirelessB.host69.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 281 WirelessB.host69.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 282 WirelessB.host69.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 283 WirelessB.host69.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 284 WirelessB.host70.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 285 WirelessB.host70.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 286 WirelessB.host70.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 287 WirelessB.host70.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 288 WirelessB.host71.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 289 WirelessB.host71.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 290 WirelessB.host71.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 291 WirelessB.host71.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 292 WirelessB.host72.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 293 WirelessB.host72.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 294 WirelessB.host72.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 295 WirelessB.host72.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 296 WirelessB.host73.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 297 WirelessB.host73.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 298 WirelessB.host73.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 299 WirelessB.host73.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 300 WirelessB.host74.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 301 WirelessB.host74.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 302 WirelessB.host74.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 303 WirelessB.host74.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 304 WirelessB.host75.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 305 WirelessB.host75.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 306 WirelessB.host75.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 307 WirelessB.host75.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 308 WirelessB.host76.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 309 WirelessB.host76.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 310 WirelessB.host76.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 311 WirelessB.host76.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 312 WirelessB.host77.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 313 WirelessB.host77.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 314 WirelessB.host77.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 315 WirelessB.host77.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 316 WirelessB.host78.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 317 WirelessB.host78.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 318 WirelessB.host78.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 319 WirelessB.host78.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 320 WirelessB.host79.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 321 WirelessB.host79.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 322 WirelessB.host79.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 323 WirelessB.host79.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 324 WirelessB.host80.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 325 WirelessB.host80.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 326 WirelessB.host80.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 327 WirelessB.host80.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 328 WirelessB.host81.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 329 WirelessB.host81.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 330 WirelessB.host81.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 331 WirelessB.host81.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 332 WirelessB.host82.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 333 WirelessB.host82.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 334 WirelessB.host82.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 335 WirelessB.host82.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 336 WirelessB.host83.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 337 WirelessB.host83.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 338 WirelessB.host83.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 339 WirelessB.host83.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 340 WirelessB.host84.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 341 WirelessB.host84.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 342 WirelessB.host84.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 343 WirelessB.host84.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 344 WirelessB.host85.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 345 WirelessB.host85.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 346 WirelessB.host85.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 347 WirelessB.host85.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 348 WirelessB.host86.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 349 WirelessB.host86.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 350 WirelessB.host86.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 351 WirelessB.host86.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 352 WirelessB.host87.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 353 WirelessB.host87.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 354 WirelessB.host87.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 355 WirelessB.host87.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 356 WirelessB.host88.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 357 WirelessB.host88.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 358 WirelessB.host88.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 359 WirelessB.host88.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 360 WirelessB.host89.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 361 WirelessB.host89.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 362 WirelessB.host89.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 363 WirelessB.host89.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 364 WirelessB.host90.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 365 WirelessB.host90.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 366 WirelessB.host90.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 367 WirelessB.host90.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 368 WirelessB.host91.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 369 WirelessB.host91.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 370 WirelessB.host91.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 371 WirelessB.host91.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 372 WirelessB.host92.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 373 WirelessB.host92.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 374 WirelessB.host92.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 375 WirelessB.host92.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 376 WirelessB.host93.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 377 WirelessB.host93.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 378 WirelessB.host93.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 379 WirelessB.host93.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 380 WirelessB.host94.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 381 WirelessB.host94.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 382 WirelessB.host94.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 383 WirelessB.host94.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 384 WirelessB.host95.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 385 WirelessB.host95.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 386 WirelessB.host95.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 387 WirelessB.host95.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 388 WirelessB.host96.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 389 WirelessB.host96.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 390 WirelessB.host96.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 391 WirelessB.host96.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 392 WirelessB.host97.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 393 WirelessB.host97.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 394 WirelessB.host97.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 395 WirelessB.host97.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 396 WirelessB.host98.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 397 WirelessB.host98.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 398 WirelessB.host98.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 399 WirelessB.host98.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 400 WirelessB.host99.wlan[0].mac.queue queueLength:vector ETV
+attr autoWarmupFilter false
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source "warmup(count(packetPushed) - count(packetPulled) - count(packetRemoved) - count(packetDropped))"
+attr title "queue length"
+attr type int
+vector 401 WirelessB.host99.udp passedUpPk:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetSentToUpper
+attr title "packets passed up, count"
+vector 402 WirelessB.host99.udp droppedPkWrongPort:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsNoPortFound(packetDropped)
+attr title "packets dropped (wrong port), count"
+vector 403 WirelessB.host99.udp droppedPkBadChecksum:vector(count) ETV
+attr interpolationmode none
+attr recordingmode vector(count)
+attr source packetDropReasonIsIncorrectlyReceived(packetDropped)
+attr title "packets dropped (checksum error), count"
+vector 404 WirelessB.hostA.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 405 WirelessB.host00.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 406 WirelessB.host01.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 407 WirelessB.host02.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 408 WirelessB.host03.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 409 WirelessB.host04.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 410 WirelessB.host05.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 411 WirelessB.host06.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 412 WirelessB.host07.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 413 WirelessB.host08.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 414 WirelessB.host09.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 415 WirelessB.host10.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 416 WirelessB.host11.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 417 WirelessB.host12.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 418 WirelessB.host13.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 419 WirelessB.host14.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 420 WirelessB.host15.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 421 WirelessB.host16.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 422 WirelessB.host17.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 423 WirelessB.host18.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 424 WirelessB.host19.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 425 WirelessB.host20.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 426 WirelessB.host21.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 427 WirelessB.host22.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 428 WirelessB.host23.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 429 WirelessB.host24.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 430 WirelessB.host25.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 431 WirelessB.host26.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 432 WirelessB.host27.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 433 WirelessB.host28.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 434 WirelessB.host29.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 435 WirelessB.host30.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 436 WirelessB.host31.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 437 WirelessB.host32.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 438 WirelessB.host33.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 439 WirelessB.host34.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 440 WirelessB.host35.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 441 WirelessB.host36.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 442 WirelessB.host37.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 443 WirelessB.host38.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 444 WirelessB.host39.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 445 WirelessB.host40.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 446 WirelessB.host41.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 447 WirelessB.host42.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 448 WirelessB.host43.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 449 WirelessB.host44.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 450 WirelessB.host45.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 451 WirelessB.host46.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 452 WirelessB.host47.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 453 WirelessB.host48.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 454 WirelessB.host49.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 455 WirelessB.host50.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 456 WirelessB.host51.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 457 WirelessB.host52.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 458 WirelessB.host53.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 459 WirelessB.host54.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 460 WirelessB.host55.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 461 WirelessB.host56.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 462 WirelessB.host57.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 463 WirelessB.host58.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 464 WirelessB.host59.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 465 WirelessB.host60.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 466 WirelessB.host61.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 467 WirelessB.host62.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 468 WirelessB.host63.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 469 WirelessB.host64.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 470 WirelessB.host65.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 471 WirelessB.host66.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 472 WirelessB.host67.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 473 WirelessB.host68.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 474 WirelessB.host69.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 475 WirelessB.host70.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 476 WirelessB.host71.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 477 WirelessB.host72.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 478 WirelessB.host73.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 479 WirelessB.host74.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 480 WirelessB.host75.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 481 WirelessB.host76.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 482 WirelessB.host77.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 483 WirelessB.host78.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 484 WirelessB.host79.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 485 WirelessB.host80.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 486 WirelessB.host81.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 487 WirelessB.host82.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 488 WirelessB.host83.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 489 WirelessB.host84.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 490 WirelessB.host85.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 491 WirelessB.host86.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 492 WirelessB.host87.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 493 WirelessB.host88.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 494 WirelessB.host89.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 495 WirelessB.host90.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 496 WirelessB.host91.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 497 WirelessB.host92.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 498 WirelessB.host93.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 499 WirelessB.host94.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 500 WirelessB.host95.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 501 WirelessB.host96.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 502 WirelessB.host97.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 503 WirelessB.host98.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 504 WirelessB.host99.wlan[0].radio radioMode:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source radioModeChanged
+attr title "Radio mode"
+vector 505 WirelessB.hostA.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 506 WirelessB.host00.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 507 WirelessB.host01.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 508 WirelessB.host02.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 509 WirelessB.host03.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 510 WirelessB.host04.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 511 WirelessB.host05.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 512 WirelessB.host06.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 513 WirelessB.host07.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 514 WirelessB.host08.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 515 WirelessB.host09.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 516 WirelessB.host10.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 517 WirelessB.host11.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 518 WirelessB.host12.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 519 WirelessB.host13.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 520 WirelessB.host14.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 521 WirelessB.host15.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 522 WirelessB.host16.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 523 WirelessB.host17.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 524 WirelessB.host18.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 525 WirelessB.host19.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 526 WirelessB.host20.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 527 WirelessB.host21.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 528 WirelessB.host22.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 529 WirelessB.host23.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 530 WirelessB.host24.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 531 WirelessB.host25.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 532 WirelessB.host26.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 533 WirelessB.host27.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 534 WirelessB.host28.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 535 WirelessB.host29.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 536 WirelessB.host30.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 537 WirelessB.host31.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 538 WirelessB.host32.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 539 WirelessB.host33.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 540 WirelessB.host34.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 541 WirelessB.host35.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 542 WirelessB.host36.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 543 WirelessB.host37.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 544 WirelessB.host38.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 545 WirelessB.host39.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 546 WirelessB.host40.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 547 WirelessB.host41.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 548 WirelessB.host42.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 549 WirelessB.host43.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 550 WirelessB.host44.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 551 WirelessB.host45.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 552 WirelessB.host46.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 553 WirelessB.host47.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 554 WirelessB.host48.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 555 WirelessB.host49.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 556 WirelessB.host50.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 557 WirelessB.host51.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 558 WirelessB.host52.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 559 WirelessB.host53.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 560 WirelessB.host54.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 561 WirelessB.host55.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 562 WirelessB.host56.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 563 WirelessB.host57.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 564 WirelessB.host58.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 565 WirelessB.host59.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 566 WirelessB.host60.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 567 WirelessB.host61.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 568 WirelessB.host62.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 569 WirelessB.host63.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 570 WirelessB.host64.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 571 WirelessB.host65.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 572 WirelessB.host66.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 573 WirelessB.host67.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 574 WirelessB.host68.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 575 WirelessB.host69.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 576 WirelessB.host70.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 577 WirelessB.host71.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 578 WirelessB.host72.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 579 WirelessB.host73.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 580 WirelessB.host74.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 581 WirelessB.host75.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 582 WirelessB.host76.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 583 WirelessB.host77.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 584 WirelessB.host78.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 585 WirelessB.host79.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 586 WirelessB.host80.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 587 WirelessB.host81.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 588 WirelessB.host82.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 589 WirelessB.host83.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 590 WirelessB.host84.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 591 WirelessB.host85.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 592 WirelessB.host86.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 593 WirelessB.host87.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 594 WirelessB.host88.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 595 WirelessB.host89.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 596 WirelessB.host90.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 597 WirelessB.host91.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 598 WirelessB.host92.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 599 WirelessB.host93.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 600 WirelessB.host94.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 601 WirelessB.host95.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 602 WirelessB.host96.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 603 WirelessB.host97.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 604 WirelessB.host98.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+vector 605 WirelessB.host99.wlan[0].radio receptionState:vector ETV
+attr interpolationmode sample-hold
+attr recordingmode vector
+attr source receptionStateChanged
+attr title "Radio reception state"
+0	142217 36 0 0 0 0 4 0 0 0 0
+1	142253 9 0 0 0 0 1 0 0 0 0
+2	142262 9 0 0 0 0 1 0 0 0 0
+3	142271 9 0 0 0 0 1 0 0 0 0
+4	142280 36 0 0 0 0 4 0 0 0 0
+5	142316 9 0 0 0 0 1 0 0 0 0
+6	142325 9 0 0 0 0 1 0 0 0 0
+7	142334 9 0 0 0 0 1 0 0 0 0
+8	142343 36 0 0 0 0 4 0 0 0 0
+9	142379 9 0 0 0 0 1 0 0 0 0
+10	142388 10 0 0 0 0 1 0 0 0 0
+11	142398 10 0 0 0 0 1 0 0 0 0
+12	142408 40 0 0 0 0 4 0 0 0 0
+13	142448 10 0 0 0 0 1 0 0 0 0
+14	142458 10 0 0 0 0 1 0 0 0 0
+15	142468 10 0 0 0 0 1 0 0 0 0
+16	142478 40 0 0 0 0 4 0 0 0 0
+17	142518 10 0 0 0 0 1 0 0 0 0
+18	142528 10 0 0 0 0 1 0 0 0 0
+19	142538 10 0 0 0 0 1 0 0 0 0
+20	142548 40 0 0 0 0 4 0 0 0 0
+21	142588 10 0 0 0 0 1 0 0 0 0
+22	142598 10 0 0 0 0 1 0 0 0 0
+23	142608 10 0 0 0 0 1 0 0 0 0
+24	142618 40 0 0 0 0 4 0 0 0 0
+25	142658 10 0 0 0 0 1 0 0 0 0
+26	142668 10 0 0 0 0 1 0 0 0 0
+27	142678 10 0 0 0 0 1 0 0 0 0
+28	142688 40 0 0 0 0 4 0 0 0 0
+29	142728 10 0 0 0 0 1 0 0 0 0
+30	142738 10 0 0 0 0 1 0 0 0 0
+31	142748 10 0 0 0 0 1 0 0 0 0
+32	142758 40 0 0 0 0 4 0 0 0 0
+33	142798 10 0 0 0 0 1 0 0 0 0
+34	142808 10 0 0 0 0 1 0 0 0 0
+35	142818 10 0 0 0 0 1 0 0 0 0
+36	142828 40 0 0 0 0 4 0 0 0 0
+37	142868 10 0 0 0 0 1 0 0 0 0
+38	142878 10 0 0 0 0 1 0 0 0 0
+39	142888 10 0 0 0 0 1 0 0 0 0
+40	142898 40 0 0 0 0 4 0 0 0 0
+41	142938 10 0 0 0 0 1 0 0 0 0
+42	142948 10 0 0 0 0 1 0 0 0 0
+43	142958 10 0 0 0 0 1 0 0 0 0
+44	142968 40 0 0 0 0 4 0 0 0 0
+45	143008 10 0 0 0 0 1 0 0 0 0
+46	143018 10 0 0 0 0 1 0 0 0 0
+47	143028 10 0 0 0 0 1 0 0 0 0
+48	143038 40 0 0 0 0 4 0 0 0 0
+49	143078 10 0 0 0 0 1 0 0 0 0
+50	143088 10 0 0 0 0 1 0 0 0 0
+51	143098 10 0 0 0 0 1 0 0 0 0
+52	143108 40 0 0 0 0 4 0 0 0 0
+53	143148 10 0 0 0 0 1 0 0 0 0
+54	143158 10 0 0 0 0 1 0 0 0 0
+55	143168 10 0 0 0 0 1 0 0 0 0
+56	143178 40 0 0 0 0 4 0 0 0 0
+57	143218 10 0 0 0 0 1 0 0 0 0
+58	143228 10 0 0 0 0 1 0 0 0 0
+59	143238 10 0 0 0 0 1 0 0 0 0
+60	143248 40 0 0 0 0 4 0 0 0 0
+61	143288 10 0 0 0 0 1 0 0 0 0
+62	143298 10 0 0 0 0 1 0 0 0 0
+63	143308 10 0 0 0 0 1 0 0 0 0
+64	143318 40 0 0 0 0 4 0 0 0 0
+65	143358 10 0 0 0 0 1 0 0 0 0
+66	143368 10 0 0 0 0 1 0 0 0 0
+67	143378 10 0 0 0 0 1 0 0 0 0
+68	143388 40 0 0 0 0 4 0 0 0 0
+69	143428 10 0 0 0 0 1 0 0 0 0
+70	143438 10 0 0 0 0 1 0 0 0 0
+71	143448 10 0 0 0 0 1 0 0 0 0
+72	143458 40 0 0 0 0 4 0 0 0 0
+73	143498 10 0 0 0 0 1 0 0 0 0
+74	143508 10 0 0 0 0 1 0 0 0 0
+75	143518 10 0 0 0 0 1 0 0 0 0
+76	143528 40 0 0 0 0 4 0 0 0 0
+77	143568 10 0 0 0 0 1 0 0 0 0
+78	143578 10 0 0 0 0 1 0 0 0 0
+79	143588 10 0 0 0 0 1 0 0 0 0
+80	143598 40 0 0 0 0 4 0 0 0 0
+81	143638 10 0 0 0 0 1 0 0 0 0
+82	143648 10 0 0 0 0 1 0 0 0 0
+83	143658 10 0 0 0 0 1 0 0 0 0
+84	143668 40 0 0 0 0 4 0 0 0 0
+85	143708 10 0 0 0 0 1 0 0 0 0
+86	143718 10 0 0 0 0 1 0 0 0 0
+87	143728 10 0 0 0 0 1 0 0 0 0
+88	143738 40 0 0 0 0 4 0 0 0 0
+89	143778 10 0 0 0 0 1 0 0 0 0
+90	143788 10 0 0 0 0 1 0 0 0 0
+91	143798 10 0 0 0 0 1 0 0 0 0
+92	143808 40 0 0 0 0 4 0 0 0 0
+93	143848 10 0 0 0 0 1 0 0 0 0
+94	143858 10 0 0 0 0 1 0 0 0 0
+95	143868 10 0 0 0 0 1 0 0 0 0
+96	143878 40 0 0 0 0 4 0 0 0 0
+97	143918 10 0 0 0 0 1 0 0 0 0
+98	143928 10 0 0 0 0 1 0 0 0 0
+99	143938 10 0 0 0 0 1 0 0 0 0
+100	143948 44 0 0 0 0 4 0 0 0 0
+101	143992 11 0 0 0 0 1 0 0 0 0
+102	144003 11 0 0 0 0 1 0 0 0 0
+103	144014 11 0 0 0 0 1 0 0 0 0
+104	144025 44 0 0 0 0 4 0 0 0 0
+105	144069 11 0 0 0 0 1 0 0 0 0
+106	144080 11 0 0 0 0 1 0 0 0 0
+107	144091 11 0 0 0 0 1 0 0 0 0
+108	144102 44 0 0 0 0 4 0 0 0 0
+109	144146 11 0 0 0 0 1 0 0 0 0
+110	144157 11 0 0 0 0 1 0 0 0 0
+111	144168 11 0 0 0 0 1 0 0 0 0
+112	144179 44 0 0 0 0 4 0 0 0 0
+113	144223 11 0 0 0 0 1 0 0 0 0
+114	144234 11 0 0 0 0 1 0 0 0 0
+115	144245 11 0 0 0 0 1 0 0 0 0
+116	144256 44 0 0 0 0 4 0 0 0 0
+117	144300 11 0 0 0 0 1 0 0 0 0
+118	144311 11 0 0 0 0 1 0 0 0 0
+119	144322 11 0 0 0 0 1 0 0 0 0
+120	144333 44 0 0 0 0 4 0 0 0 0
+121	144377 11 0 0 0 0 1 0 0 0 0
+122	144388 11 0 0 0 0 1 0 0 0 0
+123	144399 11 0 0 0 0 1 0 0 0 0
+124	144410 44 0 0 0 0 4 0 0 0 0
+125	144454 11 0 0 0 0 1 0 0 0 0
+126	144465 11 0 0 0 0 1 0 0 0 0
+127	144476 11 0 0 0 0 1 0 0 0 0
+128	144487 44 0 0 0 0 4 0 0 0 0
+129	144531 11 0 0 0 0 1 0 0 0 0
+130	144542 11 0 0 0 0 1 0 0 0 0
+131	144553 11 0 0 0 0 1 0 0 0 0
+132	144564 44 0 0 0 0 4 0 0 0 0
+133	144608 11 0 0 0 0 1 0 0 0 0
+134	144619 11 0 0 0 0 1 0 0 0 0
+135	144630 11 0 0 0 0 1 0 0 0 0
+136	144641 44 0 0 0 0 4 0 0 0 0
+137	144685 11 0 0 0 0 1 0 0 0 0
+138	144696 11 0 0 0 0 1 0 0 0 0
+139	144707 11 0 0 0 0 1 0 0 0 0
+140	144718 44 0 0 0 0 4 0 0 0 0
+141	144762 11 0 0 0 0 1 0 0 0 0
+142	144773 11 0 0 0 0 1 0 0 0 0
+143	144784 11 0 0 0 0 1 0 0 0 0
+144	144795 44 0 0 0 0 4 0 0 0 0
+145	144839 11 0 0 0 0 1 0 0 0 0
+146	144850 11 0 0 0 0 1 0 0 0 0
+147	144861 11 0 0 0 0 1 0 0 0 0
+148	144872 44 0 0 0 0 4 0 0 0 0
+149	144916 11 0 0 0 0 1 0 0 0 0
+150	144927 11 0 0 0 0 1 0 0 0 0
+151	144938 11 0 0 0 0 1 0 0 0 0
+152	144949 44 0 0 0 0 4 0 0 0 0
+153	144993 11 0 0 0 0 1 0 0 0 0
+154	145004 11 0 0 0 0 1 0 0 0 0
+155	145015 11 0 0 0 0 1 0 0 0 0
+156	145026 44 0 0 0 0 4 0 0 0 0
+157	145070 11 0 0 0 0 1 0 0 0 0
+158	145081 11 0 0 0 0 1 0 0 0 0
+159	145092 11 0 0 0 0 1 0 0 0 0
+160	145103 44 0 0 0 0 4 0 0 0 0
+161	145147 11 0 0 0 0 1 0 0 0 0
+162	145158 11 0 0 0 0 1 0 0 0 0
+163	145169 11 0 0 0 0 1 0 0 0 0
+164	145180 44 0 0 0 0 4 0 0 0 0
+165	145224 11 0 0 0 0 1 0 0 0 0
+166	145235 11 0 0 0 0 1 0 0 0 0
+167	145246 11 0 0 0 0 1 0 0 0 0
+168	145257 44 0 0 0 0 4 0 0 0 0
+169	145301 11 0 0 0 0 1 0 0 0 0
+170	145312 11 0 0 0 0 1 0 0 0 0
+171	145323 11 0 0 0 0 1 0 0 0 0
+172	145334 44 0 0 0 0 4 0 0 0 0
+173	145378 11 0 0 0 0 1 0 0 0 0
+174	145389 11 0 0 0 0 1 0 0 0 0
+175	145400 11 0 0 0 0 1 0 0 0 0
+176	145411 44 0 0 0 0 4 0 0 0 0
+177	145455 11 0 0 0 0 1 0 0 0 0
+178	145466 11 0 0 0 0 1 0 0 0 0
+179	145477 11 0 0 0 0 1 0 0 0 0
+180	145488 44 0 0 0 0 4 0 0 0 0
+181	145532 11 0 0 0 0 1 0 0 0 0
+182	145543 11 0 0 0 0 1 0 0 0 0
+183	145554 11 0 0 0 0 1 0 0 0 0
+184	145565 44 0 0 0 0 4 0 0 0 0
+185	145609 11 0 0 0 0 1 0 0 0 0
+186	145620 11 0 0 0 0 1 0 0 0 0
+187	145631 11 0 0 0 0 1 0 0 0 0
+188	145642 44 0 0 0 0 4 0 0 0 0
+189	145686 11 0 0 0 0 1 0 0 0 0
+190	145697 11 0 0 0 0 1 0 0 0 0
+191	145708 11 0 0 0 0 1 0 0 0 0
+192	145719 44 0 0 0 0 4 0 0 0 0
+193	145763 11 0 0 0 0 1 0 0 0 0
+194	145774 11 0 0 0 0 1 0 0 0 0
+195	145785 11 0 0 0 0 1 0 0 0 0
+196	145796 44 0 0 0 0 4 0 0 0 0
+197	145840 11 0 0 0 0 1 0 0 0 0
+198	145851 11 0 0 0 0 1 0 0 0 0
+199	145862 11 0 0 0 0 1 0 0 0 0
+200	145873 44 0 0 0 0 4 0 0 0 0
+201	145917 11 0 0 0 0 1 0 0 0 0
+202	145928 11 0 0 0 0 1 0 0 0 0
+203	145939 11 0 0 0 0 1 0 0 0 0
+204	145950 44 0 0 0 0 4 0 0 0 0
+205	145994 11 0 0 0 0 1 0 0 0 0
+206	146005 11 0 0 0 0 1 0 0 0 0
+207	146016 11 0 0 0 0 1 0 0 0 0
+208	146027 44 0 0 0 0 4 0 0 0 0
+209	146071 11 0 0 0 0 1 0 0 0 0
+210	146082 11 0 0 0 0 1 0 0 0 0
+211	146093 11 0 0 0 0 1 0 0 0 0
+212	146104 44 0 0 0 0 4 0 0 0 0
+213	146148 11 0 0 0 0 1 0 0 0 0
+214	146159 11 0 0 0 0 1 0 0 0 0
+215	146170 11 0 0 0 0 1 0 0 0 0
+216	146181 44 0 0 0 0 4 0 0 0 0
+217	146225 11 0 0 0 0 1 0 0 0 0
+218	146236 11 0 0 0 0 1 0 0 0 0
+219	146247 11 0 0 0 0 1 0 0 0 0
+220	146258 44 0 0 0 0 4 0 0 0 0
+221	146302 11 0 0 0 0 1 0 0 0 0
+222	146313 11 0 0 0 0 1 0 0 0 0
+223	146324 11 0 0 0 0 1 0 0 0 0
+224	146335 44 0 0 0 0 4 0 0 0 0
+225	146379 11 0 0 0 0 1 0 0 0 0
+226	146390 11 0 0 0 0 1 0 0 0 0
+227	146401 11 0 0 0 0 1 0 0 0 0
+228	146412 44 0 0 0 0 4 0 0 0 0
+229	146456 11 0 0 0 0 1 0 0 0 0
+230	146467 11 0 0 0 0 1 0 0 0 0
+231	146478 11 0 0 0 0 1 0 0 0 0
+232	146489 44 0 0 0 0 4 0 0 0 0
+233	146533 11 0 0 0 0 1 0 0 0 0
+234	146544 11 0 0 0 0 1 0 0 0 0
+235	146555 11 0 0 0 0 1 0 0 0 0
+236	146566 44 0 0 0 0 4 0 0 0 0
+237	146610 11 0 0 0 0 1 0 0 0 0
+238	146621 11 0 0 0 0 1 0 0 0 0
+239	146632 11 0 0 0 0 1 0 0 0 0
+240	146643 44 0 0 0 0 4 0 0 0 0
+241	146687 11 0 0 0 0 1 0 0 0 0
+242	146698 11 0 0 0 0 1 0 0 0 0
+243	146709 11 0 0 0 0 1 0 0 0 0
+244	146720 44 0 0 0 0 4 0 0 0 0
+245	146764 11 0 0 0 0 1 0 0 0 0
+246	146775 11 0 0 0 0 1 0 0 0 0
+247	146786 11 0 0 0 0 1 0 0 0 0
+248	146797 44 0 0 0 0 4 0 0 0 0
+249	146841 11 0 0 0 0 1 0 0 0 0
+250	146852 11 0 0 0 0 1 0 0 0 0
+251	146863 11 0 0 0 0 1 0 0 0 0
+252	146874 44 0 0 0 0 4 0 0 0 0
+253	146918 11 0 0 0 0 1 0 0 0 0
+254	146929 11 0 0 0 0 1 0 0 0 0
+255	146940 11 0 0 0 0 1 0 0 0 0
+256	146951 44 0 0 0 0 4 0 0 0 0
+257	146995 11 0 0 0 0 1 0 0 0 0
+258	147006 11 0 0 0 0 1 0 0 0 0
+259	147017 11 0 0 0 0 1 0 0 0 0
+260	147028 44 0 0 0 0 4 0 0 0 0
+261	147072 11 0 0 0 0 1 0 0 0 0
+262	147083 11 0 0 0 0 1 0 0 0 0
+263	147094 11 0 0 0 0 1 0 0 0 0
+264	147105 44 0 0 0 0 4 0 0 0 0
+265	147149 11 0 0 0 0 1 0 0 0 0
+266	147160 11 0 0 0 0 1 0 0 0 0
+267	147171 11 0 0 0 0 1 0 0 0 0
+268	147182 44 0 0 0 0 4 0 0 0 0
+269	147226 11 0 0 0 0 1 0 0 0 0
+270	147237 11 0 0 0 0 1 0 0 0 0
+271	147248 11 0 0 0 0 1 0 0 0 0
+272	147259 44 0 0 0 0 4 0 0 0 0
+273	147303 11 0 0 0 0 1 0 0 0 0
+274	147314 11 0 0 0 0 1 0 0 0 0
+275	147325 11 0 0 0 0 1 0 0 0 0
+276	147336 44 0 0 0 0 4 0 0 0 0
+277	147380 11 0 0 0 0 1 0 0 0 0
+278	147391 11 0 0 0 0 1 0 0 0 0
+279	147402 11 0 0 0 0 1 0 0 0 0
+280	147413 44 0 0 0 0 4 0 0 0 0
+281	147457 11 0 0 0 0 1 0 0 0 0
+282	147468 11 0 0 0 0 1 0 0 0 0
+283	147479 11 0 0 0 0 1 0 0 0 0
+284	147490 44 0 0 0 0 4 0 0 0 0
+285	147534 11 0 0 0 0 1 0 0 0 0
+286	147545 11 0 0 0 0 1 0 0 0 0
+287	147556 11 0 0 0 0 1 0 0 0 0
+288	147567 44 0 0 0 0 4 0 0 0 0
+289	147611 11 0 0 0 0 1 0 0 0 0
+290	147622 11 0 0 0 0 1 0 0 0 0
+291	147633 11 0 0 0 0 1 0 0 0 0
+292	147644 44 0 0 0 0 4 0 0 0 0
+293	147688 11 0 0 0 0 1 0 0 0 0
+294	147699 11 0 0 0 0 1 0 0 0 0
+295	147710 11 0 0 0 0 1 0 0 0 0
+296	147721 44 0 0 0 0 4 0 0 0 0
+297	147765 11 0 0 0 0 1 0 0 0 0
+298	147776 11 0 0 0 0 1 0 0 0 0
+299	147787 11 0 0 0 0 1 0 0 0 0
+300	147798 44 0 0 0 0 4 0 0 0 0
+301	147842 11 0 0 0 0 1 0 0 0 0
+302	147853 11 0 0 0 0 1 0 0 0 0
+303	147864 11 0 0 0 0 1 0 0 0 0
+304	147875 44 0 0 0 0 4 0 0 0 0
+305	147919 11 0 0 0 0 1 0 0 0 0
+306	147930 11 0 0 0 0 1 0 0 0 0
+307	147941 11 0 0 0 0 1 0 0 0 0
+308	147952 44 0 0 0 0 4 0 0 0 0
+309	147996 11 0 0 0 0 1 0 0 0 0
+310	148007 11 0 0 0 0 1 0 0 0 0
+311	148018 11 0 0 0 0 1 0 0 0 0
+312	148029 44 0 0 0 0 4 0 0 0 0
+313	148073 11 0 0 0 0 1 0 0 0 0
+314	148084 11 0 0 0 0 1 0 0 0 0
+315	148095 11 0 0 0 0 1 0 0 0 0
+316	148106 44 0 0 0 0 4 0 0 0 0
+317	148150 11 0 0 0 0 1 0 0 0 0
+318	148161 11 0 0 0 0 1 0 0 0 0
+319	148172 11 0 0 0 0 1 0 0 0 0
+320	148183 44 0 0 0 0 4 0 0 0 0
+321	148227 11 0 0 0 0 1 0 0 0 0
+322	148238 11 0 0 0 0 1 0 0 0 0
+323	148249 11 0 0 0 0 1 0 0 0 0
+324	148260 44 0 0 0 0 4 0 0 0 0
+325	148304 11 0 0 0 0 1 0 0 0 0
+326	148315 11 0 0 0 0 1 0 0 0 0
+327	148326 11 0 0 0 0 1 0 0 0 0
+328	148337 44 0 0 0 0 4 0 0 0 0
+329	148381 11 0 0 0 0 1 0 0 0 0
+330	148392 11 0 0 0 0 1 0 0 0 0
+331	148403 11 0 0 0 0 1 0 0 0 0
+332	148414 44 0 0 0 0 4 0 0 0 0
+333	148458 11 0 0 0 0 1 0 0 0 0
+334	148469 11 0 0 0 0 1 0 0 0 0
+335	148480 11 0 0 0 0 1 0 0 0 0
+336	148491 44 0 0 0 0 4 0 0 0 0
+337	148535 11 0 0 0 0 1 0 0 0 0
+338	148546 11 0 0 0 0 1 0 0 0 0
+339	148557 11 0 0 0 0 1 0 0 0 0
+340	148568 44 0 0 0 0 4 0 0 0 0
+341	148612 11 0 0 0 0 1 0 0 0 0
+342	148623 11 0 0 0 0 1 0 0 0 0
+343	148634 11 0 0 0 0 1 0 0 0 0
+344	148645 44 0 0 0 0 4 0 0 0 0
+345	148689 11 0 0 0 0 1 0 0 0 0
+346	148700 11 0 0 0 0 1 0 0 0 0
+347	148711 11 0 0 0 0 1 0 0 0 0
+348	148722 44 0 0 0 0 4 0 0 0 0
+349	148766 11 0 0 0 0 1 0 0 0 0
+350	148777 11 0 0 0 0 1 0 0 0 0
+351	148788 11 0 0 0 0 1 0 0 0 0
+352	148799 44 0 0 0 0 4 0 0 0 0
+353	148843 11 0 0 0 0 1 0 0 0 0
+354	148854 11 0 0 0 0 1 0 0 0 0
+355	148865 11 0 0 0 0 1 0 0 0 0
+356	148876 44 0 0 0 0 4 0 0 0 0
+357	148920 11 0 0 0 0 1 0 0 0 0
+358	148931 11 0 0 0 0 1 0 0 0 0
+359	148942 11 0 0 0 0 1 0 0 0 0
+360	148953 44 0 0 0 0 4 0 0 0 0
+361	148997 11 0 0 0 0 1 0 0 0 0
+362	149008 11 0 0 0 0 1 0 0 0 0
+363	149019 11 0 0 0 0 1 0 0 0 0
+364	149030 44 0 0 0 0 4 0 0 0 0
+365	149074 11 0 0 0 0 1 0 0 0 0
+366	149085 11 0 0 0 0 1 0 0 0 0
+367	149096 11 0 0 0 0 1 0 0 0 0
+368	149107 44 0 0 0 0 4 0 0 0 0
+369	149151 11 0 0 0 0 1 0 0 0 0
+370	149162 11 0 0 0 0 1 0 0 0 0
+371	149173 11 0 0 0 0 1 0 0 0 0
+372	149184 44 0 0 0 0 4 0 0 0 0
+373	149228 11 0 0 0 0 1 0 0 0 0
+374	149239 11 0 0 0 0 1 0 0 0 0
+375	149250 11 0 0 0 0 1 0 0 0 0
+376	149261 44 0 0 0 0 4 0 0 0 0
+377	149305 11 0 0 0 0 1 0 0 0 0
+378	149316 11 0 0 0 0 1 0 0 0 0
+379	149327 11 0 0 0 0 1 0 0 0 0
+380	149338 44 0 0 0 0 4 0 0 0 0
+381	149382 11 0 0 0 0 1 0 0 0 0
+382	149393 11 0 0 0 0 1 0 0 0 0
+383	149404 11 0 0 0 0 1 0 0 0 0
+384	149415 44 0 0 0 0 4 0 0 0 0
+385	149459 11 0 0 0 0 1 0 0 0 0
+386	149470 11 0 0 0 0 1 0 0 0 0
+387	149481 11 0 0 0 0 1 0 0 0 0
+388	149492 44 0 0 0 0 4 0 0 0 0
+389	149536 11 0 0 0 0 1 0 0 0 0
+390	149547 11 0 0 0 0 1 0 0 0 0
+391	149558 11 0 0 0 0 1 0 0 0 0
+392	149569 44 0 0 0 0 4 0 0 0 0
+393	149613 11 0 0 0 0 1 0 0 0 0
+394	149624 11 0 0 0 0 1 0 0 0 0
+395	149635 11 0 0 0 0 1 0 0 0 0
+396	149646 44 0 0 0 0 4 0 0 0 0
+397	149690 11 0 0 0 0 1 0 0 0 0
+398	149701 11 0 0 0 0 1 0 0 0 0
+399	149712 11 0 0 0 0 1 0 0 0 0
+400	149723 44 0 0 0 0 4 0 0 0 0
+401	149767 11 0 0 0 0 1 0 0 0 0
+402	149778 11 0 0 0 0 1 0 0 0 0
+403	149789 11 0 0 0 0 1 0 0 0 0
+404	149800 33 0 0 0 0 3 0 2 2 4
+405	149833 33 0 0 0 0 3 0 2 2 4
+406	149866 33 0 0 0 0 3 0 2 2 4
+407	149899 33 0 0 0 0 3 0 2 2 4
+408	149932 33 0 0 0 0 3 0 2 2 4
+409	149965 33 0 0 0 0 3 0 2 2 4
+410	149998 33 0 0 0 0 3 0 2 2 4
+411	150031 33 0 0 0 0 3 0 2 2 4
+412	150064 33 0 0 0 0 3 0 2 2 4
+413	150097 33 0 0 0 0 3 0 2 2 4
+414	150130 33 0 0 0 0 3 0 2 2 4
+415	150163 33 0 0 0 0 3 0 2 2 4
+416	150196 33 0 0 0 0 3 0 2 2 4
+417	150229 33 0 0 0 0 3 0 2 2 4
+418	150262 33 0 0 0 0 3 0 2 2 4
+419	150295 33 0 0 0 0 3 0 2 2 4
+420	150328 33 0 0 0 0 3 0 2 2 4
+421	150361 33 0 0 0 0 3 0 2 2 4
+422	150394 33 0 0 0 0 3 0 2 2 4
+423	150427 33 0 0 0 0 3 0 2 2 4
+424	150460 33 0 0 0 0 3 0 2 2 4
+425	150493 33 0 0 0 0 3 0 2 2 4
+426	150526 33 0 0 0 0 3 0 2 2 4
+427	150559 33 0 0 0 0 3 0 2 2 4
+428	150592 33 0 0 0 0 3 0 2 2 4
+429	150625 33 0 0 0 0 3 0 2 2 4
+430	150658 33 0 0 0 0 3 0 2 2 4
+431	150691 33 0 0 0 0 3 0 2 2 4
+432	150724 33 0 0 0 0 3 0 2 2 4
+433	150757 33 0 0 0 0 3 0 2 2 4
+434	150790 33 0 0 0 0 3 0 2 2 4
+435	150823 33 0 0 0 0 3 0 2 2 4
+436	150856 33 0 0 0 0 3 0 2 2 4
+437	150889 33 0 0 0 0 3 0 2 2 4
+438	150922 33 0 0 0 0 3 0 2 2 4
+439	150955 33 0 0 0 0 3 0 2 2 4
+440	150988 33 0 0 0 0 3 0 2 2 4
+441	151021 33 0 0 0 0 3 0 2 2 4
+442	151054 33 0 0 0 0 3 0 2 2 4
+443	151087 33 0 0 0 0 3 0 2 2 4
+444	151120 33 0 0 0 0 3 0 2 2 4
+445	151153 33 0 0 0 0 3 0 2 2 4
+446	151186 33 0 0 0 0 3 0 2 2 4
+447	151219 33 0 0 0 0 3 0 2 2 4
+448	151252 33 0 0 0 0 3 0 2 2 4
+449	151285 33 0 0 0 0 3 0 2 2 4
+450	151318 33 0 0 0 0 3 0 2 2 4
+451	151351 33 0 0 0 0 3 0 2 2 4
+452	151384 33 0 0 0 0 3 0 2 2 4
+453	151417 33 0 0 0 0 3 0 2 2 4
+454	151450 33 0 0 0 0 3 0 2 2 4
+455	151483 33 0 0 0 0 3 0 2 2 4
+456	151516 33 0 0 0 0 3 0 2 2 4
+457	151549 33 0 0 0 0 3 0 2 2 4
+458	151582 33 0 0 0 0 3 0 2 2 4
+459	151615 33 0 0 0 0 3 0 2 2 4
+460	151648 33 0 0 0 0 3 0 2 2 4
+461	151681 33 0 0 0 0 3 0 2 2 4
+462	151714 33 0 0 0 0 3 0 2 2 4
+463	151747 33 0 0 0 0 3 0 2 2 4
+464	151780 33 0 0 0 0 3 0 2 2 4
+465	151813 33 0 0 0 0 3 0 2 2 4
+466	151846 33 0 0 0 0 3 0 2 2 4
+467	151879 33 0 0 0 0 3 0 2 2 4
+468	151912 33 0 0 0 0 3 0 2 2 4
+469	151945 33 0 0 0 0 3 0 2 2 4
+470	151978 33 0 0 0 0 3 0 2 2 4
+471	152011 33 0 0 0 0 3 0 2 2 4
+472	152044 33 0 0 0 0 3 0 2 2 4
+473	152077 33 0 0 0 0 3 0 2 2 4
+474	152110 33 0 0 0 0 3 0 2 2 4
+475	152143 33 0 0 0 0 3 0 2 2 4
+476	152176 33 0 0 0 0 3 0 2 2 4
+477	152209 33 0 0 0 0 3 0 2 2 4
+478	152242 33 0 0 0 0 3 0 2 2 4
+479	152275 33 0 0 0 0 3 0 2 2 4
+480	152308 33 0 0 0 0 3 0 2 2 4
+481	152341 33 0 0 0 0 3 0 2 2 4
+482	152374 33 0 0 0 0 3 0 2 2 4
+483	152407 33 0 0 0 0 3 0 2 2 4
+484	152440 33 0 0 0 0 3 0 2 2 4
+485	152473 33 0 0 0 0 3 0 2 2 4
+486	152506 33 0 0 0 0 3 0 2 2 4
+487	152539 33 0 0 0 0 3 0 2 2 4
+488	152572 33 0 0 0 0 3 0 2 2 4
+489	152605 33 0 0 0 0 3 0 2 2 4
+490	152638 33 0 0 0 0 3 0 2 2 4
+491	152671 33 0 0 0 0 3 0 2 2 4
+492	152704 33 0 0 0 0 3 0 2 2 4
+493	152737 33 0 0 0 0 3 0 2 2 4
+494	152770 33 0 0 0 0 3 0 2 2 4
+495	152803 33 0 0 0 0 3 0 2 2 4
+496	152836 33 0 0 0 0 3 0 2 2 4
+497	152869 33 0 0 0 0 3 0 2 2 4
+498	152902 33 0 0 0 0 3 0 2 2 4
+499	152935 33 0 0 0 0 3 0 2 2 4
+500	152968 33 0 0 0 0 3 0 2 2 4
+501	153001 33 0 0 0 0 3 0 2 2 4
+502	153034 33 0 0 0 0 3 0 2 2 4
+503	153067 33 0 0 0 0 3 0 2 2 4
+504	153100 33 0 0 0 0 3 0 2 2 4
+505	153133 11 0 0 0 0 1 1 1 1 1
+506	153144 11 0 0 0 0 1 1 1 1 1
+507	153155 11 0 0 0 0 1 1 1 1 1
+508	153166 11 0 0 0 0 1 1 1 1 1
+509	153177 11 0 0 0 0 1 1 1 1 1
+510	153188 11 0 0 0 0 1 1 1 1 1
+511	153199 11 0 0 0 0 1 1 1 1 1
+512	153210 11 0 0 0 0 1 1 1 1 1
+513	153221 11 0 0 0 0 1 1 1 1 1
+514	153232 11 0 0 0 0 1 1 1 1 1
+515	153243 11 0 0 0 0 1 1 1 1 1
+516	153254 11 0 0 0 0 1 1 1 1 1
+517	153265 11 0 0 0 0 1 1 1 1 1
+518	153276 11 0 0 0 0 1 1 1 1 1
+519	153287 11 0 0 0 0 1 1 1 1 1
+520	153298 11 0 0 0 0 1 1 1 1 1
+521	153309 11 0 0 0 0 1 1 1 1 1
+522	153320 11 0 0 0 0 1 1 1 1 1
+523	153331 11 0 0 0 0 1 1 1 1 1
+524	153342 11 0 0 0 0 1 1 1 1 1
+525	153353 11 0 0 0 0 1 1 1 1 1
+526	153364 11 0 0 0 0 1 1 1 1 1
+527	153375 11 0 0 0 0 1 1 1 1 1
+528	153386 11 0 0 0 0 1 1 1 1 1
+529	153397 11 0 0 0 0 1 1 1 1 1
+530	153408 11 0 0 0 0 1 1 1 1 1
+531	153419 11 0 0 0 0 1 1 1 1 1
+532	153430 11 0 0 0 0 1 1 1 1 1
+533	153441 11 0 0 0 0 1 1 1 1 1
+534	153452 11 0 0 0 0 1 1 1 1 1
+535	153463 11 0 0 0 0 1 1 1 1 1
+536	153474 11 0 0 0 0 1 1 1 1 1
+537	153485 11 0 0 0 0 1 1 1 1 1
+538	153496 11 0 0 0 0 1 1 1 1 1
+539	153507 11 0 0 0 0 1 1 1 1 1
+540	153518 11 0 0 0 0 1 1 1 1 1
+541	153529 11 0 0 0 0 1 1 1 1 1
+542	153540 11 0 0 0 0 1 1 1 1 1
+543	153551 11 0 0 0 0 1 1 1 1 1
+544	153562 11 0 0 0 0 1 1 1 1 1
+545	153573 11 0 0 0 0 1 1 1 1 1
+546	153584 11 0 0 0 0 1 1 1 1 1
+547	153595 11 0 0 0 0 1 1 1 1 1
+548	153606 11 0 0 0 0 1 1 1 1 1
+549	153617 11 0 0 0 0 1 1 1 1 1
+550	153628 11 0 0 0 0 1 1 1 1 1
+551	153639 11 0 0 0 0 1 1 1 1 1
+552	153650 11 0 0 0 0 1 1 1 1 1
+553	153661 11 0 0 0 0 1 1 1 1 1
+554	153672 11 0 0 0 0 1 1 1 1 1
+555	153683 11 0 0 0 0 1 1 1 1 1
+556	153694 11 0 0 0 0 1 1 1 1 1
+557	153705 11 0 0 0 0 1 1 1 1 1
+558	153716 11 0 0 0 0 1 1 1 1 1
+559	153727 11 0 0 0 0 1 1 1 1 1
+560	153738 11 0 0 0 0 1 1 1 1 1
+561	153749 11 0 0 0 0 1 1 1 1 1
+562	153760 11 0 0 0 0 1 1 1 1 1
+563	153771 11 0 0 0 0 1 1 1 1 1
+564	153782 11 0 0 0 0 1 1 1 1 1
+565	153793 11 0 0 0 0 1 1 1 1 1
+566	153804 11 0 0 0 0 1 1 1 1 1
+567	153815 11 0 0 0 0 1 1 1 1 1
+568	153826 11 0 0 0 0 1 1 1 1 1
+569	153837 11 0 0 0 0 1 1 1 1 1
+570	153848 11 0 0 0 0 1 1 1 1 1
+571	153859 11 0 0 0 0 1 1 1 1 1
+572	153870 11 0 0 0 0 1 1 1 1 1
+573	153881 11 0 0 0 0 1 1 1 1 1
+574	153892 11 0 0 0 0 1 1 1 1 1
+575	153903 11 0 0 0 0 1 1 1 1 1
+576	153914 11 0 0 0 0 1 1 1 1 1
+577	153925 11 0 0 0 0 1 1 1 1 1
+578	153936 11 0 0 0 0 1 1 1 1 1
+579	153947 11 0 0 0 0 1 1 1 1 1
+580	153958 11 0 0 0 0 1 1 1 1 1
+581	153969 11 0 0 0 0 1 1 1 1 1
+582	153980 11 0 0 0 0 1 1 1 1 1
+583	153991 11 0 0 0 0 1 1 1 1 1
+584	154002 11 0 0 0 0 1 1 1 1 1
+585	154013 11 0 0 0 0 1 1 1 1 1
+586	154024 11 0 0 0 0 1 1 1 1 1
+587	154035 11 0 0 0 0 1 1 1 1 1
+588	154046 11 0 0 0 0 1 1 1 1 1
+589	154057 11 0 0 0 0 1 1 1 1 1
+590	154068 11 0 0 0 0 1 1 1 1 1
+591	154079 11 0 0 0 0 1 1 1 1 1
+592	154090 11 0 0 0 0 1 1 1 1 1
+593	154101 11 0 0 0 0 1 1 1 1 1
+594	154112 11 0 0 0 0 1 1 1 1 1
+595	154123 11 0 0 0 0 1 1 1 1 1
+596	154134 11 0 0 0 0 1 1 1 1 1
+597	154145 11 0 0 0 0 1 1 1 1 1
+598	154156 11 0 0 0 0 1 1 1 1 1
+599	154167 11 0 0 0 0 1 1 1 1 1
+600	154178 11 0 0 0 0 1 1 1 1 1
+601	154189 11 0 0 0 0 1 1 1 1 1
+602	154200 11 0 0 0 0 1 1 1 1 1
+603	154211 11 0 0 0 0 1 1 1 1 1
+604	154222 11 0 0 0 0 1 1 1 1 1
+605	154233 11 0 0 0 0 1 1 1 1 1
+vector 606 WirelessB.hostA.app[0] throughput:vector ETV
+attr recordingmode vector
+attr source throughput(packetReceived)
+attr title throughput
+attr unit bps
+606	154406 8577 584 584 0.1 54.9 549 0 0 0 0
+

@@ -1,0 +1,132 @@
+<?xml version="1.0" ?>
+<movements>
+    <movement id="1">
+        <!-- 180 degree then square -->
+        <set x="385" y="215" z="0" speed="100" angle="180"/>
+        <repeat n="2">
+        	<forward d="234"/>
+        	<set speed="60"/>
+        	<turn angle="45"/>
+	        <repeat n="11">
+	           	<forward d="95"/>
+        		<turn angle="270"/>
+	        </repeat>
+	        <forward d="95"/>
+	        <turn angle="45"/>
+	        <set speed="100"/>
+	        <forward d="234"/>
+            <turn angle="180"/>
+        </repeat>
+    </movement>
+    
+    <movement id="2">
+        <!-- 180 degree then square -->
+        <set x="1435" y="565" z="0" speed="200" angle="180"/>
+        <repeat n="2">
+        	<forward d="100"/>
+        	<turn angle="90"/>
+        	<forward d="400"/>
+        	<turn angle="270"/>
+        	
+        	<forward d="1200"/>
+        	
+        	<turn angle="45"/>
+        	<forward d="50"/>
+        	<turn angle="180"/>
+        	<forward d="50"/>
+        	<turn angle="45"/>
+        	
+        	<forward d="800"/>
+        	        	
+        	<turn angle="45"/>
+        	<forward d="50"/>
+        	<turn angle="180"/>
+        	<forward d="50"/>
+        	<turn angle="45"/>
+        	
+        	<forward d="800"/>
+        	
+        	<turn angle="45"/>
+        	<forward d="50"/>
+        	<turn angle="180"/>
+        	<forward d="50"/>
+        	<turn angle="45"/>
+        	
+        	<forward d="200"/>
+        	
+        	<turn angle="45"/>
+        	<forward d="50"/>
+        	<turn angle="180"/>
+        	<forward d="50"/>
+        	<turn angle="45"/>
+        	
+        	<forward d="600"/>
+        	        	
+        	<turn angle="315"/>
+        	<forward d="50"/>
+        	<turn angle="180"/>
+        	<forward d="50"/>
+        	<turn angle="315"/>
+        	
+        	<forward d="400"/>
+        	
+        	<turn angle="315"/>
+        	<forward d="50"/>
+        	<turn angle="180"/>
+        	<forward d="50"/>
+        	<turn angle="315"/>
+        	
+        	<forward d="200"/>
+        	
+        	<turn angle="315"/>
+        	<forward d="50"/>
+        	<turn angle="180"/>
+        	<forward d="50"/>
+        	<turn angle="315"/>
+        	
+        	<forward d="200"/>
+        	
+        	<turn angle="45"/>
+        	<forward d="50"/>
+        	<turn angle="180"/>
+        	<forward d="50"/>
+        	<turn angle="45"/>
+        	
+        	<forward d="200"/>
+        	
+        	<turn angle="45"/>
+        	<forward d="50"/>
+        	<turn angle="180"/>
+        	<forward d="50"/>
+        	<turn angle="45"/>
+        	
+        	<forward d="200"/>
+        	
+        	<turn angle="315"/>
+        	<forward d="50"/>
+        	<turn angle="180"/>
+        	<forward d="50"/>
+        	<turn angle="315"/>
+        	
+        	<forward d="200"/>
+        	
+        	<turn angle="315"/>
+        	<forward d="50"/>
+        	<turn angle="180"/>
+        	<forward d="50"/>
+        	<turn angle="315"/>
+        	
+        	<forward d="200"/>
+        	
+        	<turn angle="45"/>
+        	<forward d="50"/>
+        	<turn angle="180"/>
+        	<forward d="50"/>
+        	<turn angle="45"/>
+        	
+        	<forward d="500"/>
+        	<turn angle="180"/>
+        </repeat>
+    </movement>
+</movements>
+
