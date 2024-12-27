@@ -1,0 +1,30 @@
+//****************************************************************************
+//*  Copyright: National ICT Australia,  2007 - 2010                         *
+//*  Developed at the ATP lab, Networked Systems research theme              *
+//*  Author(s): Yuriy Tselishchev                                            *
+//*  This file is distributed under the terms in the attached LICENSE file.  *
+//*  If you do not find this file, copies can be found by writing to:        *
+//*                                                                          *
+//*      NICTA, Locked Bag 9013, Alexandria, NSW 1435, Australia             *
+//*      Attention:  License Inquiry.                                        *
+//*                                                                          *  
+//****************************************************************************/
+
+cplusplus {{
+#include "node/communication/routing/RoutingPacket_m.h"
+}}
+
+class RoutingPacket;
+
+enum NetFormationPacket_Type
+{
+	BROADCAST_SINK_IDS     = 1;			
+	SINK_ADVERTISE_CLUSTER = 2;
+	ACCEPT_JOIN_CLUSTER    = 3;
+};
+
+packet WSNRoutingPacket extends RoutingPacket {
+	int NetFormationPacketKind enum (NetFormationPacket_Type); 
+	int sourceCHID;
+}
+
