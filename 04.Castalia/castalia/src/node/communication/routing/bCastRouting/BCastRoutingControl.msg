@@ -1,7 +1,7 @@
 //****************************************************************************
 //*  Copyright: National ICT Australia,  2007 - 2010                         *
 //*  Developed at the ATP lab, Networked Systems research theme              *
-//*  Author(s): Yuriy Tselishchev                                            *
+//*  Author(s): Dimosthenis Pediaditakis, Yuriy Tselishchev                  *
 //*  This file is distributed under the terms in the attached LICENSE file.  *
 //*  If you do not find this file, copies can be found by writing to:        *
 //*                                                                          *
@@ -10,33 +10,15 @@
 //*                                                                          *  
 //****************************************************************************/
 
-cplusplus {{
-#include "node/communication/routing/RoutingPacket_m.h"
-}}
-
-class RoutingPacket;
-
-enum NetFormationPacket_Type
-{
-	BROADCAST_SINK_IDS     = 1;			
-	SINK_ADVERTISE_CLUSTER = 2;
-	ACCEPT_JOIN_CLUSTER    = 3;
-};
-
-struct NodeMessage
-{
-	int nodeId;
-	int energy;
-	char* msgContent;
+enum BCastRoutingControlDef {
+	MPRINGS_NOT_CONNECTED = 1;
+	MPRINGS_CONNECTED_TO_TREE = 2;
+	MPRINGS_TREE_LEVEL_UPDATED = 3;
 }
 
-packet WSNRoutingPacket extends RoutingPacket {
-	int NetFormationPacketKind enum (NetFormationPacket_Type); 
-	int messageID;
-	int sourceCHID;
-	int originScrID;
-	int hopCount = 0;
-	int cluster = -1;
-	NodeMessage messages[100];
+message BCastRoutingControlMessage {
+	int BCastRoutingControlMessageKind enum (BCastRoutingControlDef);
+	int sinkID;
+	int level;
 }
 

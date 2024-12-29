@@ -1,7 +1,7 @@
 //****************************************************************************
-//*  Copyright: National ICT Australia,  2007 - 2010                         *
+//*  Copyright: National ICT Australia,  2007 - 2011                         *
 //*  Developed at the ATP lab, Networked Systems research theme              *
-//*  Author(s): Yuriy Tselishchev                                            *
+//*  Author(s): Athanassios Boulis, Yuriy Tselishchev                        *
 //*  This file is distributed under the terms in the attached LICENSE file.  *
 //*  If you do not find this file, copies can be found by writing to:        *
 //*                                                                          *
@@ -16,27 +16,17 @@ cplusplus {{
 
 class RoutingPacket;
 
-enum NetFormationPacket_Type
-{
-	BROADCAST_SINK_IDS     = 1;			
-	SINK_ADVERTISE_CLUSTER = 2;
-	ACCEPT_JOIN_CLUSTER    = 3;
-};
+enum BCastRoutingPacketDef {
+	MPRINGS_DATA_PACKET = 1;
+	MPRINGS_TOPOLOGY_SETUP_PACKET = 2;
+} 
 
-struct NodeMessage
-{
-	int nodeId;
-	int energy;
-	char* msgContent;
-}
+packet BCastRoutingPacket extends RoutingPacket {
+	int BCastRoutingPacketKind enum (BCastRoutingPacketDef);	// 1 byte
+	int sinkID;			// 2 bytes
+	int senderLevel;	// 1 byte
 
-packet WSNRoutingPacket extends RoutingPacket {
-	int NetFormationPacketKind enum (NetFormationPacket_Type); 
-	int messageID;
-	int sourceCHID;
-	int originScrID;
-	int hopCount = 0;
-	int cluster = -1;
-	NodeMessage messages[100];
+	//DATA packet overhead contains all fields, making its total size 13 bytes
+	//SETUP packet does not contain sequence number field, making its size 12 bytes
 }
 
