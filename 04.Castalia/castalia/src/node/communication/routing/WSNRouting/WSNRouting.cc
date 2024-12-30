@@ -26,6 +26,22 @@ void WSNRouting::fromApplicationLayer(cPacket * pkt, const char *destination)
  */
 void WSNRouting::fromMacLayer(cPacket * pkt, int srcMacAddress, double rssi, double lqi)
 {
+	/*TODO: 
+	If (BC_TOPO)
+		if (level != -1)
+			if (hopCount < level)
+				prevHop = senderAdd
+		else prevHop = senderAdd
+
+	level = hopCount +1
+	hopCount ++ 
+	*/
+
+	/*TODO: 
+	If (ACK_TOPO)
+		nextHop = senderAdd
+	*/
+
 	RoutingPacket *netPacket = dynamic_cast <RoutingPacket*>(pkt);
 	if (netPacket) {
 		string destination(netPacket->getDestination());

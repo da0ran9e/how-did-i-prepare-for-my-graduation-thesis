@@ -7,6 +7,10 @@
 using namespace std;
 
 class WSNRouting: public VirtualRouting {
+ private:
+	int level = -1;
+	int prevHop;
+	int nextHop;
  protected:
 	void fromApplicationLayer(cPacket *, const char *);
 	void fromMacLayer(cPacket *, int, double, double);
