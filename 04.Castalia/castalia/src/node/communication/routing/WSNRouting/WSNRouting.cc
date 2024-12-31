@@ -1,6 +1,11 @@
 #include "node/communication/routing/WSNRouting/WSNRouting.h"
+#include "node/communication/routing/WSNRouting/WSNRoutingPacket_m.h"
 
 Define_Module(WSNRouting);
+
+void WSNRouting::startup(){
+	
+}
 
 /* Application layer sends a packet together with a dest network layer address.
  * Network layer is responsible to route that packet by selecting an appropriate
@@ -11,6 +16,11 @@ Define_Module(WSNRouting);
  */
 void WSNRouting::fromApplicationLayer(cPacket * pkt, const char *destination)
 {
+	if (netPacket->getOriginAdd() == -1) {
+		netPacket->setOriginAdd(SELF_NETWORK_ADDRESS);
+		netPacket->setMessageID(SELF_NETWORK_ADDRESS);
+		netPacket->setWSNRoutingMessage(BC_SINK);
+	}
 	WSNRoutingPacket *netPacket = new WSNRoutingPacket("WSNRouting packet", NETWORK_LAYER_PACKET);
 	netPacket->setSource(SELF_NETWORK_ADDRESS);
 	netPacket->setDestination(destination);
@@ -26,28 +36,48 @@ void WSNRouting::fromApplicationLayer(cPacket * pkt, const char *destination)
  */
 void WSNRouting::fromMacLayer(cPacket * pkt, int srcMacAddress, double rssi, double lqi)
 {
-	/*TODO: 
-	If (BC_TOPO)
-		if (level != -1)
-			if (hopCount < level)
-				prevHop = senderAdd
-		else prevHop = senderAdd
+	WSNRoutingPacket *netPacket = dynamic_cast <WSNRoutingPacket*>(pkt); 	
+	processIncoming(netPacket, srcMacAddress);
+}
 
-	level = hopCount +1
-	hopCount ++ 
-	*/
+void WSNRouting::acceptHop(WSNRoutingPacket * netPacket){
+	//update variable
+	prevHop = netPacket->getSenderAdd();
+	netPacket->setHopCount(netPacket->getHopCount()+1);
+	level = netPacket->getHopCount();
 
-	/*TODO: 
-	If (ACK_TOPO)
-		nextHop = senderAdd
-	*/
+	//send Ack
+	netPacket->setWSNRoutingMessage(ACK_SINK);
+	netPacket->setDestination(netPacket->getSource());
+	toApplicationLayer(decapsulatePacket(netPacket));
+	//Broadcast to others
+	netPacket->setWSNRoutingMessage(BC_SINK);
+	netPacket->setDestination(BROADCAST_NETWORK_ADDRESS);
+	toApplicationLayer(decapsulatePacket(netPacket));
+}
 
-	RoutingPacket *netPacket = dynamic_cast <RoutingPacket*>(pkt);
-	if (netPacket) {
-		string destination(netPacket->getDestination());
-		if (destination.compare(SELF_NETWORK_ADDRESS) == 0 ||
-		    destination.compare(BROADCAST_NETWORK_ADDRESS) == 0)
-			toApplicationLayer(decapsulatePacket(pkt));
+void WSNRouting::onBC(WSNRoutingPacket * netPacket){
+	if (level != -1){
+		if (netPacket->getHopCount() < level) {
+			acceptHop(netPacket);
+		}
+	} else {
+		acceptHop(netPacket);
 	}
 }
 
+void WSNRouting::onAck(WSNRoutingPacket * netPacket){
+	nextHop = netPacket->getSenderAdd();
+}
+
+void WSNRouting::processIncoming(WSNRoutingPacket * netPacket){
+	if (netPacket) {
+		sinkAdd = netPacket->getOriginAdd();
+		if (netPacket->getWSNRoutingMessage() == BC_SINK) {
+			onBC(netPacket);
+		}
+		if (netPacket->getWSNRoutingMessage() == ACK_SINK){
+			onAck(netPacket);
+		}
+	} 
+}
