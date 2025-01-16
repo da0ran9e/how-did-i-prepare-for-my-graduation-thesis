@@ -8,23 +8,12 @@ using namespace std;
 
 class WSNRouting: public VirtualRouting {
  private:
- 	char * sinkAdd;
-	int level = -1;
-	char * prevHop;
-	char * nextHop;
+	std::list<std::string> cluster;
  protected:
  	void startup();
 	void fromApplicationLayer(cPacket *, const char *);
 	void fromMacLayer(cPacket *, int, double, double);
-
-	/*
-	* Process incoming package after 
-	*/
-	void processIncoming(WSNRoutingPacket *);
-	void processOutgoing(WSNRoutingPacket *)
-	void acceptHop(WSNRoutingPacket *);
-	void onAck(WSNRoutingPacket *);
-	void onBC(WSNRoutingPacket *);
+	void finish();
 };
 
 #endif				

@@ -4,80 +4,54 @@
 Define_Module(WSNRouting);
 
 void WSNRouting::startup(){
-	
+	if (appModule->hasPar("isSink"))
+		isSink = appModule->par("isSink");
+	else
+		throw cRuntimeError("\nMultiPathRings routing has to be used with an application that defines the parameter isSink");
+	if (isSink){
+		// broadcast
+		WSNRoutingPacket *setupPkt = new WSNRoutingPacket("BCAST pkt", NETWORK_LAYER_PACKET);
+		
+		std::string clusters["12", "56", "71", "90"];
+		setupPkt->setClusterAdd(clusters);
+		setupPkt->setId(0);
+		setupPkt->setWSNRoutingPacketKind(BCAST);
+		setupPkt->setSource(SELF_NETWORK_ADDRESS);
+		setupPkt->setDestination(BROADCAST_NETWORK_ADDRESS);
+		toMacLayer(setupPkt, BROADCAST_MAC_ADDRESS);
+	}
+
 }
 
-/* Application layer sends a packet together with a dest network layer address.
- * Network layer is responsible to route that packet by selecting an appropriate
- * MAC address. With WSNRouting we do not perform any routing function. We
- * just encapsulate the app packet and translate the net address to a MAC address
- * (e.g. "3" becomes 3, or a BROADCAST_NETWORK_ADDRESS becomes BROADCAST_MAC_ADDRESS)
- * If the destination is a 1-hop neighbor it will receive the packet.
- */
 void WSNRouting::fromApplicationLayer(cPacket * pkt, const char *destination)
 {
-	if (netPacket->getOriginAdd() == -1) {
-		netPacket->setOriginAdd(SELF_NETWORK_ADDRESS);
-		netPacket->setMessageID(SELF_NETWORK_ADDRESS);
-		netPacket->setWSNRoutingMessage(BC_SINK);
-	}
-	WSNRoutingPacket *netPacket = new WSNRoutingPacket("WSNRouting packet", NETWORK_LAYER_PACKET);
-	netPacket->setSource(SELF_NETWORK_ADDRESS);
-	netPacket->setDestination(destination);
-	encapsulatePacket(netPacket, pkt);
-	toMacLayer(netPacket, resolveNetworkAddress(destination));
+
 }
 
-/* MAC layer sends a packet together with the source MAC address and other info.
- * With BypassMAC we just filter the packet by the NET address. If this
- * node is the right destination decapsulatePacket will extract the APP packet.
- * If not, there is no need to do anything. The whole net packet (including
- * the encapsulated apppacket will be deleted by the virtual routing code
- */
 void WSNRouting::fromMacLayer(cPacket * pkt, int srcMacAddress, double rssi, double lqi)
 {
-	WSNRoutingPacket *netPacket = dynamic_cast <WSNRoutingPacket*>(pkt); 	
-	processIncoming(netPacket, srcMacAddress);
-}
-
-void WSNRouting::acceptHop(WSNRoutingPacket * netPacket){
-	//update variable
-	prevHop = netPacket->getSenderAdd();
-	netPacket->setHopCount(netPacket->getHopCount()+1);
-	level = netPacket->getHopCount();
-
-	//send Ack
-	netPacket->setWSNRoutingMessage(ACK_SINK);
-	netPacket->setDestination(netPacket->getSource());
-	toApplicationLayer(decapsulatePacket(netPacket));
-	//Broadcast to others
-	netPacket->setWSNRoutingMessage(BC_SINK);
-	netPacket->setDestination(BROADCAST_NETWORK_ADDRESS);
-	toApplicationLayer(decapsulatePacket(netPacket));
-}
-
-void WSNRouting::onBC(WSNRoutingPacket * netPacket){
-	if (level != -1){
-		if (netPacket->getHopCount() < level) {
-			acceptHop(netPacket);
-		}
-	} else {
-		acceptHop(netPacket);
+	// Cast the packet
+	FloodRoutingPacket *netPacket = dynamic_cast <FloodRoutingPacket*>(pkt);
+	if (!netPacket) {
+		std::fprintf(log, "Unrecognized packet, discarding\n\n");
+		return;
 	}
-}
 
-void WSNRouting::onAck(WSNRoutingPacket * netPacket){
-	nextHop = netPacket->getSenderAdd();
-}
+	switch (netPacket->getType()) {
 
-void WSNRouting::processIncoming(WSNRoutingPacket * netPacket){
-	if (netPacket) {
-		sinkAdd = netPacket->getOriginAdd();
-		if (netPacket->getWSNRoutingMessage() == BC_SINK) {
-			onBC(netPacket);
+	case PacketType::BCAST:
+		// If broadcast packet, check message id
+		int msgID = netPacket->getMessageID();
+		if (count(pktHistory.first(), pktHistory.last(), msgID)>0){
+			break;
+		} else {
+			//save data
+			FloodRoutingPacket* p = netPacket->dup();
+			pktHistory.push_back(msgID);
+			cluster = p->getClusterAdd();
+
+			toMacLayer(p, BROADCAST_MAC_ADDRESS);
 		}
-		if (netPacket->getWSNRoutingMessage() == ACK_SINK){
-			onAck(netPacket);
-		}
-	} 
+		break;
+	}
 }

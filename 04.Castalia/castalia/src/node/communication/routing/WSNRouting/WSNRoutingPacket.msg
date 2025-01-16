@@ -6,15 +6,15 @@ class RoutingPacket;
 
 enum WSNRoutingPacket_Type
 {
-	BC_SINK  = 1;			
-	ACK_SINK = 2;
+	BCAST  = 1;			
+	ACK = 2;
 };
 
 packet WSNRoutingPacket extends RoutingPacket {
 	int WSNRoutingMessage enum (WSNRoutingPacket_Type); 
-	char * messageID;
-	char * clusterHeadAdd;
-	char * originAdd = -1;
-	int hopCount = 0;
+	int messageID;
+	string clusterAdd[10];
+	string source;
+	string destination;
 }
 
