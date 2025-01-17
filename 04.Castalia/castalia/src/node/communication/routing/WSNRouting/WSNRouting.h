@@ -8,12 +8,14 @@ using namespace std;
 
 class WSNRouting: public VirtualRouting {
  private:
-	std::list<std::string> cluster;
+    bool isSink;
+	std::string cluster[10];
+	int lastPkt = -1;
  protected:
  	void startup();
 	void fromApplicationLayer(cPacket *, const char *);
 	void fromMacLayer(cPacket *, int, double, double);
-	void finish();
+	//void finish();
 };
 
 #endif				
