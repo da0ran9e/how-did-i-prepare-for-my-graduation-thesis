@@ -10,8 +10,8 @@ void WSNRouting::startup(){
 
 void WSNRouting::fromApplicationLayer(cPacket * pkt, const char *destination)
 {
-    trace() << "Startup " << SELF_NETWORK_ADDRESS << " node ";
-        cModule *appModule = getParentModule()->getParentModule()->getSubmodule("Application");
+    //trace() << "Startup " << SELF_NETWORK_ADDRESS << " node ";
+    cModule *appModule = getParentModule()->getParentModule()->getSubmodule("Application");
         if (appModule->hasPar("isSink"))
             isSink = appModule->par("isSink");
 
@@ -20,7 +20,7 @@ void WSNRouting::fromApplicationLayer(cPacket * pkt, const char *destination)
         if (isSink){
             // broadcast
             WSNRoutingPacket *setupPkt = new WSNRoutingPacket("BCAST pkt", NETWORK_LAYER_PACKET);
-            trace() << "Node " << SELF_NETWORK_ADDRESS << " is sink ";
+            trace() << "This node is sink: " << SELF_NETWORK_ADDRESS;
             char* clusters[10] = {"12", "56", "71", "90"};
             for (int i=0; i<4; i++){
                 setupPkt->setClusterAdd(i, clusters[i]);
@@ -38,17 +38,20 @@ void WSNRouting::fromApplicationLayer(cPacket * pkt, const char *destination)
 
 void WSNRouting::fromMacLayer(cPacket * pkt, int srcMacAddress, double rssi, double lqi)
 {
-    trace() << "WSN pkt Reached";
+    //trace() << "WSN pkt Reached";
 	// Cast the packet
     WSNRoutingPacket *netPacket = dynamic_cast <WSNRoutingPacket*>(pkt);
 	if (!netPacket) {
 		return;
 	}
 	int pkt_kind = netPacket->getWSNRoutingMessage();
-	trace() << "WSN Received pkt kind: " << pkt_kind;
+	const char * org = netPacket->getOrigin();
+	const char * from = netPacket->getSource();
+	trace() << "Msg type " << pkt_kind << " org: " << org << " from: " << from << " to: " << SELF_NETWORK_ADDRESS;
 	switch (pkt_kind) {
 
 	case WSNRoutingPacket_Type::BCAST:
+	{
 		// If broadcast packet, check message id
 		int msgID = netPacket->getMessageID();
 		if (lastPkt == msgID){
@@ -58,19 +61,18 @@ void WSNRouting::fromMacLayer(cPacket * pkt, int srcMacAddress, double rssi, dou
 			WSNRoutingPacket* p = netPacket->dup();
 			lastPkt = msgID;
 			origin = p->getOrigin();
-			for (int i=1; i<4; i++){
+			for (int i=0; i<4; i++){
 			    cluster[i] = p->getClusterAdd(i);
 			}
 
-			trace() << "WSN Received packet" << msgID << " from node: " << p->getDestination();
 			// Forward the message to neighbors 
 			p->setSource(SELF_NETWORK_ADDRESS);
             p->setDestination(BROADCAST_NETWORK_ADDRESS);
 			toMacLayer(p, BROADCAST_MAC_ADDRESS);
 
-			for (int i=1; i<4; i++){
-				if (strcmp(cluster[i], SELF_NETWORK_ADDRESS)){
-					//Sent recruit 
+			for (int i=0; i<4; i++){
+				if (!strcmp(cluster[i].c_str(), SELF_NETWORK_ADDRESS)){
+					//Sent recruit
 					WSNRoutingPacket *setupPkt = new WSNRoutingPacket("RECRUIT pkt", NETWORK_LAYER_PACKET);
             		trace() << "Node " << SELF_NETWORK_ADDRESS << " is CH ";
 					ch = SELF_NETWORK_ADDRESS;
@@ -84,11 +86,13 @@ void WSNRouting::fromMacLayer(cPacket * pkt, int srcMacAddress, double rssi, dou
 		}
 		break;
 	}
+
 	case WSNRoutingPacket_Type::RECRUIT:
+	{
 		std::string recruitId = netPacket->getOrigin();
 		std::string senderId = netPacket->getSource();
 		WSNRoutingPacket* p = netPacket->dup();
-		if (CH != "-1"){
+		if (ch != "-1"){
 			break;
 		} else {
 			//Save CH
@@ -101,25 +105,30 @@ void WSNRouting::fromMacLayer(cPacket * pkt, int srcMacAddress, double rssi, dou
 					setupPkt->setWSNRoutingMessage(JOIN);
 					setupPkt->setSource(SELF_NETWORK_ADDRESS);
 					setupPkt->setOrigin(SELF_NETWORK_ADDRESS);
-					setupPkt->setDestination(ch);
-					toMacLayer(setupPkt, bHop);
+					setupPkt->setDestination(ch.c_str());
+					toMacLayer(setupPkt, atoi(bHop.c_str()));
 			//Forward
 			p->setSource(SELF_NETWORK_ADDRESS);
             p->setDestination(BROADCAST_NETWORK_ADDRESS);
 			toMacLayer(p, BROADCAST_MAC_ADDRESS);
 		}
 		break;
+	}
 
 	case WSNRoutingPacket_Type::JOIN:
-		if(CH == SELF_NETWORK_ADDRESS){
+	{
+		if(ch == SELF_NETWORK_ADDRESS){
 			//save data
 			clusterUnits.push_back(netPacket->getOrigin());
 		} else {
 			//forward to bHop
+		    WSNRoutingPacket* p = netPacket->dup();
 			p->setSource(SELF_NETWORK_ADDRESS);
-            p->setDestination(bHop);
-			toMacLayer(netPacket, bHop);
+            p->setDestination(bHop.c_str());
+			toMacLayer(netPacket, atoi(bHop.c_str()));
 		}
 		
 		break;
+	}
+	}
 }
