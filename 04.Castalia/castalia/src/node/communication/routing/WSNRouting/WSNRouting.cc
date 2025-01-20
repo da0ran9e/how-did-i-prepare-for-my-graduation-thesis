@@ -4,36 +4,35 @@
 Define_Module(WSNRouting);
 
 void WSNRouting::startup(){
+    trace() << "Startup " << SELF_NETWORK_ADDRESS << " node ";
+        cModule *appModule = getParentModule()->getParentModule()->getSubmodule("Application");
+            if (appModule->hasPar("isSink"))
+                isSink = appModule->par("isSink");
 
-
+            else
+                throw cRuntimeError("\nMultiPathRings routing has to be used with an application that defines the parameter isSink");
+            if (isSink){
+                // broadcast
+                WSNRoutingPacket *setupPkt = new WSNRoutingPacket("BCAST pkt", NETWORK_LAYER_PACKET);
+                trace() << "This node is sink: " << SELF_NETWORK_ADDRESS;
+                char* clusters[10] = {"12", "56", "71", "90"};
+                for (int i=0; i<4; i++){
+                    setupPkt->setClusterAdd(i, clusters[i]);
+                }
+                int msgID = 101;
+                lastPkt = msgID;
+                setupPkt->setMessageID(msgID);
+                setupPkt->setWSNRoutingMessage(BCAST);
+                setupPkt->setSource(SELF_NETWORK_ADDRESS);
+                setupPkt->setOrigin(SELF_NETWORK_ADDRESS);
+                setupPkt->setDestination(BROADCAST_NETWORK_ADDRESS);
+                toMacLayer(setupPkt, BROADCAST_MAC_ADDRESS);
+            }
 }
 
 void WSNRouting::fromApplicationLayer(cPacket * pkt, const char *destination)
 {
-    //trace() << "Startup " << SELF_NETWORK_ADDRESS << " node ";
-    cModule *appModule = getParentModule()->getParentModule()->getSubmodule("Application");
-        if (appModule->hasPar("isSink"))
-            isSink = appModule->par("isSink");
 
-        else
-            throw cRuntimeError("\nMultiPathRings routing has to be used with an application that defines the parameter isSink");
-        if (isSink){
-            // broadcast
-            WSNRoutingPacket *setupPkt = new WSNRoutingPacket("BCAST pkt", NETWORK_LAYER_PACKET);
-            trace() << "This node is sink: " << SELF_NETWORK_ADDRESS;
-            char* clusters[10] = {"12", "56", "71", "90"};
-            for (int i=0; i<4; i++){
-                setupPkt->setClusterAdd(i, clusters[i]);
-            }
-			int msgID = 101;
-			lastPkt = msgID;
-            setupPkt->setMessageID(msgID);
-            setupPkt->setWSNRoutingMessage(BCAST);
-            setupPkt->setSource(SELF_NETWORK_ADDRESS);
-			setupPkt->setOrigin(SELF_NETWORK_ADDRESS);
-            setupPkt->setDestination(BROADCAST_NETWORK_ADDRESS);
-            toMacLayer(setupPkt, BROADCAST_MAC_ADDRESS);
-        }
 }
 
 void WSNRouting::fromMacLayer(cPacket * pkt, int srcMacAddress, double rssi, double lqi)
