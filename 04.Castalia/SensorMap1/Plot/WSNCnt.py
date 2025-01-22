@@ -69,7 +69,7 @@ x_coords = [node[1] for node in nodes]
 y_coords = [node[2] for node in nodes]
 
 # File path to your WSNMap.txt file
-wsn_file_path = 'WSNMap.txt'  # Replace with your actual file path
+wsn_file_path = 'WSNMap4.txt'  # Replace with your actual file path
 
 # Parse the file and get connections
 connections, msg_type_colors = parse_wsn_map(wsn_file_path)
@@ -99,5 +99,5 @@ plt.title('Sensor Nodes Map with Node IDs and Connections')
 plt.grid(True)
 
 # Save and show the plot
-plt.savefig("sensor_map2.png")
+plt.savefig("sensor_map_con_4.png")
 plt.show()  # To display the plot interactively

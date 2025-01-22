@@ -55,7 +55,7 @@ def parse_omnetpp_ini(file_path):
 
 # File paths
 omnet_file_path = '../omnetpp.ini'  # Your OMNeT++ ini file path
-wsn_file_path = 'WSNMap.txt'  # Your WSNMap.txt file path
+wsn_file_path = 'WSNMap4.txt'  # Your WSNMap.txt file path
 
 # Parse the data
 nodes = parse_omnetpp_ini(omnet_file_path)
@@ -97,4 +97,4 @@ max_frames = min(1000, len(connections))
 ani = FuncAnimation(fig, update, frames=max_frames, repeat=False)
 
 # Save the animation as GIF
-ani.save('sensor_map_animation1.gif', writer='imagemagick', fps=10)
+ani.save('sensor_map_animation4.gif', writer='imagemagick', fps=10)

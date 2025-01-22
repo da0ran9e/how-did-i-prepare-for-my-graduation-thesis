@@ -1,1759 +1,761 @@
-
-0.000937400514    SN.node[11].Communication.Routing        Startup 11 node 
-0.001030725101    SN.node[59].Communication.Routing        Startup 59 node 
-0.001155878429    SN.node[77].Communication.Routing        Startup 77 node 
-0.00119909416     SN.node[32].Communication.Routing        Startup 32 node 
-0.001493810629    SN.node[20].Communication.Routing        Startup 20 node 
-0.002031536878    SN.node[13].Communication.Routing        Startup 13 node 
-0.002573360398    SN.node[16].Communication.Routing        Startup 16 node 
-0.003536244016    SN.node[1].Communication.Routing         Startup 1 node 
-0.003760005685    SN.node[99].Communication.Routing        Startup 99 node 
-0.004610850569    SN.node[70].Communication.Routing        Startup 70 node 
-0.004677574779    SN.node[17].Communication.Routing        Startup 17 node 
-0.006066428963    SN.node[5].Communication.Routing         Startup 5 node 
-0.006279265799    SN.node[12].Communication.Routing        Startup 12 node 
-0.007135866478    SN.node[61].Communication.Routing        Startup 61 node 
-0.007268507371    SN.node[21].Communication.Routing        Startup 21 node 
-0.007843387034    SN.node[46].Communication.Routing        Startup 46 node 
-0.010167726444    SN.node[87].Communication.Routing        Startup 87 node 
-0.010362143931    SN.node[14].Communication.Routing        Startup 14 node 
-0.01077885062     SN.node[25].Communication.Routing        Startup 25 node 
-0.011097894213    SN.node[54].Communication.Routing        Startup 54 node 
-0.011252725136    SN.node[78].Communication.Routing        Startup 78 node 
-0.012394415087    SN.node[15].Communication.Routing        Startup 15 node 
-0.012879264588    SN.node[53].Communication.Routing        Startup 53 node 
-0.012962622254    SN.node[36].Communication.Routing        Startup 36 node 
-0.013461779011    SN.node[84].Communication.Routing        Startup 84 node 
-0.013746005378    SN.node[45].Communication.Routing        Startup 45 node 
-0.01389887546     SN.node[96].Communication.Routing        Startup 96 node 
-0.013924364198    SN.node[26].Communication.Routing        Startup 26 node 
-0.014174393029    SN.node[94].Communication.Routing        Startup 94 node 
-0.014176254312    SN.node[40].Communication.Routing        Startup 40 node 
-0.01454523718     SN.node[4].Communication.Routing         Startup 4 node 
-0.01458963867     SN.node[86].Communication.Routing        Startup 86 node 
-0.015318031353    SN.node[41].Communication.Routing        Startup 41 node 
-0.015318176581    SN.node[52].Communication.Routing        Startup 52 node 
-0.01578836242     SN.node[79].Communication.Routing        Startup 79 node 
-0.016265308857    SN.node[63].Communication.Routing        Startup 63 node 
-0.017695253645    SN.node[27].Communication.Routing        Startup 27 node 
-0.018078238156    SN.node[76].Communication.Routing        Startup 76 node 
-0.018706236407    SN.node[97].Communication.Routing        Startup 97 node 
-0.018899702269    SN.node[68].Communication.Routing        Startup 68 node 
-0.019398562855    SN.node[56].Communication.Routing        Startup 56 node 
-0.019949547807    SN.node[67].Communication.Routing        Startup 67 node 
-0.020118032116    SN.node[37].Communication.Routing        Startup 37 node 
-0.020325995854    SN.node[80].Communication.Routing        Startup 80 node 
-0.020685934182    SN.node[71].Communication.Routing        Startup 71 node 
-0.020755059808    SN.node[38].Communication.Routing        Startup 38 node 
-0.021235080494    SN.node[69].Communication.Routing        Startup 69 node 
-0.021853097004    SN.node[9].Communication.Routing         Startup 9 node 
-0.02202268613     SN.node[44].Communication.Routing        Startup 44 node 
-0.022040491924    SN.node[18].Communication.Routing        Startup 18 node 
-0.022658614977    SN.node[23].Communication.Routing        Startup 23 node 
-0.022730388248    SN.node[47].Communication.Routing        Startup 47 node 
-0.022731104109    SN.node[98].Communication.Routing        Startup 98 node 
-0.022841661132    SN.node[22].Communication.Routing        Startup 22 node 
-0.022884319909    SN.node[88].Communication.Routing        Startup 88 node 
-0.023447012273    SN.node[82].Communication.Routing        Startup 82 node 
-0.024631796055    SN.node[29].Communication.Routing        Startup 29 node 
-0.025541380048    SN.node[6].Communication.Routing         Startup 6 node 
-0.027232450631    SN.node[48].Communication.Routing        Startup 48 node 
-0.027539895219    SN.node[0].Communication.Routing         Startup 0 node 
-0.027539895219    SN.node[0].Communication.Routing         This node is sink: 0
-0.027638597426    SN.node[39].Communication.Routing        Startup 39 node 
-0.027892038191    SN.node[74].Communication.Routing        Startup 74 node 
-0.027942704258    SN.node[34].Communication.Routing        Startup 34 node 
-0.028138504818    SN.node[81].Communication.Routing        Startup 81 node 
-0.028465566284    SN.node[7].Communication.Routing         Startup 7 node 
-0.029312645085    SN.node[92].Communication.Routing        Startup 92 node 
-0.029330998601    SN.node[43].Communication.Routing        Startup 43 node 
-0.029543140554    SN.node[30].Communication.Routing        Startup 30 node 
-0.030481183203    SN.node[85].Communication.Routing        Startup 85 node 
-0.03245720258     SN.node[24].Communication.Routing        Startup 24 node 
-0.032670544914    SN.node[72].Communication.Routing        Startup 72 node 
-0.032681542623    SN.node[89].Communication.Routing        Startup 89 node 
-0.0331343133      SN.node[91].Communication.Routing        Startup 91 node 
-0.033619183931    SN.node[62].Communication.Routing        Startup 62 node 
-0.033812745172    SN.node[28].Communication.Routing        Startup 28 node 
-0.034656895977    SN.node[42].Communication.Routing        Startup 42 node 
-0.034741182858    SN.node[19].Communication.Routing        Startup 19 node 
-0.035407391109    SN.node[2].Communication.Routing         Startup 2 node 
-0.035678287386    SN.node[75].Communication.Routing        Startup 75 node 
-0.03592110126     SN.node[57].Communication.Routing        Startup 57 node 
-0.037407871836    SN.node[83].Communication.Routing        Startup 83 node 
-0.037883262278    SN.node[49].Communication.Routing        Startup 49 node 
-0.038291318726    SN.node[33].Communication.Routing        Startup 33 node 
-0.039015738096    SN.node[50].Communication.Routing        Startup 50 node 
-0.039356925024    SN.node[73].Communication.Routing        Startup 73 node 
-0.040446459979    SN.node[65].Communication.Routing        Startup 65 node 
-0.040561387816    SN.node[95].Communication.Routing        Startup 95 node 
-0.040878536366    SN.node[51].Communication.Routing        Startup 51 node 
-0.041997452115    SN.node[3].Communication.Routing         Startup 3 node 
-0.042287543626    SN.node[66].Communication.Routing        Startup 66 node 
-0.043026695587    SN.node[90].Communication.Routing        Startup 90 node 
-0.043553602532    SN.node[93].Communication.Routing        Startup 93 node 
-0.044647347892    SN.node[8].Communication.Routing         Startup 8 node 
-0.044653255318    SN.node[55].Communication.Routing        Startup 55 node 
-0.044814654556    SN.node[10].Communication.Routing        Startup 10 node 
-0.045141705126    SN.node[64].Communication.Routing        Startup 64 node 
-0.045665072638    SN.node[31].Communication.Routing        Startup 31 node 
-0.046819182648    SN.node[58].Communication.Routing        Startup 58 node 
-0.048682413553    SN.node[35].Communication.Routing        Startup 35 node 
-0.048799771396    SN.node[60].Communication.Routing        Startup 60 node 
-0.131425825623    SN.node[2].Communication.Routing         Received [BCAST pkt] from MAC layer
 0.131425825623    SN.node[2].Communication.Routing         Msg type 1 org: 0 from: 0 to: 2
-0.751529275473    SN.node[0].Communication.Routing         Received [BCAST pkt] from MAC layer
 0.751529275473    SN.node[0].Communication.Routing         Msg type 1 org: 0 from: 2 to: 0
-0.751529275473    SN.node[1].Communication.Routing         Received [BCAST pkt] from MAC layer
 0.751529275473    SN.node[1].Communication.Routing         Msg type 1 org: 0 from: 2 to: 1
-0.751529275473    SN.node[3].Communication.Routing         Received [BCAST pkt] from MAC layer
 0.751529275473    SN.node[3].Communication.Routing         Msg type 1 org: 0 from: 2 to: 3
-0.751529275473    SN.node[10].Communication.Routing        Received [BCAST pkt] from MAC layer
 0.751529275473    SN.node[10].Communication.Routing        Msg type 1 org: 0 from: 2 to: 10
-1.027599881079    SN.node[0].Communication.Routing         Received [Bridge test reprogram packet] from application layer
-1.527629874009    SN.node[0].Communication.Routing         Received [Bridge test reprogram packet] from application layer
-1.966037211547    SN.node[2].Communication.Routing         Received [BCAST pkt] from MAC layer
 1.966037211547    SN.node[2].Communication.Routing         Msg type 1 org: 0 from: 1 to: 2
-1.966037211547    SN.node[3].Communication.Routing         Received [BCAST pkt] from MAC layer
 1.966037211547    SN.node[3].Communication.Routing         Msg type 1 org: 0 from: 1 to: 3
-1.966037211547    SN.node[10].Communication.Routing        Received [BCAST pkt] from MAC layer
 1.966037211547    SN.node[10].Communication.Routing        Msg type 1 org: 0 from: 1 to: 10
-1.966037211547    SN.node[11].Communication.Routing        Received [BCAST pkt] from MAC layer
 1.966037211547    SN.node[11].Communication.Routing        Msg type 1 org: 0 from: 1 to: 11
-2.027659866939    SN.node[0].Communication.Routing         Received [Bridge test reprogram packet] from application layer
-2.527689859869    SN.node[0].Communication.Routing         Received [Bridge test reprogram packet] from application layer
-2.568768560671    SN.node[1].Communication.Routing         Received [BCAST pkt] from MAC layer
 2.568768560671    SN.node[1].Communication.Routing         Msg type 1 org: 0 from: 3 to: 1
-2.568768560671    SN.node[4].Communication.Routing         Received [BCAST pkt] from MAC layer
 2.568768560671    SN.node[4].Communication.Routing         Msg type 1 org: 0 from: 3 to: 4
-2.568768560671    SN.node[5].Communication.Routing         Received [BCAST pkt] from MAC layer
 2.568768560671    SN.node[5].Communication.Routing         Msg type 1 org: 0 from: 3 to: 5
-2.568768560671    SN.node[6].Communication.Routing         Received [BCAST pkt] from MAC layer
 2.568768560671    SN.node[6].Communication.Routing         Msg type 1 org: 0 from: 3 to: 6
-2.568768560671    SN.node[10].Communication.Routing        Received [BCAST pkt] from MAC layer
 2.568768560671    SN.node[10].Communication.Routing        Msg type 1 org: 0 from: 3 to: 10
-2.568768560671    SN.node[11].Communication.Routing        Received [BCAST pkt] from MAC layer
 2.568768560671    SN.node[11].Communication.Routing        Msg type 1 org: 0 from: 3 to: 11
-2.568768560671    SN.node[24].Communication.Routing        Received [BCAST pkt] from MAC layer
 2.568768560671    SN.node[24].Communication.Routing        Msg type 1 org: 0 from: 3 to: 24
-3.027719852799    SN.node[0].Communication.Routing         Received [Bridge test reprogram packet] from application layer
-3.178841329961    SN.node[1].Communication.Routing         Received [BCAST pkt] from MAC layer
 3.178841329961    SN.node[1].Communication.Routing         Msg type 1 org: 0 from: 11 to: 1
-3.178841329961    SN.node[3].Communication.Routing         Received [BCAST pkt] from MAC layer
 3.178841329961    SN.node[3].Communication.Routing         Msg type 1 org: 0 from: 11 to: 3
-3.178841329961    SN.node[24].Communication.Routing        Received [BCAST pkt] from MAC layer
 3.178841329961    SN.node[24].Communication.Routing        Msg type 1 org: 0 from: 11 to: 24
-3.181622515721    SN.node[3].Communication.Routing         Received [BCAST pkt] from MAC layer
 3.181622515721    SN.node[3].Communication.Routing         Msg type 1 org: 0 from: 6 to: 3
-3.181622515721    SN.node[4].Communication.Routing         Received [BCAST pkt] from MAC layer
 3.181622515721    SN.node[4].Communication.Routing         Msg type 1 org: 0 from: 6 to: 4
-3.181622515721    SN.node[5].Communication.Routing         Received [BCAST pkt] from MAC layer
 3.181622515721    SN.node[5].Communication.Routing         Msg type 1 org: 0 from: 6 to: 5
-3.181622515721    SN.node[7].Communication.Routing         Received [BCAST pkt] from MAC layer
 3.181622515721    SN.node[7].Communication.Routing         Msg type 1 org: 0 from: 6 to: 7
-3.181622515721    SN.node[8].Communication.Routing         Received [BCAST pkt] from MAC layer
 3.181622515721    SN.node[8].Communication.Routing         Msg type 1 org: 0 from: 6 to: 8
-3.181622515721    SN.node[9].Communication.Routing         Received [BCAST pkt] from MAC layer
 3.181622515721    SN.node[9].Communication.Routing         Msg type 1 org: 0 from: 6 to: 9
-3.185249406232    SN.node[1].Communication.Routing         Received [BCAST pkt] from MAC layer
 3.185249406232    SN.node[1].Communication.Routing         Msg type 1 org: 0 from: 10 to: 1
-3.185249406232    SN.node[3].Communication.Routing         Received [BCAST pkt] from MAC layer
 3.185249406232    SN.node[3].Communication.Routing         Msg type 1 org: 0 from: 10 to: 3
-3.185249406232    SN.node[14].Communication.Routing        Received [BCAST pkt] from MAC layer
 3.185249406232    SN.node[14].Communication.Routing        Msg type 1 org: 0 from: 10 to: 14
-3.185249406232    SN.node[15].Communication.Routing        Received [BCAST pkt] from MAC layer
 3.185249406232    SN.node[15].Communication.Routing        Msg type 1 org: 0 from: 10 to: 15
-3.185249406232    SN.node[27].Communication.Routing        Received [BCAST pkt] from MAC layer
 3.185249406232    SN.node[27].Communication.Routing        Msg type 1 org: 0 from: 10 to: 27
-3.527749845729    SN.node[0].Communication.Routing         Received [Bridge test reprogram packet] from application layer
-3.789972255566    SN.node[1].Communication.Routing         Received [BCAST pkt] from MAC layer
 3.789972255566    SN.node[1].Communication.Routing         Msg type 1 org: 0 from: 15 to: 1
-3.789972255566    SN.node[10].Communication.Routing        Received [BCAST pkt] from MAC layer
 3.789972255566    SN.node[10].Communication.Routing        Msg type 1 org: 0 from: 15 to: 10
-3.789972255566    SN.node[11].Communication.Routing        Received [BCAST pkt] from MAC layer
 3.789972255566    SN.node[11].Communication.Routing        Msg type 1 org: 0 from: 15 to: 11
-3.789972255566    SN.node[14].Communication.Routing        Received [BCAST pkt] from MAC layer
 3.789972255566    SN.node[14].Communication.Routing        Msg type 1 org: 0 from: 15 to: 14
-3.789972255566    SN.node[20].Communication.Routing        Received [BCAST pkt] from MAC layer
 3.789972255566    SN.node[20].Communication.Routing        Msg type 1 org: 0 from: 15 to: 20
-3.790147986134    SN.node[6].Communication.Routing         Received [BCAST pkt] from MAC layer
 3.790147986134    SN.node[6].Communication.Routing         Msg type 1 org: 0 from: 9 to: 6
-3.790147986134    SN.node[7].Communication.Routing         Received [BCAST pkt] from MAC layer
 3.790147986134    SN.node[7].Communication.Routing         Msg type 1 org: 0 from: 9 to: 7
-3.790147986134    SN.node[8].Communication.Routing         Received [BCAST pkt] from MAC layer
 3.790147986134    SN.node[8].Communication.Routing         Msg type 1 org: 0 from: 9 to: 8
-3.79417064076     SN.node[25].Communication.Routing        Received [BCAST pkt] from MAC layer
 3.79417064076     SN.node[25].Communication.Routing        Msg type 1 org: 0 from: 27 to: 25
-3.79417064076     SN.node[26].Communication.Routing        Received [BCAST pkt] from MAC layer
 3.79417064076     SN.node[26].Communication.Routing        Msg type 1 org: 0 from: 27 to: 26
-3.79417064076     SN.node[28].Communication.Routing        Received [BCAST pkt] from MAC layer
 3.79417064076     SN.node[28].Communication.Routing        Msg type 1 org: 0 from: 27 to: 28
-3.79417064076     SN.node[29].Communication.Routing        Received [BCAST pkt] from MAC layer
 3.79417064076     SN.node[29].Communication.Routing        Msg type 1 org: 0 from: 27 to: 29
-3.79417064076     SN.node[36].Communication.Routing        Received [BCAST pkt] from MAC layer
 3.79417064076     SN.node[36].Communication.Routing        Msg type 1 org: 0 from: 27 to: 36
-3.794426995267    SN.node[3].Communication.Routing         Received [BCAST pkt] from MAC layer
 3.794426995267    SN.node[3].Communication.Routing         Msg type 1 org: 0 from: 24 to: 3
-3.794426995267    SN.node[5].Communication.Routing         Received [BCAST pkt] from MAC layer
 3.794426995267    SN.node[5].Communication.Routing         Msg type 1 org: 0 from: 24 to: 5
-3.794426995267    SN.node[7].Communication.Routing         Received [BCAST pkt] from MAC layer
 3.794426995267    SN.node[7].Communication.Routing         Msg type 1 org: 0 from: 24 to: 7
-3.794426995267    SN.node[12].Communication.Routing        Received [BCAST pkt] from MAC layer
 3.794426995267    SN.node[12].Communication.Routing        Msg type 1 org: 0 from: 24 to: 12
-3.794426995267    SN.node[12].Communication.Routing        Node 12 is CH 
-3.794426995267    SN.node[16].Communication.Routing        Received [BCAST pkt] from MAC layer
 3.794426995267    SN.node[16].Communication.Routing        Msg type 1 org: 0 from: 24 to: 16
-3.79717195772     SN.node[3].Communication.Routing         Received [BCAST pkt] from MAC layer
 3.79717195772     SN.node[3].Communication.Routing         Msg type 1 org: 0 from: 4 to: 3
-3.79717195772     SN.node[5].Communication.Routing         Received [BCAST pkt] from MAC layer
 3.79717195772     SN.node[5].Communication.Routing         Msg type 1 org: 0 from: 4 to: 5
-3.79717195772     SN.node[6].Communication.Routing         Received [BCAST pkt] from MAC layer
 3.79717195772     SN.node[6].Communication.Routing         Msg type 1 org: 0 from: 4 to: 6
-3.79717195772     SN.node[7].Communication.Routing         Received [BCAST pkt] from MAC layer
 3.79717195772     SN.node[7].Communication.Routing         Msg type 1 org: 0 from: 4 to: 7
-4.027779838659    SN.node[0].Communication.Routing         Received [Bridge test reprogram packet] from application layer
-4.400568075688    SN.node[14].Communication.Routing        Received [BCAST pkt] from MAC layer
 4.400568075688    SN.node[14].Communication.Routing        Msg type 1 org: 0 from: 20 to: 14
-4.400568075688    SN.node[21].Communication.Routing        Received [BCAST pkt] from MAC layer
 4.400568075688    SN.node[21].Communication.Routing        Msg type 1 org: 0 from: 20 to: 21
-4.400568075688    SN.node[24].Communication.Routing        Received [BCAST pkt] from MAC layer
 4.400568075688    SN.node[24].Communication.Routing        Msg type 1 org: 0 from: 20 to: 24
-4.400568075688    SN.node[27].Communication.Routing        Received [BCAST pkt] from MAC layer
 4.400568075688    SN.node[27].Communication.Routing        Msg type 1 org: 0 from: 20 to: 27
-4.403526510986    SN.node[7].Communication.Routing         Received [BCAST pkt] from MAC layer
 4.403526510986    SN.node[7].Communication.Routing         Msg type 1 org: 0 from: 12 to: 7
-4.403526510986    SN.node[13].Communication.Routing        Received [BCAST pkt] from MAC layer
 4.403526510986    SN.node[13].Communication.Routing        Msg type 1 org: 0 from: 12 to: 13
-4.403526510986    SN.node[16].Communication.Routing        Received [BCAST pkt] from MAC layer
 4.403526510986    SN.node[16].Communication.Routing        Msg type 1 org: 0 from: 12 to: 16
-4.403526510986    SN.node[17].Communication.Routing        Received [BCAST pkt] from MAC layer
 4.403526510986    SN.node[17].Communication.Routing        Msg type 1 org: 0 from: 12 to: 17
-4.403526510986    SN.node[18].Communication.Routing        Received [BCAST pkt] from MAC layer
 4.403526510986    SN.node[18].Communication.Routing        Msg type 1 org: 0 from: 12 to: 18
-4.403526510986    SN.node[24].Communication.Routing        Received [BCAST pkt] from MAC layer
 4.403526510986    SN.node[24].Communication.Routing        Msg type 1 org: 0 from: 12 to: 24
-4.404677243575    SN.node[6].Communication.Routing         Received [BCAST pkt] from MAC layer
 4.404677243575    SN.node[6].Communication.Routing         Msg type 1 org: 0 from: 8 to: 6
-4.404677243575    SN.node[7].Communication.Routing         Received [BCAST pkt] from MAC layer
 4.404677243575    SN.node[7].Communication.Routing         Msg type 1 org: 0 from: 8 to: 7
-4.404677243575    SN.node[9].Communication.Routing         Received [BCAST pkt] from MAC layer
 4.404677243575    SN.node[9].Communication.Routing         Msg type 1 org: 0 from: 8 to: 9
-4.404677243575    SN.node[50].Communication.Routing        Received [BCAST pkt] from MAC layer
 4.404677243575    SN.node[50].Communication.Routing        Msg type 1 org: 0 from: 8 to: 50
-4.404677243575    SN.node[51].Communication.Routing        Received [BCAST pkt] from MAC layer
 4.404677243575    SN.node[51].Communication.Routing        Msg type 1 org: 0 from: 8 to: 51
-4.406391623828    SN.node[39].Communication.Routing        Received [BCAST pkt] from MAC layer
 4.406391623828    SN.node[39].Communication.Routing        Msg type 1 org: 0 from: 36 to: 39
-4.406391623828    SN.node[49].Communication.Routing        Received [BCAST pkt] from MAC layer
 4.406391623828    SN.node[49].Communication.Routing        Msg type 1 org: 0 from: 36 to: 49
-4.406975174715    SN.node[30].Communication.Routing        Received [BCAST pkt] from MAC layer
 4.406975174715    SN.node[30].Communication.Routing        Msg type 1 org: 0 from: 28 to: 30
-4.407221128737    SN.node[41].Communication.Routing        Received [BCAST pkt] from MAC layer
 4.407221128737    SN.node[41].Communication.Routing        Msg type 1 org: 0 from: 26 to: 41
-4.407280957002    SN.node[13].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 4.407280957002    SN.node[13].Communication.Routing        Msg type 3 org: 12 from: 12 to: 13
-4.407280957002    SN.node[13].Communication.Routing        Node 13 joint cluster: 12
-4.407280957002    SN.node[16].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 4.407280957002    SN.node[16].Communication.Routing        Msg type 3 org: 12 from: 12 to: 16
-4.407280957002    SN.node[16].Communication.Routing        Node 16 joint cluster: 12
-4.407280957002    SN.node[17].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 4.407280957002    SN.node[17].Communication.Routing        Msg type 3 org: 12 from: 12 to: 17
-4.407280957002    SN.node[17].Communication.Routing        Node 17 joint cluster: 12
-4.407280957002    SN.node[24].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 4.407280957002    SN.node[24].Communication.Routing        Msg type 3 org: 12 from: 12 to: 24
-4.407280957002    SN.node[24].Communication.Routing        Node 24 joint cluster: 12
-4.408429022324    SN.node[16].Communication.Routing        Received [BCAST pkt] from MAC layer
 4.408429022324    SN.node[16].Communication.Routing        Msg type 1 org: 0 from: 29 to: 16
-4.408429022324    SN.node[27].Communication.Routing        Received [BCAST pkt] from MAC layer
 4.408429022324    SN.node[27].Communication.Routing        Msg type 1 org: 0 from: 29 to: 27
-4.408429022324    SN.node[28].Communication.Routing        Received [BCAST pkt] from MAC layer
 4.408429022324    SN.node[28].Communication.Routing        Msg type 1 org: 0 from: 29 to: 28
-4.408429022324    SN.node[32].Communication.Routing        Received [BCAST pkt] from MAC layer
 4.408429022324    SN.node[32].Communication.Routing        Msg type 1 org: 0 from: 29 to: 32
-4.413363114122    SN.node[1].Communication.Routing         Received [BCAST pkt] from MAC layer
 4.413363114122    SN.node[1].Communication.Routing         Msg type 1 org: 0 from: 5 to: 1
-4.413363114122    SN.node[3].Communication.Routing         Received [BCAST pkt] from MAC layer
 4.413363114122    SN.node[3].Communication.Routing         Msg type 1 org: 0 from: 5 to: 3
-4.413363114122    SN.node[4].Communication.Routing         Received [BCAST pkt] from MAC layer
 4.413363114122    SN.node[4].Communication.Routing         Msg type 1 org: 0 from: 5 to: 4
-4.413363114122    SN.node[6].Communication.Routing         Received [BCAST pkt] from MAC layer
 4.413363114122    SN.node[6].Communication.Routing         Msg type 1 org: 0 from: 5 to: 6
-4.413363114122    SN.node[13].Communication.Routing        Received [BCAST pkt] from MAC layer
 4.413363114122    SN.node[13].Communication.Routing        Msg type 1 org: 0 from: 5 to: 13
-4.527809831589    SN.node[0].Communication.Routing         Received [Bridge test reprogram packet] from application layer
-5.008680048066    SN.node[17].Communication.Routing        Received [BCAST pkt] from MAC layer
 5.008680048066    SN.node[17].Communication.Routing        Msg type 1 org: 0 from: 18 to: 17
-5.008680048066    SN.node[22].Communication.Routing        Received [BCAST pkt] from MAC layer
 5.008680048066    SN.node[22].Communication.Routing        Msg type 1 org: 0 from: 18 to: 22
-5.008680048066    SN.node[23].Communication.Routing        Received [BCAST pkt] from MAC layer
 5.008680048066    SN.node[23].Communication.Routing        Msg type 1 org: 0 from: 18 to: 23
-5.008680048066    SN.node[64].Communication.Routing        Received [BCAST pkt] from MAC layer
 5.008680048066    SN.node[64].Communication.Routing        Msg type 1 org: 0 from: 18 to: 64
-5.008686209265    SN.node[8].Communication.Routing         Received [BCAST pkt] from MAC layer
 5.008686209265    SN.node[8].Communication.Routing         Msg type 1 org: 0 from: 50 to: 8
-5.008686209265    SN.node[51].Communication.Routing        Received [BCAST pkt] from MAC layer
 5.008686209265    SN.node[51].Communication.Routing        Msg type 1 org: 0 from: 50 to: 51
-5.008686209265    SN.node[52].Communication.Routing        Received [BCAST pkt] from MAC layer
 5.008686209265    SN.node[52].Communication.Routing        Msg type 1 org: 0 from: 50 to: 52
-5.00915570394     SN.node[30].Communication.Routing        Received [BCAST pkt] from MAC layer
 5.00915570394     SN.node[30].Communication.Routing        Msg type 1 org: 0 from: 49 to: 30
-5.00915570394     SN.node[32].Communication.Routing        Received [BCAST pkt] from MAC layer
 5.00915570394     SN.node[32].Communication.Routing        Msg type 1 org: 0 from: 49 to: 32
-5.00915570394     SN.node[34].Communication.Routing        Received [BCAST pkt] from MAC layer
 5.00915570394     SN.node[34].Communication.Routing        Msg type 1 org: 0 from: 49 to: 34
-5.00915570394     SN.node[41].Communication.Routing        Received [BCAST pkt] from MAC layer
 5.00915570394     SN.node[41].Communication.Routing        Msg type 1 org: 0 from: 49 to: 41
-5.00981108459     SN.node[4].Communication.Routing         Received [BCAST pkt] from MAC layer
 5.00981108459     SN.node[4].Communication.Routing         Msg type 1 org: 0 from: 7 to: 4
-5.00981108459     SN.node[9].Communication.Routing         Received [BCAST pkt] from MAC layer
 5.00981108459     SN.node[9].Communication.Routing         Msg type 1 org: 0 from: 7 to: 9
-5.00981108459     SN.node[22].Communication.Routing        Received [BCAST pkt] from MAC layer
 5.00981108459     SN.node[22].Communication.Routing        Msg type 1 org: 0 from: 7 to: 22
-5.010281918444    SN.node[19].Communication.Routing        Received [BCAST pkt] from MAC layer
 5.010281918444    SN.node[19].Communication.Routing        Msg type 1 org: 0 from: 21 to: 19
-5.010281918444    SN.node[20].Communication.Routing        Received [BCAST pkt] from MAC layer
 5.010281918444    SN.node[20].Communication.Routing        Msg type 1 org: 0 from: 21 to: 20
-5.010281918444    SN.node[27].Communication.Routing        Received [BCAST pkt] from MAC layer
 5.010281918444    SN.node[27].Communication.Routing        Msg type 1 org: 0 from: 21 to: 27
-5.010281918444    SN.node[29].Communication.Routing        Received [BCAST pkt] from MAC layer
 5.010281918444    SN.node[29].Communication.Routing        Msg type 1 org: 0 from: 21 to: 29
-5.012119058661    SN.node[36].Communication.Routing        Received [BCAST pkt] from MAC layer
 5.012119058661    SN.node[36].Communication.Routing        Msg type 1 org: 0 from: 39 to: 36
-5.012119058661    SN.node[40].Communication.Routing        Received [BCAST pkt] from MAC layer
 5.012119058661    SN.node[40].Communication.Routing        Msg type 1 org: 0 from: 39 to: 40
-5.012720232229    SN.node[12].Communication.Routing        Received [JOIN pkt] from MAC layer
 5.012720232229    SN.node[12].Communication.Routing        Msg type 4 org: 24 from: 24 to: 12
-5.01643984281     SN.node[5].Communication.Routing         Received [BCAST pkt] from MAC layer
 5.01643984281     SN.node[5].Communication.Routing         Msg type 1 org: 0 from: 13 to: 5
-5.01643984281     SN.node[22].Communication.Routing        Received [BCAST pkt] from MAC layer
 5.01643984281     SN.node[22].Communication.Routing        Msg type 1 org: 0 from: 13 to: 22
-5.01643984281     SN.node[51].Communication.Routing        Received [BCAST pkt] from MAC layer
 5.01643984281     SN.node[51].Communication.Routing        Msg type 1 org: 0 from: 13 to: 51
-5.01643984281     SN.node[66].Communication.Routing        Received [BCAST pkt] from MAC layer
 5.01643984281     SN.node[66].Communication.Routing        Msg type 1 org: 0 from: 13 to: 66
-5.016685088256    SN.node[17].Communication.Routing        Received [BCAST pkt] from MAC layer
 5.016685088256    SN.node[17].Communication.Routing        Msg type 1 org: 0 from: 16 to: 17
-5.016685088256    SN.node[24].Communication.Routing        Received [BCAST pkt] from MAC layer
 5.016685088256    SN.node[24].Communication.Routing        Msg type 1 org: 0 from: 16 to: 24
-5.017014119867    SN.node[28].Communication.Routing        Received [BCAST pkt] from MAC layer
 5.017014119867    SN.node[28].Communication.Routing        Msg type 1 org: 0 from: 25 to: 28
-5.020726396429    SN.node[3].Communication.Routing         Received [RECRUIT pkt] from MAC layer
 5.020726396429    SN.node[3].Communication.Routing         Msg type 3 org: 12 from: 24 to: 3
-5.020726396429    SN.node[3].Communication.Routing         Node 3 joint cluster: 12
-5.020726396429    SN.node[11].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 5.020726396429    SN.node[11].Communication.Routing        Msg type 3 org: 12 from: 24 to: 11
-5.020726396429    SN.node[11].Communication.Routing        Node 11 joint cluster: 12
-5.020726396429    SN.node[16].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 5.020726396429    SN.node[16].Communication.Routing        Msg type 3 org: 12 from: 24 to: 16
-5.020726396429    SN.node[20].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 5.020726396429    SN.node[20].Communication.Routing        Msg type 3 org: 12 from: 24 to: 20
-5.020726396429    SN.node[20].Communication.Routing        Node 20 joint cluster: 12
-5.02557798894     SN.node[64].Communication.Routing        Received [BCAST pkt] from MAC layer
 5.02557798894     SN.node[64].Communication.Routing        Msg type 1 org: 0 from: 66 to: 64
-5.027839824519    SN.node[0].Communication.Routing         Received [Bridge test reprogram packet] from application layer
-5.032944770383    SN.node[8].Communication.Routing         Received [BCAST pkt] from MAC layer
 5.032944770383    SN.node[8].Communication.Routing         Msg type 1 org: 0 from: 51 to: 8
-5.032944770383    SN.node[9].Communication.Routing         Received [BCAST pkt] from MAC layer
 5.032944770383    SN.node[9].Communication.Routing         Msg type 1 org: 0 from: 51 to: 9
-5.032944770383    SN.node[50].Communication.Routing        Received [BCAST pkt] from MAC layer
 5.032944770383    SN.node[50].Communication.Routing        Msg type 1 org: 0 from: 51 to: 50
-5.527869817449    SN.node[0].Communication.Routing         Received [Bridge test reprogram packet] from application layer
-5.61890618841     SN.node[26].Communication.Routing        Received [BCAST pkt] from MAC layer
 5.61890618841     SN.node[26].Communication.Routing        Msg type 1 org: 0 from: 34 to: 26
-5.61890618841     SN.node[37].Communication.Routing        Received [BCAST pkt] from MAC layer
 5.61890618841     SN.node[37].Communication.Routing        Msg type 1 org: 0 from: 34 to: 37
-5.61890618841     SN.node[40].Communication.Routing        Received [BCAST pkt] from MAC layer
 5.61890618841     SN.node[40].Communication.Routing        Msg type 1 org: 0 from: 34 to: 40
-5.61890618841     SN.node[49].Communication.Routing        Received [BCAST pkt] from MAC layer
 5.61890618841     SN.node[49].Communication.Routing        Msg type 1 org: 0 from: 34 to: 49
-5.619568451726    SN.node[29].Communication.Routing        Received [BCAST pkt] from MAC layer
 5.619568451726    SN.node[29].Communication.Routing        Msg type 1 org: 0 from: 32 to: 29
-5.619568451726    SN.node[37].Communication.Routing        Received [BCAST pkt] from MAC layer
 5.619568451726    SN.node[37].Communication.Routing        Msg type 1 org: 0 from: 32 to: 37
-5.619568451726    SN.node[85].Communication.Routing        Received [BCAST pkt] from MAC layer
 5.619568451726    SN.node[85].Communication.Routing        Msg type 1 org: 0 from: 32 to: 85
-5.62174055003     SN.node[18].Communication.Routing        Received [BCAST pkt] from MAC layer
 5.62174055003     SN.node[18].Communication.Routing        Msg type 1 org: 0 from: 23 to: 18
-5.62174055003     SN.node[22].Communication.Routing        Received [BCAST pkt] from MAC layer
 5.62174055003     SN.node[22].Communication.Routing        Msg type 1 org: 0 from: 23 to: 22
-5.62174055003     SN.node[33].Communication.Routing        Received [BCAST pkt] from MAC layer
 5.62174055003     SN.node[33].Communication.Routing        Msg type 1 org: 0 from: 23 to: 33
-5.62174055003     SN.node[64].Communication.Routing        Received [BCAST pkt] from MAC layer
 5.62174055003     SN.node[64].Communication.Routing        Msg type 1 org: 0 from: 23 to: 64
-5.62174055003     SN.node[69].Communication.Routing        Received [BCAST pkt] from MAC layer
 5.62174055003     SN.node[69].Communication.Routing        Msg type 1 org: 0 from: 23 to: 69
-5.62174055003     SN.node[83].Communication.Routing        Received [BCAST pkt] from MAC layer
 5.62174055003     SN.node[83].Communication.Routing        Msg type 1 org: 0 from: 23 to: 83
-5.623811102035    SN.node[12].Communication.Routing        Received [BCAST pkt] from MAC layer
 5.623811102035    SN.node[12].Communication.Routing        Msg type 1 org: 0 from: 17 to: 12
-5.623811102035    SN.node[16].Communication.Routing        Received [BCAST pkt] from MAC layer
 5.623811102035    SN.node[16].Communication.Routing        Msg type 1 org: 0 from: 17 to: 16
-5.623811102035    SN.node[18].Communication.Routing        Received [BCAST pkt] from MAC layer
 5.623811102035    SN.node[18].Communication.Routing        Msg type 1 org: 0 from: 17 to: 18
-5.623811102035    SN.node[22].Communication.Routing        Received [BCAST pkt] from MAC layer
 5.623811102035    SN.node[22].Communication.Routing        Msg type 1 org: 0 from: 17 to: 22
-5.623811102035    SN.node[31].Communication.Routing        Received [BCAST pkt] from MAC layer
 5.623811102035    SN.node[31].Communication.Routing        Msg type 1 org: 0 from: 17 to: 31
-5.625357586441    SN.node[5].Communication.Routing         Received [RECRUIT pkt] from MAC layer
 5.625357586441    SN.node[5].Communication.Routing         Msg type 3 org: 12 from: 13 to: 5
-5.625357586441    SN.node[5].Communication.Routing         Node 5 joint cluster: 12
-5.625357586441    SN.node[9].Communication.Routing         Received [RECRUIT pkt] from MAC layer
 5.625357586441    SN.node[9].Communication.Routing         Msg type 3 org: 12 from: 13 to: 9
-5.625357586441    SN.node[9].Communication.Routing         Node 9 joint cluster: 12
-5.625357586441    SN.node[12].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 5.625357586441    SN.node[12].Communication.Routing        Msg type 3 org: 12 from: 13 to: 12
-5.625357586441    SN.node[22].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 5.625357586441    SN.node[22].Communication.Routing        Msg type 3 org: 12 from: 13 to: 22
-5.625357586441    SN.node[22].Communication.Routing        Node 22 joint cluster: 12
-5.625357586441    SN.node[50].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 5.625357586441    SN.node[50].Communication.Routing        Msg type 3 org: 12 from: 13 to: 50
-5.625357586441    SN.node[50].Communication.Routing        Node 50 joint cluster: 12
-5.626715466951    SN.node[50].Communication.Routing        Received [BCAST pkt] from MAC layer
 5.626715466951    SN.node[50].Communication.Routing        Msg type 1 org: 0 from: 52 to: 50
-5.626715466951    SN.node[54].Communication.Routing        Received [BCAST pkt] from MAC layer
 5.626715466951    SN.node[54].Communication.Routing        Msg type 1 org: 0 from: 52 to: 54
-5.626715466951    SN.node[59].Communication.Routing        Received [BCAST pkt] from MAC layer
 5.626715466951    SN.node[59].Communication.Routing        Msg type 1 org: 0 from: 52 to: 59
-5.629598612301    SN.node[12].Communication.Routing        Received [JOIN pkt] from MAC layer
 5.629598612301    SN.node[12].Communication.Routing        Msg type 4 org: 17 from: 17 to: 12
-5.632390953297    SN.node[10].Communication.Routing        Received [BCAST pkt] from MAC layer
 5.632390953297    SN.node[10].Communication.Routing        Msg type 1 org: 0 from: 14 to: 10
-5.632390953297    SN.node[15].Communication.Routing        Received [BCAST pkt] from MAC layer
 5.632390953297    SN.node[15].Communication.Routing        Msg type 1 org: 0 from: 14 to: 15
-5.632390953297    SN.node[19].Communication.Routing        Received [BCAST pkt] from MAC layer
 5.632390953297    SN.node[19].Communication.Routing        Msg type 1 org: 0 from: 14 to: 19
-5.632390953297    SN.node[20].Communication.Routing        Received [BCAST pkt] from MAC layer
 5.632390953297    SN.node[20].Communication.Routing        Msg type 1 org: 0 from: 14 to: 20
-5.635033157303    SN.node[7].Communication.Routing         Received [BCAST pkt] from MAC layer
 5.635033157303    SN.node[7].Communication.Routing         Msg type 1 org: 0 from: 22 to: 7
-5.635033157303    SN.node[13].Communication.Routing        Received [BCAST pkt] from MAC layer
 5.635033157303    SN.node[13].Communication.Routing        Msg type 1 org: 0 from: 22 to: 13
-5.635033157303    SN.node[17].Communication.Routing        Received [BCAST pkt] from MAC layer
 5.635033157303    SN.node[17].Communication.Routing        Msg type 1 org: 0 from: 22 to: 17
-5.635033157303    SN.node[18].Communication.Routing        Received [BCAST pkt] from MAC layer
 5.635033157303    SN.node[18].Communication.Routing        Msg type 1 org: 0 from: 22 to: 18
-5.635033157303    SN.node[23].Communication.Routing        Received [BCAST pkt] from MAC layer
 5.635033157303    SN.node[23].Communication.Routing        Msg type 1 org: 0 from: 22 to: 23
-5.638241978601    SN.node[13].Communication.Routing        Received [JOIN pkt] from MAC layer
 5.638241978601    SN.node[13].Communication.Routing        Msg type 4 org: 22 from: 22 to: 13
-5.643277883776    SN.node[13].Communication.Routing        Received [JOIN pkt] from MAC layer
 5.643277883776    SN.node[13].Communication.Routing        Msg type 4 org: 9 from: 9 to: 13
-5.64621041868     SN.node[24].Communication.Routing        Received [JOIN pkt] from MAC layer
 5.64621041868     SN.node[24].Communication.Routing        Msg type 4 org: 3 from: 3 to: 24
-5.646922047228    SN.node[6].Communication.Routing         Received [RECRUIT pkt] from MAC layer
 5.646922047228    SN.node[6].Communication.Routing         Msg type 3 org: 12 from: 9 to: 6
-5.646922047228    SN.node[6].Communication.Routing         Node 6 joint cluster: 12
-5.646922047228    SN.node[7].Communication.Routing         Received [RECRUIT pkt] from MAC layer
 5.646922047228    SN.node[7].Communication.Routing         Msg type 3 org: 12 from: 9 to: 7
-5.646922047228    SN.node[7].Communication.Routing         Node 7 joint cluster: 12
-5.646922047228    SN.node[51].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 5.646922047228    SN.node[51].Communication.Routing        Msg type 3 org: 12 from: 9 to: 51
-5.646922047228    SN.node[51].Communication.Routing        Node 51 joint cluster: 12
-5.647927459285    SN.node[21].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 5.647927459285    SN.node[21].Communication.Routing        Msg type 3 org: 12 from: 20 to: 21
-5.647927459285    SN.node[21].Communication.Routing        Node 21 joint cluster: 12
-5.647927459285    SN.node[24].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 5.647927459285    SN.node[24].Communication.Routing        Msg type 3 org: 12 from: 20 to: 24
-5.647927459285    SN.node[27].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 5.647927459285    SN.node[27].Communication.Routing        Msg type 3 org: 12 from: 20 to: 27
-5.647927459285    SN.node[27].Communication.Routing        Node 27 joint cluster: 12
-5.651005379422    SN.node[12].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 5.651005379422    SN.node[12].Communication.Routing        Msg type 3 org: 12 from: 17 to: 12
-5.651005379422    SN.node[16].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 5.651005379422    SN.node[16].Communication.Routing        Msg type 3 org: 12 from: 17 to: 16
-5.651005379422    SN.node[22].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 5.651005379422    SN.node[22].Communication.Routing        Msg type 3 org: 12 from: 17 to: 22
-5.651695779052    SN.node[1].Communication.Routing         Received [RECRUIT pkt] from MAC layer
 5.651695779052    SN.node[1].Communication.Routing         Msg type 3 org: 12 from: 3 to: 1
-5.651695779052    SN.node[1].Communication.Routing         Node 1 joint cluster: 12
-5.651695779052    SN.node[2].Communication.Routing         Received [RECRUIT pkt] from MAC layer
 5.651695779052    SN.node[2].Communication.Routing         Msg type 3 org: 12 from: 3 to: 2
-5.651695779052    SN.node[2].Communication.Routing         Node 2 joint cluster: 12
-5.651695779052    SN.node[4].Communication.Routing         Received [RECRUIT pkt] from MAC layer
 5.651695779052    SN.node[4].Communication.Routing         Msg type 3 org: 12 from: 3 to: 4
-5.651695779052    SN.node[4].Communication.Routing         Node 4 joint cluster: 12
-5.651695779052    SN.node[5].Communication.Routing         Received [RECRUIT pkt] from MAC layer
 5.651695779052    SN.node[5].Communication.Routing         Msg type 3 org: 12 from: 3 to: 5
-5.651695779052    SN.node[6].Communication.Routing         Received [RECRUIT pkt] from MAC layer
 5.651695779052    SN.node[6].Communication.Routing         Msg type 3 org: 12 from: 3 to: 6
-5.651695779052    SN.node[10].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 5.651695779052    SN.node[10].Communication.Routing        Msg type 3 org: 12 from: 3 to: 10
-5.651695779052    SN.node[10].Communication.Routing        Node 10 joint cluster: 12
-5.651695779052    SN.node[11].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 5.651695779052    SN.node[11].Communication.Routing        Msg type 3 org: 12 from: 3 to: 11
-5.651695779052    SN.node[24].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 5.651695779052    SN.node[24].Communication.Routing        Msg type 3 org: 12 from: 3 to: 24
-6.027899810379    SN.node[0].Communication.Routing         Received [Bridge test reprogram packet] from application layer
-6.228539261566    SN.node[52].Communication.Routing        Received [BCAST pkt] from MAC layer
 6.228539261566    SN.node[52].Communication.Routing        Msg type 1 org: 0 from: 54 to: 52
-6.228539261566    SN.node[55].Communication.Routing        Received [BCAST pkt] from MAC layer
 6.228539261566    SN.node[55].Communication.Routing        Msg type 1 org: 0 from: 54 to: 55
-6.228539261566    SN.node[57].Communication.Routing        Received [BCAST pkt] from MAC layer
 6.228539261566    SN.node[57].Communication.Routing        Msg type 1 org: 0 from: 54 to: 57
-6.230841119749    SN.node[34].Communication.Routing        Received [BCAST pkt] from MAC layer
 6.230841119749    SN.node[34].Communication.Routing        Msg type 1 org: 0 from: 41 to: 34
-6.230841119749    SN.node[37].Communication.Routing        Received [BCAST pkt] from MAC layer
 6.230841119749    SN.node[37].Communication.Routing        Msg type 1 org: 0 from: 41 to: 37
-6.230841119749    SN.node[42].Communication.Routing        Received [BCAST pkt] from MAC layer
 6.230841119749    SN.node[42].Communication.Routing        Msg type 1 org: 0 from: 41 to: 42
-6.230841119749    SN.node[46].Communication.Routing        Received [BCAST pkt] from MAC layer
 6.230841119749    SN.node[46].Communication.Routing        Msg type 1 org: 0 from: 41 to: 46
-6.231405928779    SN.node[9].Communication.Routing         Received [JOIN pkt] from MAC layer
 6.231405928779    SN.node[9].Communication.Routing         Msg type 4 org: 7 from: 7 to: 9
-6.232317381427    SN.node[20].Communication.Routing        Received [JOIN pkt] from MAC layer
 6.232317381427    SN.node[20].Communication.Routing        Msg type 4 org: 27 from: 27 to: 20
-6.232694211266    SN.node[45].Communication.Routing        Received [BCAST pkt] from MAC layer
 6.232694211266    SN.node[45].Communication.Routing        Msg type 1 org: 0 from: 40 to: 45
-6.23452017203     SN.node[28].Communication.Routing        Received [BCAST pkt] from MAC layer
 6.23452017203     SN.node[28].Communication.Routing        Msg type 1 org: 0 from: 30 to: 28
-6.23452017203     SN.node[31].Communication.Routing        Received [BCAST pkt] from MAC layer
 6.23452017203     SN.node[31].Communication.Routing        Msg type 1 org: 0 from: 30 to: 31
-6.23452017203     SN.node[34].Communication.Routing        Received [BCAST pkt] from MAC layer
 6.23452017203     SN.node[34].Communication.Routing        Msg type 1 org: 0 from: 30 to: 34
-6.23452017203     SN.node[35].Communication.Routing        Received [BCAST pkt] from MAC layer
 6.23452017203     SN.node[35].Communication.Routing        Msg type 1 org: 0 from: 30 to: 35
-6.23452017203     SN.node[49].Communication.Routing        Received [BCAST pkt] from MAC layer
 6.23452017203     SN.node[49].Communication.Routing        Msg type 1 org: 0 from: 30 to: 49
-6.23523562046     SN.node[9].Communication.Routing         Received [JOIN pkt] from MAC layer
 6.23523562046     SN.node[9].Communication.Routing         Msg type 4 org: 6 from: 6 to: 9
-6.235569596945    SN.node[23].Communication.Routing        Received [BCAST pkt] from MAC layer
 6.235569596945    SN.node[23].Communication.Routing        Msg type 1 org: 0 from: 33 to: 23
-6.235569596945    SN.node[31].Communication.Routing        Received [BCAST pkt] from MAC layer
 6.235569596945    SN.node[31].Communication.Routing        Msg type 1 org: 0 from: 33 to: 31
-6.235569596945    SN.node[35].Communication.Routing        Received [BCAST pkt] from MAC layer
 6.235569596945    SN.node[35].Communication.Routing        Msg type 1 org: 0 from: 33 to: 35
-6.235569596945    SN.node[75].Communication.Routing        Received [BCAST pkt] from MAC layer
 6.235569596945    SN.node[75].Communication.Routing        Msg type 1 org: 0 from: 33 to: 75
-6.235569596945    SN.node[83].Communication.Routing        Received [BCAST pkt] from MAC layer
 6.235569596945    SN.node[83].Communication.Routing        Msg type 1 org: 0 from: 33 to: 83
-6.235569596945    SN.node[86].Communication.Routing        Received [BCAST pkt] from MAC layer
 6.235569596945    SN.node[86].Communication.Routing        Msg type 1 org: 0 from: 33 to: 86
-6.237375316851    SN.node[7].Communication.Routing         Received [RECRUIT pkt] from MAC layer
 6.237375316851    SN.node[7].Communication.Routing         Msg type 3 org: 12 from: 22 to: 7
-6.237375316851    SN.node[13].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 6.237375316851    SN.node[13].Communication.Routing        Msg type 3 org: 12 from: 22 to: 13
-6.237375316851    SN.node[17].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 6.237375316851    SN.node[17].Communication.Routing        Msg type 3 org: 12 from: 22 to: 17
-6.237375316851    SN.node[18].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 6.237375316851    SN.node[18].Communication.Routing        Msg type 3 org: 12 from: 22 to: 18
-6.237375316851    SN.node[18].Communication.Routing        Node 18 joint cluster: 12
-6.237375316851    SN.node[23].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 6.237375316851    SN.node[23].Communication.Routing        Msg type 3 org: 12 from: 22 to: 23
-6.237375316851    SN.node[23].Communication.Routing        Node 23 joint cluster: 12
-6.237971478867    SN.node[18].Communication.Routing        Received [BCAST pkt] from MAC layer
 6.237971478867    SN.node[18].Communication.Routing        Msg type 1 org: 0 from: 64 to: 18
-6.237971478867    SN.node[58].Communication.Routing        Received [BCAST pkt] from MAC layer
 6.237971478867    SN.node[58].Communication.Routing        Msg type 1 org: 0 from: 64 to: 58
-6.237971478867    SN.node[62].Communication.Routing        Received [BCAST pkt] from MAC layer
 6.237971478867    SN.node[62].Communication.Routing        Msg type 1 org: 0 from: 64 to: 62
-6.237971478867    SN.node[69].Communication.Routing        Received [BCAST pkt] from MAC layer
 6.237971478867    SN.node[69].Communication.Routing        Msg type 1 org: 0 from: 64 to: 69
-6.237971478867    SN.node[70].Communication.Routing        Received [BCAST pkt] from MAC layer
 6.237971478867    SN.node[70].Communication.Routing        Msg type 1 org: 0 from: 64 to: 70
-6.238154008961    SN.node[38].Communication.Routing        Received [BCAST pkt] from MAC layer
 6.238154008961    SN.node[38].Communication.Routing        Msg type 1 org: 0 from: 85 to: 38
-6.238154008961    SN.node[83].Communication.Routing        Received [BCAST pkt] from MAC layer
 6.238154008961    SN.node[83].Communication.Routing        Msg type 1 org: 0 from: 85 to: 83
-6.238154008961    SN.node[86].Communication.Routing        Received [BCAST pkt] from MAC layer
 6.238154008961    SN.node[86].Communication.Routing        Msg type 1 org: 0 from: 85 to: 86
-6.242965858271    SN.node[3].Communication.Routing         Received [JOIN pkt] from MAC layer
 6.242965858271    SN.node[3].Communication.Routing         Msg type 4 org: 1 from: 1 to: 3
-6.247481048857    SN.node[20].Communication.Routing        Received [JOIN pkt] from MAC layer
 6.247481048857    SN.node[20].Communication.Routing        Msg type 4 org: 21 from: 21 to: 20
-6.250458978783    SN.node[3].Communication.Routing         Received [JOIN pkt] from MAC layer
 6.250458978783    SN.node[3].Communication.Routing         Msg type 4 org: 10 from: 10 to: 3
-6.255116605729    SN.node[16].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 6.255116605729    SN.node[16].Communication.Routing        Msg type 3 org: 12 from: 21 to: 16
-6.255116605729    SN.node[17].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 6.255116605729    SN.node[17].Communication.Routing        Msg type 3 org: 12 from: 21 to: 17
-6.255116605729    SN.node[19].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 6.255116605729    SN.node[19].Communication.Routing        Msg type 3 org: 12 from: 21 to: 19
-6.255116605729    SN.node[19].Communication.Routing        Node 19 joint cluster: 12
-6.255116605729    SN.node[20].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 6.255116605729    SN.node[20].Communication.Routing        Msg type 3 org: 12 from: 21 to: 20
-6.255116605729    SN.node[29].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 6.255116605729    SN.node[29].Communication.Routing        Msg type 3 org: 12 from: 21 to: 29
-6.255116605729    SN.node[29].Communication.Routing        Node 29 joint cluster: 12
-6.258505707207    SN.node[3].Communication.Routing         Received [RECRUIT pkt] from MAC layer
 6.258505707207    SN.node[3].Communication.Routing         Msg type 3 org: 12 from: 6 to: 3
-6.258505707207    SN.node[4].Communication.Routing         Received [RECRUIT pkt] from MAC layer
 6.258505707207    SN.node[4].Communication.Routing         Msg type 3 org: 12 from: 6 to: 4
-6.258505707207    SN.node[5].Communication.Routing         Received [RECRUIT pkt] from MAC layer
 6.258505707207    SN.node[5].Communication.Routing         Msg type 3 org: 12 from: 6 to: 5
-6.258505707207    SN.node[8].Communication.Routing         Received [RECRUIT pkt] from MAC layer
 6.258505707207    SN.node[8].Communication.Routing         Msg type 3 org: 12 from: 6 to: 8
-6.258505707207    SN.node[8].Communication.Routing         Node 8 joint cluster: 12
-6.258505707207    SN.node[9].Communication.Routing         Received [RECRUIT pkt] from MAC layer
 6.258505707207    SN.node[9].Communication.Routing         Msg type 3 org: 12 from: 6 to: 9
-6.259155428024    SN.node[0].Communication.Routing         Received [RECRUIT pkt] from MAC layer
 6.259155428024    SN.node[0].Communication.Routing         Msg type 3 org: 12 from: 2 to: 0
-6.259155428024    SN.node[0].Communication.Routing         Node 0 joint cluster: 12
-6.259155428024    SN.node[3].Communication.Routing         Received [RECRUIT pkt] from MAC layer
 6.259155428024    SN.node[3].Communication.Routing         Msg type 3 org: 12 from: 2 to: 3
-6.263943739936    SN.node[1].Communication.Routing         Received [RECRUIT pkt] from MAC layer
 6.263943739936    SN.node[1].Communication.Routing         Msg type 3 org: 12 from: 11 to: 1
-6.263943739936    SN.node[3].Communication.Routing         Received [RECRUIT pkt] from MAC layer
 6.263943739936    SN.node[3].Communication.Routing         Msg type 3 org: 12 from: 11 to: 3
-6.263943739936    SN.node[15].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 6.263943739936    SN.node[15].Communication.Routing        Msg type 3 org: 12 from: 11 to: 15
-6.263943739936    SN.node[15].Communication.Routing        Node 15 joint cluster: 12
-6.271090379392    SN.node[10].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 6.271090379392    SN.node[10].Communication.Routing        Msg type 3 org: 12 from: 27 to: 10
-6.271090379392    SN.node[16].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 6.271090379392    SN.node[16].Communication.Routing        Msg type 3 org: 12 from: 27 to: 16
-6.271090379392    SN.node[20].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 6.271090379392    SN.node[20].Communication.Routing        Msg type 3 org: 12 from: 27 to: 20
-6.271090379392    SN.node[25].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 6.271090379392    SN.node[25].Communication.Routing        Msg type 3 org: 12 from: 27 to: 25
-6.271090379392    SN.node[25].Communication.Routing        Node 25 joint cluster: 12
-6.271090379392    SN.node[29].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 6.271090379392    SN.node[29].Communication.Routing        Msg type 3 org: 12 from: 27 to: 29
-6.272572633546    SN.node[4].Communication.Routing         Received [RECRUIT pkt] from MAC layer
 6.272572633546    SN.node[4].Communication.Routing         Msg type 3 org: 12 from: 7 to: 4
-6.272572633546    SN.node[6].Communication.Routing         Received [RECRUIT pkt] from MAC layer
 6.272572633546    SN.node[6].Communication.Routing         Msg type 3 org: 12 from: 7 to: 6
-6.272572633546    SN.node[8].Communication.Routing         Received [RECRUIT pkt] from MAC layer
 6.272572633546    SN.node[8].Communication.Routing         Msg type 3 org: 12 from: 7 to: 8
-6.272572633546    SN.node[9].Communication.Routing         Received [RECRUIT pkt] from MAC layer
 6.272572633546    SN.node[9].Communication.Routing         Msg type 3 org: 12 from: 7 to: 9
-6.272572633546    SN.node[22].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 6.272572633546    SN.node[22].Communication.Routing        Msg type 3 org: 12 from: 7 to: 22
-6.275538143446    SN.node[6].Communication.Routing         Received [JOIN pkt] from MAC layer
 6.275538143446    SN.node[6].Communication.Routing         Msg type 4 org: 8 from: 8 to: 6
-6.27876140706     SN.node[8].Communication.Routing         Received [RECRUIT pkt] from MAC layer
 6.27876140706     SN.node[8].Communication.Routing         Msg type 3 org: 12 from: 50 to: 8
-6.27876140706     SN.node[51].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 6.27876140706     SN.node[51].Communication.Routing        Msg type 3 org: 12 from: 50 to: 51
-6.285194842887    SN.node[3].Communication.Routing         Received [JOIN pkt] from MAC layer
 6.285194842887    SN.node[3].Communication.Routing         Msg type 4 org: 4 from: 4 to: 3
-6.287542105556    SN.node[15].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 6.287542105556    SN.node[15].Communication.Routing        Msg type 3 org: 12 from: 16 to: 15
-6.287542105556    SN.node[17].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 6.287542105556    SN.node[17].Communication.Routing        Msg type 3 org: 12 from: 16 to: 17
-6.287542105556    SN.node[19].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 6.287542105556    SN.node[19].Communication.Routing        Msg type 3 org: 12 from: 16 to: 19
-6.287542105556    SN.node[20].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 6.287542105556    SN.node[20].Communication.Routing        Msg type 3 org: 12 from: 16 to: 20
-6.287542105556    SN.node[24].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 6.287542105556    SN.node[24].Communication.Routing        Msg type 3 org: 12 from: 16 to: 24
-6.287542105556    SN.node[27].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 6.287542105556    SN.node[27].Communication.Routing        Msg type 3 org: 12 from: 16 to: 27
-6.287542105556    SN.node[29].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 6.287542105556    SN.node[29].Communication.Routing        Msg type 3 org: 12 from: 16 to: 29
-6.290262579233    SN.node[3].Communication.Routing         Received [RECRUIT pkt] from MAC layer
 6.290262579233    SN.node[3].Communication.Routing         Msg type 3 org: 12 from: 5 to: 3
-6.290262579233    SN.node[4].Communication.Routing         Received [RECRUIT pkt] from MAC layer
 6.290262579233    SN.node[4].Communication.Routing         Msg type 3 org: 12 from: 5 to: 4
-6.290262579233    SN.node[6].Communication.Routing         Received [RECRUIT pkt] from MAC layer
 6.290262579233    SN.node[6].Communication.Routing         Msg type 3 org: 12 from: 5 to: 6
-6.290262579233    SN.node[7].Communication.Routing         Received [RECRUIT pkt] from MAC layer
 6.290262579233    SN.node[7].Communication.Routing         Msg type 3 org: 12 from: 5 to: 7
-6.296620808057    SN.node[1].Communication.Routing         Received [RECRUIT pkt] from MAC layer
 6.296620808057    SN.node[1].Communication.Routing         Msg type 3 org: 12 from: 10 to: 1
-6.296620808057    SN.node[3].Communication.Routing         Received [RECRUIT pkt] from MAC layer
 6.296620808057    SN.node[3].Communication.Routing         Msg type 3 org: 12 from: 10 to: 3
-6.296620808057    SN.node[15].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 6.296620808057    SN.node[15].Communication.Routing        Msg type 3 org: 12 from: 10 to: 15
-6.296620808057    SN.node[27].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 6.296620808057    SN.node[27].Communication.Routing        Msg type 3 org: 12 from: 10 to: 27
-6.527929803309    SN.node[0].Communication.Routing         Received [Bridge test reprogram packet] from application layer
-6.83847539689     SN.node[6].Communication.Routing         Received [RECRUIT pkt] from MAC layer
 6.83847539689     SN.node[6].Communication.Routing         Msg type 3 org: 12 from: 8 to: 6
-6.83847539689     SN.node[50].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 6.83847539689     SN.node[50].Communication.Routing        Msg type 3 org: 12 from: 8 to: 50
-6.83847539689     SN.node[51].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 6.83847539689     SN.node[51].Communication.Routing        Msg type 3 org: 12 from: 8 to: 51
-6.838479548669    SN.node[23].Communication.Routing        Received [BCAST pkt] from MAC layer
 6.838479548669    SN.node[23].Communication.Routing        Msg type 1 org: 0 from: 69 to: 23
-6.838479548669    SN.node[70].Communication.Routing        Received [BCAST pkt] from MAC layer
 6.838479548669    SN.node[70].Communication.Routing        Msg type 1 org: 0 from: 69 to: 70
-6.838479548669    SN.node[77].Communication.Routing        Received [BCAST pkt] from MAC layer
 6.838479548669    SN.node[77].Communication.Routing        Msg type 1 org: 0 from: 69 to: 77
-6.838859977497    SN.node[2].Communication.Routing         Received [RECRUIT pkt] from MAC layer
 6.838859977497    SN.node[2].Communication.Routing         Msg type 3 org: 12 from: 1 to: 2
-6.838859977497    SN.node[3].Communication.Routing         Received [RECRUIT pkt] from MAC layer
 6.838859977497    SN.node[3].Communication.Routing         Msg type 3 org: 12 from: 1 to: 3
-6.838859977497    SN.node[10].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 6.838859977497    SN.node[10].Communication.Routing        Msg type 3 org: 12 from: 1 to: 10
-6.838859977497    SN.node[11].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 6.838859977497    SN.node[11].Communication.Routing        Msg type 3 org: 12 from: 1 to: 11
-6.840778822896    SN.node[64].Communication.Routing        Received [BCAST pkt] from MAC layer
 6.840778822896    SN.node[64].Communication.Routing        Msg type 1 org: 0 from: 70 to: 64
-6.840778822896    SN.node[65].Communication.Routing        Received [BCAST pkt] from MAC layer
 6.840778822896    SN.node[65].Communication.Routing        Msg type 1 org: 0 from: 70 to: 65
-6.840778822896    SN.node[66].Communication.Routing        Received [BCAST pkt] from MAC layer
 6.840778822896    SN.node[66].Communication.Routing        Msg type 1 org: 0 from: 70 to: 66
-6.840778822896    SN.node[71].Communication.Routing        Received [BCAST pkt] from MAC layer
 6.840778822896    SN.node[71].Communication.Routing        Msg type 1 org: 0 from: 70 to: 71
-6.840778822896    SN.node[71].Communication.Routing        Node 71 is CH 
-6.840778822896    SN.node[77].Communication.Routing        Received [BCAST pkt] from MAC layer
 6.840778822896    SN.node[77].Communication.Routing        Msg type 1 org: 0 from: 70 to: 77
-6.840778822896    SN.node[79].Communication.Routing        Received [BCAST pkt] from MAC layer
 6.840778822896    SN.node[79].Communication.Routing        Msg type 1 org: 0 from: 70 to: 79
-6.841518303989    SN.node[30].Communication.Routing        Received [BCAST pkt] from MAC layer
 6.841518303989    SN.node[30].Communication.Routing        Msg type 1 org: 0 from: 35 to: 30
-6.841518303989    SN.node[31].Communication.Routing        Received [BCAST pkt] from MAC layer
 6.841518303989    SN.node[31].Communication.Routing        Msg type 1 org: 0 from: 35 to: 31
-6.841518303989    SN.node[33].Communication.Routing        Received [BCAST pkt] from MAC layer
 6.841518303989    SN.node[33].Communication.Routing        Msg type 1 org: 0 from: 35 to: 33
-6.841518303989    SN.node[75].Communication.Routing        Received [BCAST pkt] from MAC layer
 6.841518303989    SN.node[75].Communication.Routing        Msg type 1 org: 0 from: 35 to: 75
-6.841549177958    SN.node[42].Communication.Routing        Received [BCAST pkt] from MAC layer
 6.841549177958    SN.node[42].Communication.Routing        Msg type 1 org: 0 from: 38 to: 42
-6.841549177958    SN.node[94].Communication.Routing        Received [BCAST pkt] from MAC layer
 6.841549177958    SN.node[94].Communication.Routing        Msg type 1 org: 0 from: 38 to: 94
-6.841861123895    SN.node[51].Communication.Routing        Received [BCAST pkt] from MAC layer
 6.841861123895    SN.node[51].Communication.Routing        Msg type 1 org: 0 from: 59 to: 51
-6.841861123895    SN.node[52].Communication.Routing        Received [BCAST pkt] from MAC layer
 6.841861123895    SN.node[52].Communication.Routing        Msg type 1 org: 0 from: 59 to: 52
-6.841861123895    SN.node[66].Communication.Routing        Received [BCAST pkt] from MAC layer
 6.841861123895    SN.node[66].Communication.Routing        Msg type 1 org: 0 from: 59 to: 66
-6.841861123895    SN.node[74].Communication.Routing        Received [BCAST pkt] from MAC layer
 6.841861123895    SN.node[74].Communication.Routing        Msg type 1 org: 0 from: 59 to: 74
-6.843407386612    SN.node[2].Communication.Routing         Received [JOIN pkt] from MAC layer
 6.843407386612    SN.node[2].Communication.Routing         Msg type 4 org: 0 from: 0 to: 2
-6.843818814898    SN.node[33].Communication.Routing        Received [BCAST pkt] from MAC layer
 6.843818814898    SN.node[33].Communication.Routing        Msg type 1 org: 0 from: 86 to: 33
-6.843818814898    SN.node[38].Communication.Routing        Received [BCAST pkt] from MAC layer
 6.843818814898    SN.node[38].Communication.Routing        Msg type 1 org: 0 from: 86 to: 38
-6.843818814898    SN.node[76].Communication.Routing        Received [BCAST pkt] from MAC layer
 6.843818814898    SN.node[76].Communication.Routing        Msg type 1 org: 0 from: 86 to: 76
-6.843818814898    SN.node[83].Communication.Routing        Received [BCAST pkt] from MAC layer
 6.843818814898    SN.node[83].Communication.Routing        Msg type 1 org: 0 from: 86 to: 83
-6.843818814898    SN.node[85].Communication.Routing        Received [BCAST pkt] from MAC layer
 6.843818814898    SN.node[85].Communication.Routing        Msg type 1 org: 0 from: 86 to: 85
-6.843818814898    SN.node[91].Communication.Routing        Received [BCAST pkt] from MAC layer
 6.843818814898    SN.node[91].Communication.Routing        Msg type 1 org: 0 from: 86 to: 91
-6.843818814898    SN.node[99].Communication.Routing        Received [BCAST pkt] from MAC layer
 6.843818814898    SN.node[99].Communication.Routing        Msg type 1 org: 0 from: 86 to: 99
-6.847178895239    SN.node[21].Communication.Routing        Received [JOIN pkt] from MAC layer
 6.847178895239    SN.node[21].Communication.Routing        Msg type 4 org: 29 from: 29 to: 21
-6.847281713549    SN.node[18].Communication.Routing        Received [BCAST pkt] from MAC layer
 6.847281713549    SN.node[18].Communication.Routing        Msg type 1 org: 0 from: 62 to: 18
-6.847281713549    SN.node[51].Communication.Routing        Received [BCAST pkt] from MAC layer
 6.847281713549    SN.node[51].Communication.Routing        Msg type 1 org: 0 from: 62 to: 51
-6.847281713549    SN.node[58].Communication.Routing        Received [BCAST pkt] from MAC layer
 6.847281713549    SN.node[58].Communication.Routing        Msg type 1 org: 0 from: 62 to: 58
-6.847677050361    SN.node[45].Communication.Routing        Received [BCAST pkt] from MAC layer
 6.847677050361    SN.node[45].Communication.Routing        Msg type 1 org: 0 from: 46 to: 45
-6.847677050361    SN.node[47].Communication.Routing        Received [BCAST pkt] from MAC layer
 6.847677050361    SN.node[47].Communication.Routing        Msg type 1 org: 0 from: 46 to: 47
-6.847698828793    SN.node[3].Communication.Routing         Received [RECRUIT pkt] from MAC layer
 6.847698828793    SN.node[3].Communication.Routing         Msg type 3 org: 12 from: 4 to: 3
-6.847698828793    SN.node[5].Communication.Routing         Received [RECRUIT pkt] from MAC layer
 6.847698828793    SN.node[5].Communication.Routing         Msg type 3 org: 12 from: 4 to: 5
-6.847698828793    SN.node[6].Communication.Routing         Received [RECRUIT pkt] from MAC layer
 6.847698828793    SN.node[6].Communication.Routing         Msg type 3 org: 12 from: 4 to: 6
-6.847698828793    SN.node[7].Communication.Routing         Received [RECRUIT pkt] from MAC layer
 6.847698828793    SN.node[7].Communication.Routing         Msg type 3 org: 12 from: 4 to: 7
-6.847768149357    SN.node[54].Communication.Routing        Received [BCAST pkt] from MAC layer
 6.847768149357    SN.node[54].Communication.Routing        Msg type 1 org: 0 from: 55 to: 54
-6.847768149357    SN.node[56].Communication.Routing        Received [BCAST pkt] from MAC layer
 6.847768149357    SN.node[56].Communication.Routing        Msg type 1 org: 0 from: 55 to: 56
-6.847768149357    SN.node[56].Communication.Routing        Node 56 is CH 
-6.847768149357    SN.node[57].Communication.Routing        Received [BCAST pkt] from MAC layer
 6.847768149357    SN.node[57].Communication.Routing        Msg type 1 org: 0 from: 55 to: 57
-6.848231107095    SN.node[2].Communication.Routing         Received [RECRUIT pkt] from MAC layer
 6.848231107095    SN.node[2].Communication.Routing         Msg type 3 org: 12 from: 0 to: 2
-6.854160172536    SN.node[16].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 6.854160172536    SN.node[16].Communication.Routing        Msg type 3 org: 12 from: 29 to: 16
-6.854160172536    SN.node[21].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 6.854160172536    SN.node[21].Communication.Routing        Msg type 3 org: 12 from: 29 to: 21
-6.854160172536    SN.node[27].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 6.854160172536    SN.node[27].Communication.Routing        Msg type 3 org: 12 from: 29 to: 27
-6.854160172536    SN.node[32].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 6.854160172536    SN.node[32].Communication.Routing        Msg type 3 org: 12 from: 29 to: 32
-6.854160172536    SN.node[32].Communication.Routing        Node 32 joint cluster: 12
-6.855706918875    SN.node[20].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 6.855706918875    SN.node[20].Communication.Routing        Msg type 3 org: 12 from: 19 to: 20
-6.855706918875    SN.node[21].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 6.855706918875    SN.node[21].Communication.Routing        Msg type 3 org: 12 from: 19 to: 21
-6.862414588588    SN.node[10].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 6.862414588588    SN.node[10].Communication.Routing        Msg type 3 org: 12 from: 15 to: 10
-6.862414588588    SN.node[11].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 6.862414588588    SN.node[11].Communication.Routing        Msg type 3 org: 12 from: 15 to: 11
-6.862414588588    SN.node[14].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 6.862414588588    SN.node[14].Communication.Routing        Msg type 3 org: 12 from: 15 to: 14
-6.862414588588    SN.node[14].Communication.Routing        Node 14 joint cluster: 12
-6.862414588588    SN.node[16].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 6.862414588588    SN.node[16].Communication.Routing        Msg type 3 org: 12 from: 15 to: 16
-6.862414588588    SN.node[20].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 6.862414588588    SN.node[20].Communication.Routing        Msg type 3 org: 12 from: 15 to: 20
-7.027959796239    SN.node[0].Communication.Routing         Received [Bridge test reprogram packet] from application layer
-7.448507578043    SN.node[8].Communication.Routing         Received [RECRUIT pkt] from MAC layer
 7.448507578043    SN.node[8].Communication.Routing         Msg type 3 org: 12 from: 51 to: 8
-7.448507578043    SN.node[50].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 7.448507578043    SN.node[50].Communication.Routing        Msg type 3 org: 12 from: 51 to: 50
-7.448507578043    SN.node[59].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 7.448507578043    SN.node[59].Communication.Routing        Msg type 3 org: 12 from: 51 to: 59
-7.448507578043    SN.node[59].Communication.Routing        Node 59 joint cluster: 12
-7.449514873549    SN.node[66].Communication.Routing        Received [BCAST pkt] from MAC layer
 7.449514873549    SN.node[66].Communication.Routing        Msg type 1 org: 0 from: 71 to: 66
-7.449514873549    SN.node[77].Communication.Routing        Received [BCAST pkt] from MAC layer
 7.449514873549    SN.node[77].Communication.Routing        Msg type 1 org: 0 from: 71 to: 77
-7.449514873549    SN.node[78].Communication.Routing        Received [BCAST pkt] from MAC layer
 7.449514873549    SN.node[78].Communication.Routing        Msg type 1 org: 0 from: 71 to: 78
-7.449514873549    SN.node[80].Communication.Routing        Received [BCAST pkt] from MAC layer
 7.449514873549    SN.node[80].Communication.Routing        Msg type 1 org: 0 from: 71 to: 80
-7.449795433099    SN.node[37].Communication.Routing        Received [BCAST pkt] from MAC layer
 7.449795433099    SN.node[37].Communication.Routing        Msg type 1 org: 0 from: 94 to: 37
-7.449795433099    SN.node[48].Communication.Routing        Received [BCAST pkt] from MAC layer
 7.449795433099    SN.node[48].Communication.Routing        Msg type 1 org: 0 from: 94 to: 48
-7.449795433099    SN.node[89].Communication.Routing        Received [BCAST pkt] from MAC layer
 7.449795433099    SN.node[89].Communication.Routing        Msg type 1 org: 0 from: 94 to: 89
-7.449795433099    SN.node[90].Communication.Routing        Received [BCAST pkt] from MAC layer
 7.449795433099    SN.node[90].Communication.Routing        Msg type 1 org: 0 from: 94 to: 90
-7.449795433099    SN.node[90].Communication.Routing        Node 90 is CH 
-7.449795433099    SN.node[95].Communication.Routing        Received [BCAST pkt] from MAC layer
 7.449795433099    SN.node[95].Communication.Routing        Msg type 1 org: 0 from: 94 to: 95
-7.450236826351    SN.node[22].Communication.Routing        Received [JOIN pkt] from MAC layer
 7.450236826351    SN.node[22].Communication.Routing        Msg type 4 org: 23 from: 23 to: 22
-7.450323795779    SN.node[40].Communication.Routing        Received [BCAST pkt] from MAC layer
 7.450323795779    SN.node[40].Communication.Routing        Msg type 1 org: 0 from: 45 to: 40
-7.450323795779    SN.node[44].Communication.Routing        Received [BCAST pkt] from MAC layer
 7.450323795779    SN.node[44].Communication.Routing        Msg type 1 org: 0 from: 45 to: 44
-7.450323795779    SN.node[46].Communication.Routing        Received [BCAST pkt] from MAC layer
 7.450323795779    SN.node[46].Communication.Routing        Msg type 1 org: 0 from: 45 to: 46
-7.45071086108     SN.node[71].Communication.Routing        Received [BCAST pkt] from MAC layer
 7.45071086108     SN.node[71].Communication.Routing        Msg type 1 org: 0 from: 76 to: 71
-7.45071086108     SN.node[75].Communication.Routing        Received [BCAST pkt] from MAC layer
 7.45071086108     SN.node[75].Communication.Routing        Msg type 1 org: 0 from: 76 to: 75
-7.45071086108     SN.node[79].Communication.Routing        Received [BCAST pkt] from MAC layer
 7.45071086108     SN.node[79].Communication.Routing        Msg type 1 org: 0 from: 76 to: 79
-7.45071086108     SN.node[86].Communication.Routing        Received [BCAST pkt] from MAC layer
 7.45071086108     SN.node[86].Communication.Routing        Msg type 1 org: 0 from: 76 to: 86
-7.451583206099    SN.node[53].Communication.Routing        Received [BCAST pkt] from MAC layer
 7.451583206099    SN.node[53].Communication.Routing        Msg type 1 org: 0 from: 74 to: 53
-7.451583206099    SN.node[58].Communication.Routing        Received [BCAST pkt] from MAC layer
 7.451583206099    SN.node[58].Communication.Routing        Msg type 1 org: 0 from: 74 to: 58
-7.451583206099    SN.node[59].Communication.Routing        Received [BCAST pkt] from MAC layer
 7.451583206099    SN.node[59].Communication.Routing        Msg type 1 org: 0 from: 74 to: 59
-7.451776376132    SN.node[55].Communication.Routing        Received [BCAST pkt] from MAC layer
 7.451776376132    SN.node[55].Communication.Routing        Msg type 1 org: 0 from: 56 to: 55
-7.451776376132    SN.node[57].Communication.Routing        Received [BCAST pkt] from MAC layer
 7.451776376132    SN.node[57].Communication.Routing        Msg type 1 org: 0 from: 56 to: 57
-7.451776376132    SN.node[63].Communication.Routing        Received [BCAST pkt] from MAC layer
 7.451776376132    SN.node[63].Communication.Routing        Msg type 1 org: 0 from: 56 to: 63
-7.452148800701    SN.node[41].Communication.Routing        Received [BCAST pkt] from MAC layer
 7.452148800701    SN.node[41].Communication.Routing        Msg type 1 org: 0 from: 47 to: 41
-7.452148800701    SN.node[46].Communication.Routing        Received [BCAST pkt] from MAC layer
 7.452148800701    SN.node[46].Communication.Routing        Msg type 1 org: 0 from: 47 to: 46
-7.452148800701    SN.node[49].Communication.Routing        Received [BCAST pkt] from MAC layer
 7.452148800701    SN.node[49].Communication.Routing        Msg type 1 org: 0 from: 47 to: 49
-7.453147989929    SN.node[83].Communication.Routing        Received [BCAST pkt] from MAC layer
 7.453147989929    SN.node[83].Communication.Routing        Msg type 1 org: 0 from: 91 to: 83
-7.453147989929    SN.node[86].Communication.Routing        Received [BCAST pkt] from MAC layer
 7.453147989929    SN.node[86].Communication.Routing        Msg type 1 org: 0 from: 91 to: 86
-7.453147989929    SN.node[87].Communication.Routing        Received [BCAST pkt] from MAC layer
 7.453147989929    SN.node[87].Communication.Routing        Msg type 1 org: 0 from: 91 to: 87
-7.453147989929    SN.node[90].Communication.Routing        Received [BCAST pkt] from MAC layer
 7.453147989929    SN.node[90].Communication.Routing        Msg type 1 org: 0 from: 91 to: 90
-7.453147989929    SN.node[92].Communication.Routing        Received [BCAST pkt] from MAC layer
 7.453147989929    SN.node[92].Communication.Routing        Msg type 1 org: 0 from: 91 to: 92
-7.453147989929    SN.node[95].Communication.Routing        Received [BCAST pkt] from MAC layer
 7.453147989929    SN.node[95].Communication.Routing        Msg type 1 org: 0 from: 91 to: 95
-7.453147989929    SN.node[96].Communication.Routing        Received [BCAST pkt] from MAC layer
 7.453147989929    SN.node[96].Communication.Routing        Msg type 1 org: 0 from: 91 to: 96
-7.453147989929    SN.node[99].Communication.Routing        Received [BCAST pkt] from MAC layer
 7.453147989929    SN.node[99].Communication.Routing        Msg type 1 org: 0 from: 91 to: 99
-7.454295732102    SN.node[27].Communication.Routing        Received [JOIN pkt] from MAC layer
 7.454295732102    SN.node[27].Communication.Routing        Msg type 4 org: 25 from: 25 to: 27
-7.454370094823    SN.node[66].Communication.Routing        Received [BCAST pkt] from MAC layer
 7.454370094823    SN.node[66].Communication.Routing        Msg type 1 org: 0 from: 65 to: 66
-7.454370094823    SN.node[70].Communication.Routing        Received [BCAST pkt] from MAC layer
 7.454370094823    SN.node[70].Communication.Routing        Msg type 1 org: 0 from: 65 to: 70
-7.455336102157    SN.node[30].Communication.Routing        Received [BCAST pkt] from MAC layer
 7.455336102157    SN.node[30].Communication.Routing        Msg type 1 org: 0 from: 31 to: 30
-7.457110542547    SN.node[15].Communication.Routing        Received [JOIN pkt] from MAC layer
 7.457110542547    SN.node[15].Communication.Routing        Msg type 4 org: 14 from: 14 to: 15
-7.459768901094    SN.node[55].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 7.459768901094    SN.node[55].Communication.Routing        Msg type 3 org: 56 from: 56 to: 55
-7.459768901094    SN.node[55].Communication.Routing        Node 55 joint cluster: 56
-7.459768901094    SN.node[57].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 7.459768901094    SN.node[57].Communication.Routing        Msg type 3 org: 56 from: 56 to: 57
-7.459768901094    SN.node[57].Communication.Routing        Node 57 joint cluster: 56
-7.459768901094    SN.node[61].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 7.459768901094    SN.node[61].Communication.Routing        Msg type 3 org: 56 from: 56 to: 61
-7.459768901094    SN.node[61].Communication.Routing        Node 61 joint cluster: 56
-7.461070283996    SN.node[10].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 7.461070283996    SN.node[10].Communication.Routing        Msg type 3 org: 12 from: 14 to: 10
-7.461070283996    SN.node[15].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 7.461070283996    SN.node[15].Communication.Routing        Msg type 3 org: 12 from: 14 to: 15
-7.46310294918     SN.node[32].Communication.Routing        Received [BCAST pkt] from MAC layer
 7.46310294918     SN.node[32].Communication.Routing        Msg type 1 org: 0 from: 37 to: 32
-7.46310294918     SN.node[34].Communication.Routing        Received [BCAST pkt] from MAC layer
 7.46310294918     SN.node[34].Communication.Routing        Msg type 1 org: 0 from: 37 to: 34
-7.46310294918     SN.node[42].Communication.Routing        Received [BCAST pkt] from MAC layer
 7.46310294918     SN.node[42].Communication.Routing        Msg type 1 org: 0 from: 37 to: 42
-7.465756766935    SN.node[18].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 7.465756766935    SN.node[18].Communication.Routing        Msg type 3 org: 12 from: 23 to: 18
-7.465756766935    SN.node[22].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 7.465756766935    SN.node[22].Communication.Routing        Msg type 3 org: 12 from: 23 to: 22
-7.465756766935    SN.node[33].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 7.465756766935    SN.node[33].Communication.Routing        Msg type 3 org: 12 from: 23 to: 33
-7.465756766935    SN.node[33].Communication.Routing        Node 33 joint cluster: 12
-7.465756766935    SN.node[64].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 7.465756766935    SN.node[64].Communication.Routing        Msg type 3 org: 12 from: 23 to: 64
-7.465756766935    SN.node[64].Communication.Routing        Node 64 joint cluster: 12
-7.465756766935    SN.node[83].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 7.465756766935    SN.node[83].Communication.Routing        Msg type 3 org: 12 from: 23 to: 83
-7.465756766935    SN.node[83].Communication.Routing        Node 83 joint cluster: 12
-7.471876508097    SN.node[29].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 7.471876508097    SN.node[29].Communication.Routing        Msg type 3 org: 12 from: 32 to: 29
-7.471876508097    SN.node[30].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 7.471876508097    SN.node[30].Communication.Routing        Msg type 3 org: 12 from: 32 to: 30
-7.471876508097    SN.node[30].Communication.Routing        Node 30 joint cluster: 12
-7.471876508097    SN.node[37].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 7.471876508097    SN.node[37].Communication.Routing        Msg type 3 org: 12 from: 32 to: 37
-7.471876508097    SN.node[37].Communication.Routing        Node 37 joint cluster: 12
-7.471876508097    SN.node[49].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 7.471876508097    SN.node[49].Communication.Routing        Msg type 3 org: 12 from: 32 to: 49
-7.471876508097    SN.node[49].Communication.Routing        Node 49 joint cluster: 12
-7.471876508097    SN.node[85].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 7.471876508097    SN.node[85].Communication.Routing        Msg type 3 org: 12 from: 32 to: 85
-7.471876508097    SN.node[85].Communication.Routing        Node 85 joint cluster: 12
-7.527989789169    SN.node[0].Communication.Routing         Received [Bridge test reprogram packet] from application layer
-8.028019782099    SN.node[0].Communication.Routing         Received [Bridge test reprogram packet] from application layer
-8.058986136564    SN.node[92].Communication.Routing        Received [BCAST pkt] from MAC layer
 8.058986136564    SN.node[92].Communication.Routing        Msg type 1 org: 0 from: 87 to: 92
-8.058986136564    SN.node[93].Communication.Routing        Received [BCAST pkt] from MAC layer
 8.058986136564    SN.node[93].Communication.Routing        Msg type 1 org: 0 from: 87 to: 93
-8.058986136564    SN.node[99].Communication.Routing        Received [BCAST pkt] from MAC layer
 8.058986136564    SN.node[99].Communication.Routing        Msg type 1 org: 0 from: 87 to: 99
-8.059027884795    SN.node[64].Communication.Routing        Received [BCAST pkt] from MAC layer
 8.059027884795    SN.node[64].Communication.Routing        Msg type 1 org: 0 from: 77 to: 64
-8.059027884795    SN.node[68].Communication.Routing        Received [BCAST pkt] from MAC layer
 8.059027884795    SN.node[68].Communication.Routing        Msg type 1 org: 0 from: 77 to: 68
-8.059027884795    SN.node[69].Communication.Routing        Received [BCAST pkt] from MAC layer
 8.059027884795    SN.node[69].Communication.Routing        Msg type 1 org: 0 from: 77 to: 69
-8.059027884795    SN.node[70].Communication.Routing        Received [BCAST pkt] from MAC layer
 8.059027884795    SN.node[70].Communication.Routing        Msg type 1 org: 0 from: 77 to: 70
-8.059027884795    SN.node[71].Communication.Routing        Received [BCAST pkt] from MAC layer
 8.059027884795    SN.node[71].Communication.Routing        Msg type 1 org: 0 from: 77 to: 71
-8.059027884795    SN.node[78].Communication.Routing        Received [BCAST pkt] from MAC layer
 8.059027884795    SN.node[78].Communication.Routing        Msg type 1 org: 0 from: 77 to: 78
-8.059198762881    SN.node[96].Communication.Routing        Received [BCAST pkt] from MAC layer
 8.059198762881    SN.node[96].Communication.Routing        Msg type 1 org: 0 from: 95 to: 96
-8.06072326853     SN.node[53].Communication.Routing        Received [BCAST pkt] from MAC layer
 8.06072326853     SN.node[53].Communication.Routing        Msg type 1 org: 0 from: 58 to: 53
-8.06072326853     SN.node[62].Communication.Routing        Received [BCAST pkt] from MAC layer
 8.06072326853     SN.node[62].Communication.Routing        Msg type 1 org: 0 from: 58 to: 62
-8.06072326853     SN.node[64].Communication.Routing        Received [BCAST pkt] from MAC layer
 8.06072326853     SN.node[64].Communication.Routing        Msg type 1 org: 0 from: 58 to: 64
-8.06072326853     SN.node[65].Communication.Routing        Received [BCAST pkt] from MAC layer
 8.06072326853     SN.node[65].Communication.Routing        Msg type 1 org: 0 from: 58 to: 65
-8.06072326853     SN.node[74].Communication.Routing        Received [BCAST pkt] from MAC layer
 8.06072326853     SN.node[74].Communication.Routing        Msg type 1 org: 0 from: 58 to: 74
-8.061191331582    SN.node[45].Communication.Routing        Received [BCAST pkt] from MAC layer
 8.061191331582    SN.node[45].Communication.Routing        Msg type 1 org: 0 from: 44 to: 45
-8.062249250011    SN.node[91].Communication.Routing        Received [BCAST pkt] from MAC layer
 8.062249250011    SN.node[91].Communication.Routing        Msg type 1 org: 0 from: 90 to: 91
-8.062503823926    SN.node[32].Communication.Routing        Received [JOIN pkt] from MAC layer
 8.062503823926    SN.node[32].Communication.Routing        Msg type 4 org: 37 from: 37 to: 32
-8.062721156131    SN.node[51].Communication.Routing        Received [JOIN pkt] from MAC layer
 8.062721156131    SN.node[51].Communication.Routing        Msg type 4 org: 59 from: 59 to: 51
-8.063863537257    SN.node[61].Communication.Routing        Received [BCAST pkt] from MAC layer
 8.063863537257    SN.node[61].Communication.Routing        Msg type 1 org: 0 from: 80 to: 61
-8.063863537257    SN.node[72].Communication.Routing        Received [BCAST pkt] from MAC layer
 8.063863537257    SN.node[72].Communication.Routing        Msg type 1 org: 0 from: 80 to: 72
-8.063863537257    SN.node[73].Communication.Routing        Received [BCAST pkt] from MAC layer
 8.063863537257    SN.node[73].Communication.Routing        Msg type 1 org: 0 from: 80 to: 73
-8.063863537257    SN.node[79].Communication.Routing        Received [BCAST pkt] from MAC layer
 8.063863537257    SN.node[79].Communication.Routing        Msg type 1 org: 0 from: 80 to: 79
-8.06412668067     SN.node[32].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.06412668067     SN.node[32].Communication.Routing        Msg type 3 org: 12 from: 37 to: 32
-8.06412668067     SN.node[34].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.06412668067     SN.node[34].Communication.Routing        Msg type 3 org: 12 from: 37 to: 34
-8.06412668067     SN.node[34].Communication.Routing        Node 34 joint cluster: 12
-8.06412668067     SN.node[41].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.06412668067     SN.node[41].Communication.Routing        Msg type 3 org: 12 from: 37 to: 41
-8.06412668067     SN.node[41].Communication.Routing        Node 41 joint cluster: 12
-8.06412668067     SN.node[42].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.06412668067     SN.node[42].Communication.Routing        Msg type 3 org: 12 from: 37 to: 42
-8.06412668067     SN.node[42].Communication.Routing        Node 42 joint cluster: 12
-8.06412668067     SN.node[94].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.06412668067     SN.node[94].Communication.Routing        Msg type 3 org: 12 from: 37 to: 94
-8.06412668067     SN.node[94].Communication.Routing        Node 94 joint cluster: 12
-8.064255107666    SN.node[51].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.064255107666    SN.node[51].Communication.Routing        Msg type 3 org: 12 from: 59 to: 51
-8.064255107666    SN.node[52].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.064255107666    SN.node[52].Communication.Routing        Msg type 3 org: 12 from: 59 to: 52
-8.064255107666    SN.node[52].Communication.Routing        Node 52 joint cluster: 12
-8.064255107666    SN.node[66].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.064255107666    SN.node[66].Communication.Routing        Msg type 3 org: 12 from: 59 to: 66
-8.064255107666    SN.node[66].Communication.Routing        Node 66 joint cluster: 12
-8.064255107666    SN.node[74].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.064255107666    SN.node[74].Communication.Routing        Msg type 3 org: 12 from: 59 to: 74
-8.064255107666    SN.node[74].Communication.Routing        Node 74 joint cluster: 12
-8.066305368157    SN.node[56].Communication.Routing        Received [JOIN pkt] from MAC layer
 8.066305368157    SN.node[56].Communication.Routing        Msg type 4 org: 55 from: 55 to: 56
-8.068140662027    SN.node[91].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.068140662027    SN.node[91].Communication.Routing        Msg type 3 org: 90 from: 90 to: 91
-8.068140662027    SN.node[91].Communication.Routing        Node 91 joint cluster: 90
-8.068140662027    SN.node[94].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.068140662027    SN.node[94].Communication.Routing        Msg type 3 org: 90 from: 90 to: 94
-8.068140662027    SN.node[99].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.068140662027    SN.node[99].Communication.Routing        Msg type 3 org: 90 from: 90 to: 99
-8.068140662027    SN.node[99].Communication.Routing        Node 99 joint cluster: 90
-8.070252907987    SN.node[37].Communication.Routing        Received [BCAST pkt] from MAC layer
 8.070252907987    SN.node[37].Communication.Routing        Msg type 1 org: 0 from: 42 to: 37
-8.070252907987    SN.node[41].Communication.Routing        Received [BCAST pkt] from MAC layer
 8.070252907987    SN.node[41].Communication.Routing        Msg type 1 org: 0 from: 42 to: 41
-8.071328153017    SN.node[23].Communication.Routing        Received [JOIN pkt] from MAC layer
 8.071328153017    SN.node[23].Communication.Routing        Msg type 4 org: 64 from: 64 to: 23
-8.072168325964    SN.node[56].Communication.Routing        Received [BCAST pkt] from MAC layer
 8.072168325964    SN.node[56].Communication.Routing        Msg type 1 org: 0 from: 63 to: 56
-8.072168325964    SN.node[60].Communication.Routing        Received [BCAST pkt] from MAC layer
 8.072168325964    SN.node[60].Communication.Routing        Msg type 1 org: 0 from: 63 to: 60
-8.072168325964    SN.node[61].Communication.Routing        Received [BCAST pkt] from MAC layer
 8.072168325964    SN.node[61].Communication.Routing        Msg type 1 org: 0 from: 63 to: 61
-8.072168325964    SN.node[73].Communication.Routing        Received [BCAST pkt] from MAC layer
 8.072168325964    SN.node[73].Communication.Routing        Msg type 1 org: 0 from: 63 to: 73
-8.075047494809    SN.node[53].Communication.Routing        Received [BCAST pkt] from MAC layer
 8.075047494809    SN.node[53].Communication.Routing        Msg type 1 org: 0 from: 57 to: 53
-8.075047494809    SN.node[54].Communication.Routing        Received [BCAST pkt] from MAC layer
 8.075047494809    SN.node[54].Communication.Routing        Msg type 1 org: 0 from: 57 to: 54
-8.075047494809    SN.node[55].Communication.Routing        Received [BCAST pkt] from MAC layer
 8.075047494809    SN.node[55].Communication.Routing        Msg type 1 org: 0 from: 57 to: 55
-8.075047494809    SN.node[56].Communication.Routing        Received [BCAST pkt] from MAC layer
 8.075047494809    SN.node[56].Communication.Routing        Msg type 1 org: 0 from: 57 to: 56
-8.075047494809    SN.node[60].Communication.Routing        Received [BCAST pkt] from MAC layer
 8.075047494809    SN.node[60].Communication.Routing        Msg type 1 org: 0 from: 57 to: 60
-8.075047494809    SN.node[61].Communication.Routing        Received [BCAST pkt] from MAC layer
 8.075047494809    SN.node[61].Communication.Routing        Msg type 1 org: 0 from: 57 to: 61
-8.075636821814    SN.node[12].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.075636821814    SN.node[12].Communication.Routing        Msg type 3 org: 12 from: 18 to: 12
-8.075636821814    SN.node[17].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.075636821814    SN.node[17].Communication.Routing        Msg type 3 org: 12 from: 18 to: 17
-8.075636821814    SN.node[22].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.075636821814    SN.node[22].Communication.Routing        Msg type 3 org: 12 from: 18 to: 22
-8.075636821814    SN.node[23].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.075636821814    SN.node[23].Communication.Routing        Msg type 3 org: 12 from: 18 to: 23
-8.075636821814    SN.node[64].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.075636821814    SN.node[64].Communication.Routing        Msg type 3 org: 12 from: 18 to: 64
-8.075636821814    SN.node[70].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.075636821814    SN.node[70].Communication.Routing        Msg type 3 org: 12 from: 18 to: 70
-8.075636821814    SN.node[70].Communication.Routing        Node 70 joint cluster: 12
-8.081165530207    SN.node[23].Communication.Routing        Received [JOIN pkt] from MAC layer
 8.081165530207    SN.node[23].Communication.Routing        Msg type 4 org: 33 from: 33 to: 23
-8.082413044648    SN.node[37].Communication.Routing        Received [JOIN pkt] from MAC layer
 8.082413044648    SN.node[37].Communication.Routing        Msg type 4 org: 42 from: 42 to: 37
-8.085644163729    SN.node[56].Communication.Routing        Received [JOIN pkt] from MAC layer
 8.085644163729    SN.node[56].Communication.Routing        Msg type 4 org: 57 from: 57 to: 56
-8.086217844377    SN.node[23].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.086217844377    SN.node[23].Communication.Routing        Msg type 3 org: 12 from: 33 to: 23
-8.086217844377    SN.node[31].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.086217844377    SN.node[31].Communication.Routing        Msg type 3 org: 12 from: 33 to: 31
-8.086217844377    SN.node[31].Communication.Routing        Node 31 joint cluster: 12
-8.086217844377    SN.node[32].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.086217844377    SN.node[32].Communication.Routing        Msg type 3 org: 12 from: 33 to: 32
-8.086217844377    SN.node[35].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.086217844377    SN.node[35].Communication.Routing        Msg type 3 org: 12 from: 33 to: 35
-8.086217844377    SN.node[35].Communication.Routing        Node 35 joint cluster: 12
-8.086217844377    SN.node[75].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.086217844377    SN.node[75].Communication.Routing        Msg type 3 org: 12 from: 33 to: 75
-8.086217844377    SN.node[75].Communication.Routing        Node 75 joint cluster: 12
-8.086217844377    SN.node[83].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.086217844377    SN.node[83].Communication.Routing        Msg type 3 org: 12 from: 33 to: 83
-8.086217844377    SN.node[86].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.086217844377    SN.node[86].Communication.Routing        Msg type 3 org: 12 from: 33 to: 86
-8.086217844377    SN.node[86].Communication.Routing        Node 86 joint cluster: 12
-8.090274559313    SN.node[18].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.090274559313    SN.node[18].Communication.Routing        Msg type 3 org: 12 from: 64 to: 18
-8.090274559313    SN.node[23].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.090274559313    SN.node[23].Communication.Routing        Msg type 3 org: 12 from: 64 to: 23
-8.090274559313    SN.node[62].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.090274559313    SN.node[62].Communication.Routing        Msg type 3 org: 12 from: 64 to: 62
-8.090274559313    SN.node[62].Communication.Routing        Node 62 joint cluster: 12
-8.090274559313    SN.node[69].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.090274559313    SN.node[69].Communication.Routing        Msg type 3 org: 12 from: 64 to: 69
-8.090274559313    SN.node[69].Communication.Routing        Node 69 joint cluster: 12
-8.090278218835    SN.node[53].Communication.Routing        Received [BCAST pkt] from MAC layer
 8.090278218835    SN.node[53].Communication.Routing        Msg type 1 org: 0 from: 60 to: 53
-8.090278218835    SN.node[57].Communication.Routing        Received [BCAST pkt] from MAC layer
 8.090278218835    SN.node[57].Communication.Routing        Msg type 1 org: 0 from: 60 to: 57
-8.090278218835    SN.node[63].Communication.Routing        Received [BCAST pkt] from MAC layer
 8.090278218835    SN.node[63].Communication.Routing        Msg type 1 org: 0 from: 60 to: 63
-8.092367277367    SN.node[37].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.092367277367    SN.node[37].Communication.Routing        Msg type 3 org: 12 from: 42 to: 37
-8.092367277367    SN.node[41].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.092367277367    SN.node[41].Communication.Routing        Msg type 3 org: 12 from: 42 to: 41
-8.093539135018    SN.node[56].Communication.Routing        Received [JOIN pkt] from MAC layer
 8.093539135018    SN.node[56].Communication.Routing        Msg type 4 org: 61 from: 61 to: 56
-8.094139132347    SN.node[36].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.094139132347    SN.node[36].Communication.Routing        Msg type 3 org: 12 from: 34 to: 36
-8.094139132347    SN.node[36].Communication.Routing        Node 36 joint cluster: 12
-8.094139132347    SN.node[40].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.094139132347    SN.node[40].Communication.Routing        Msg type 3 org: 12 from: 34 to: 40
-8.094139132347    SN.node[40].Communication.Routing        Node 40 joint cluster: 12
-8.096172252931    SN.node[56].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.096172252931    SN.node[56].Communication.Routing        Msg type 3 org: 56 from: 61 to: 56
-8.096172252931    SN.node[57].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.096172252931    SN.node[57].Communication.Routing        Msg type 3 org: 56 from: 61 to: 57
-8.096172252931    SN.node[63].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.096172252931    SN.node[63].Communication.Routing        Msg type 3 org: 56 from: 61 to: 63
-8.096172252931    SN.node[63].Communication.Routing        Node 63 joint cluster: 56
-8.100354894708    SN.node[20].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.100354894708    SN.node[20].Communication.Routing        Msg type 3 org: 12 from: 30 to: 20
-8.100354894708    SN.node[28].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.100354894708    SN.node[28].Communication.Routing        Msg type 3 org: 12 from: 30 to: 28
-8.100354894708    SN.node[28].Communication.Routing        Node 28 joint cluster: 12
-8.100354894708    SN.node[31].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.100354894708    SN.node[31].Communication.Routing        Msg type 3 org: 12 from: 30 to: 31
-8.100354894708    SN.node[32].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.100354894708    SN.node[32].Communication.Routing        Msg type 3 org: 12 from: 30 to: 32
-8.100354894708    SN.node[35].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.100354894708    SN.node[35].Communication.Routing        Msg type 3 org: 12 from: 30 to: 35
-8.100354894708    SN.node[49].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.100354894708    SN.node[49].Communication.Routing        Msg type 3 org: 12 from: 30 to: 49
-8.10239668889     SN.node[31].Communication.Routing        Received [BCAST pkt] from MAC layer
 8.10239668889     SN.node[31].Communication.Routing        Msg type 1 org: 0 from: 75 to: 31
-8.10239668889     SN.node[33].Communication.Routing        Received [BCAST pkt] from MAC layer
 8.10239668889     SN.node[33].Communication.Routing        Msg type 1 org: 0 from: 75 to: 33
-8.10239668889     SN.node[35].Communication.Routing        Received [BCAST pkt] from MAC layer
 8.10239668889     SN.node[35].Communication.Routing        Msg type 1 org: 0 from: 75 to: 35
-8.10239668889     SN.node[83].Communication.Routing        Received [BCAST pkt] from MAC layer
 8.10239668889     SN.node[83].Communication.Routing        Msg type 1 org: 0 from: 75 to: 83
-8.103278593922    SN.node[56].Communication.Routing        Received [BCAST pkt] from MAC layer
 8.103278593922    SN.node[56].Communication.Routing        Msg type 1 org: 0 from: 61 to: 56
-8.103278593922    SN.node[57].Communication.Routing        Received [BCAST pkt] from MAC layer
 8.103278593922    SN.node[57].Communication.Routing        Msg type 1 org: 0 from: 61 to: 57
-8.103278593922    SN.node[63].Communication.Routing        Received [BCAST pkt] from MAC layer
 8.103278593922    SN.node[63].Communication.Routing        Msg type 1 org: 0 from: 61 to: 63
-8.104360689373    SN.node[33].Communication.Routing        Received [JOIN pkt] from MAC layer
 8.104360689373    SN.node[33].Communication.Routing        Msg type 4 org: 75 from: 75 to: 33
-8.104733423851    SN.node[56].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.104733423851    SN.node[56].Communication.Routing        Msg type 3 org: 56 from: 55 to: 56
-8.104733423851    SN.node[57].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.104733423851    SN.node[57].Communication.Routing        Msg type 3 org: 56 from: 55 to: 57
-8.10988827603     SN.node[31].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.10988827603     SN.node[31].Communication.Routing        Msg type 3 org: 12 from: 75 to: 31
-8.10988827603     SN.node[35].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.10988827603     SN.node[35].Communication.Routing        Msg type 3 org: 12 from: 75 to: 35
-8.117248977819    SN.node[32].Communication.Routing        Received [JOIN pkt] from MAC layer
 8.117248977819    SN.node[32].Communication.Routing        Msg type 4 org: 85 from: 85 to: 32
-8.121410705427    SN.node[33].Communication.Routing        Received [JOIN pkt] from MAC layer
 8.121410705427    SN.node[33].Communication.Routing        Msg type 4 org: 86 from: 86 to: 33
-8.126414848531    SN.node[32].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.126414848531    SN.node[32].Communication.Routing        Msg type 3 org: 12 from: 85 to: 32
-8.126414848531    SN.node[38].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.126414848531    SN.node[38].Communication.Routing        Msg type 3 org: 12 from: 85 to: 38
-8.126414848531    SN.node[38].Communication.Routing        Node 38 joint cluster: 12
-8.126414848531    SN.node[83].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.126414848531    SN.node[83].Communication.Routing        Msg type 3 org: 12 from: 85 to: 83
-8.126414848531    SN.node[86].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.126414848531    SN.node[86].Communication.Routing        Msg type 3 org: 12 from: 85 to: 86
-8.132018774419    SN.node[85].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.132018774419    SN.node[85].Communication.Routing        Msg type 3 org: 12 from: 86 to: 85
-8.144543781889    SN.node[30].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.144543781889    SN.node[30].Communication.Routing        Msg type 3 org: 12 from: 31 to: 30
-8.144543781889    SN.node[35].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.144543781889    SN.node[35].Communication.Routing        Msg type 3 org: 12 from: 31 to: 35
-8.144543781889    SN.node[75].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.144543781889    SN.node[75].Communication.Routing        Msg type 3 org: 12 from: 31 to: 75
-8.528049775029    SN.node[0].Communication.Routing         Received [Bridge test reprogram packet] from application layer
-8.66876623613     SN.node[66].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.66876623613     SN.node[66].Communication.Routing        Msg type 3 org: 71 from: 71 to: 66
-8.66876623613     SN.node[70].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.66876623613     SN.node[70].Communication.Routing        Msg type 3 org: 71 from: 71 to: 70
-8.66876623613     SN.node[77].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.66876623613     SN.node[77].Communication.Routing        Msg type 3 org: 71 from: 71 to: 77
-8.66876623613     SN.node[77].Communication.Routing        Node 77 joint cluster: 71
-8.66876623613     SN.node[78].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.66876623613     SN.node[78].Communication.Routing        Msg type 3 org: 71 from: 71 to: 78
-8.66876623613     SN.node[78].Communication.Routing        Node 78 joint cluster: 71
-8.668829491276    SN.node[95].Communication.Routing        Received [BCAST pkt] from MAC layer
 8.668829491276    SN.node[95].Communication.Routing        Msg type 1 org: 0 from: 96 to: 95
-8.669078848817    SN.node[84].Communication.Routing        Received [BCAST pkt] from MAC layer
 8.669078848817    SN.node[84].Communication.Routing        Msg type 1 org: 0 from: 99 to: 84
-8.669078848817    SN.node[87].Communication.Routing        Received [BCAST pkt] from MAC layer
 8.669078848817    SN.node[87].Communication.Routing        Msg type 1 org: 0 from: 99 to: 87
-8.669868522228    SN.node[87].Communication.Routing        Received [BCAST pkt] from MAC layer
 8.669868522228    SN.node[87].Communication.Routing        Msg type 1 org: 0 from: 93 to: 87
-8.669868522228    SN.node[88].Communication.Routing        Received [BCAST pkt] from MAC layer
 8.669868522228    SN.node[88].Communication.Routing        Msg type 1 org: 0 from: 93 to: 88
-8.669868522228    SN.node[98].Communication.Routing        Received [BCAST pkt] from MAC layer
 8.669868522228    SN.node[98].Communication.Routing        Msg type 1 org: 0 from: 93 to: 98
-8.67058278968     SN.node[30].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.67058278968     SN.node[30].Communication.Routing        Msg type 3 org: 12 from: 49 to: 30
-8.67058278968     SN.node[32].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.67058278968     SN.node[32].Communication.Routing        Msg type 3 org: 12 from: 49 to: 32
-8.67058278968     SN.node[34].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.67058278968     SN.node[34].Communication.Routing        Msg type 3 org: 12 from: 49 to: 34
-8.670892697087    SN.node[52].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.670892697087    SN.node[52].Communication.Routing        Msg type 3 org: 56 from: 57 to: 52
-8.670892697087    SN.node[53].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.670892697087    SN.node[53].Communication.Routing        Msg type 3 org: 56 from: 57 to: 53
-8.670892697087    SN.node[53].Communication.Routing        Node 53 joint cluster: 56
-8.670892697087    SN.node[54].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.670892697087    SN.node[54].Communication.Routing        Msg type 3 org: 56 from: 57 to: 54
-8.670892697087    SN.node[54].Communication.Routing        Node 54 joint cluster: 56
-8.670892697087    SN.node[55].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.670892697087    SN.node[55].Communication.Routing        Msg type 3 org: 56 from: 57 to: 55
-8.670892697087    SN.node[56].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.670892697087    SN.node[56].Communication.Routing        Msg type 3 org: 56 from: 57 to: 56
-8.670892697087    SN.node[60].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.670892697087    SN.node[60].Communication.Routing        Msg type 3 org: 56 from: 57 to: 60
-8.670892697087    SN.node[60].Communication.Routing        Node 60 joint cluster: 56
-8.670892697087    SN.node[61].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.670892697087    SN.node[61].Communication.Routing        Msg type 3 org: 56 from: 57 to: 61
-8.672018810602    SN.node[90].Communication.Routing        Received [JOIN pkt] from MAC layer
 8.672018810602    SN.node[90].Communication.Routing        Msg type 4 org: 91 from: 91 to: 90
-8.674012747963    SN.node[30].Communication.Routing        Received [JOIN pkt] from MAC layer
 8.674012747963    SN.node[30].Communication.Routing        Msg type 4 org: 28 from: 28 to: 30
-8.674135720549    SN.node[86].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.674135720549    SN.node[86].Communication.Routing        Msg type 3 org: 90 from: 91 to: 86
-8.674135720549    SN.node[87].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.674135720549    SN.node[87].Communication.Routing        Msg type 3 org: 90 from: 91 to: 87
-8.674135720549    SN.node[87].Communication.Routing        Node 87 joint cluster: 90
-8.674135720549    SN.node[90].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.674135720549    SN.node[90].Communication.Routing        Msg type 3 org: 90 from: 91 to: 90
-8.674135720549    SN.node[95].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.674135720549    SN.node[95].Communication.Routing        Msg type 3 org: 90 from: 91 to: 95
-8.674135720549    SN.node[95].Communication.Routing        Node 95 joint cluster: 90
-8.674135720549    SN.node[96].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.674135720549    SN.node[96].Communication.Routing        Msg type 3 org: 90 from: 91 to: 96
-8.674135720549    SN.node[96].Communication.Routing        Node 96 joint cluster: 90
-8.674135720549    SN.node[99].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.674135720549    SN.node[99].Communication.Routing        Msg type 3 org: 90 from: 91 to: 99
-8.674894250626    SN.node[94].Communication.Routing        Received [BCAST pkt] from MAC layer
 8.674894250626    SN.node[94].Communication.Routing        Msg type 1 org: 0 from: 89 to: 94
-8.674929193433    SN.node[70].Communication.Routing        Received [BCAST pkt] from MAC layer
 8.674929193433    SN.node[70].Communication.Routing        Msg type 1 org: 0 from: 79 to: 70
-8.674929193433    SN.node[76].Communication.Routing        Received [BCAST pkt] from MAC layer
 8.674929193433    SN.node[76].Communication.Routing        Msg type 1 org: 0 from: 79 to: 76
-8.674929193433    SN.node[77].Communication.Routing        Received [BCAST pkt] from MAC layer
 8.674929193433    SN.node[77].Communication.Routing        Msg type 1 org: 0 from: 79 to: 77
-8.674929193433    SN.node[80].Communication.Routing        Received [BCAST pkt] from MAC layer
 8.674929193433    SN.node[80].Communication.Routing        Msg type 1 org: 0 from: 79 to: 80
-8.674929193433    SN.node[87].Communication.Routing        Received [BCAST pkt] from MAC layer
 8.674929193433    SN.node[87].Communication.Routing        Msg type 1 org: 0 from: 79 to: 87
-8.674929193433    SN.node[99].Communication.Routing        Received [BCAST pkt] from MAC layer
 8.674929193433    SN.node[99].Communication.Routing        Msg type 1 org: 0 from: 79 to: 99
-8.674986550495    SN.node[60].Communication.Routing        Received [BCAST pkt] from MAC layer
 8.674986550495    SN.node[60].Communication.Routing        Msg type 1 org: 0 from: 68 to: 60
-8.674986550495    SN.node[67].Communication.Routing        Received [BCAST pkt] from MAC layer
 8.674986550495    SN.node[67].Communication.Routing        Msg type 1 org: 0 from: 68 to: 67
-8.676471322345    SN.node[34].Communication.Routing        Received [JOIN pkt] from MAC layer
 8.676471322345    SN.node[34].Communication.Routing        Msg type 4 org: 40 from: 40 to: 34
-8.676906421528    SN.node[61].Communication.Routing        Received [JOIN pkt] from MAC layer
 8.676906421528    SN.node[61].Communication.Routing        Msg type 4 org: 63 from: 63 to: 61
-8.67859475799     SN.node[60].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.67859475799     SN.node[60].Communication.Routing        Msg type 3 org: 56 from: 63 to: 60
-8.67859475799     SN.node[61].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.67859475799     SN.node[61].Communication.Routing        Msg type 3 org: 56 from: 63 to: 61
-8.679568050679    SN.node[85].Communication.Routing        Received [JOIN pkt] from MAC layer
 8.679568050679    SN.node[85].Communication.Routing        Msg type 4 org: 38 from: 38 to: 85
-8.685398494658    SN.node[34].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.685398494658    SN.node[34].Communication.Routing        Msg type 3 org: 12 from: 40 to: 34
-8.685398494658    SN.node[36].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.685398494658    SN.node[36].Communication.Routing        Msg type 3 org: 12 from: 40 to: 36
-8.685398494658    SN.node[39].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.685398494658    SN.node[39].Communication.Routing        Msg type 3 org: 12 from: 40 to: 39
-8.685398494658    SN.node[39].Communication.Routing        Node 39 joint cluster: 12
-8.685398494658    SN.node[45].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.685398494658    SN.node[45].Communication.Routing        Msg type 3 org: 12 from: 40 to: 45
-8.685398494658    SN.node[45].Communication.Routing        Node 45 joint cluster: 12
-8.685398494658    SN.node[47].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.685398494658    SN.node[47].Communication.Routing        Msg type 3 org: 12 from: 40 to: 47
-8.685398494658    SN.node[47].Communication.Routing        Node 47 joint cluster: 12
-8.686714097501    SN.node[45].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.686714097501    SN.node[45].Communication.Routing        Msg type 3 org: 12 from: 38 to: 45
-8.686714097501    SN.node[83].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.686714097501    SN.node[83].Communication.Routing        Msg type 3 org: 12 from: 38 to: 83
-8.686714097501    SN.node[85].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.686714097501    SN.node[85].Communication.Routing        Msg type 3 org: 12 from: 38 to: 85
-8.686714097501    SN.node[94].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.686714097501    SN.node[94].Communication.Routing        Msg type 3 org: 12 from: 38 to: 94
-8.692495039555    SN.node[71].Communication.Routing        Received [JOIN pkt] from MAC layer
 8.692495039555    SN.node[71].Communication.Routing        Msg type 4 org: 77 from: 77 to: 71
-8.694336245825    SN.node[71].Communication.Routing        Received [BCAST pkt] from MAC layer
 8.694336245825    SN.node[71].Communication.Routing        Msg type 1 org: 0 from: 78 to: 71
-8.694336245825    SN.node[72].Communication.Routing        Received [BCAST pkt] from MAC layer
 8.694336245825    SN.node[72].Communication.Routing        Msg type 1 org: 0 from: 78 to: 72
-8.694336245825    SN.node[77].Communication.Routing        Received [BCAST pkt] from MAC layer
 8.694336245825    SN.node[77].Communication.Routing        Msg type 1 org: 0 from: 78 to: 77
-8.694336245825    SN.node[79].Communication.Routing        Received [BCAST pkt] from MAC layer
 8.694336245825    SN.node[79].Communication.Routing        Msg type 1 org: 0 from: 78 to: 79
-8.697271946235    SN.node[59].Communication.Routing        Received [JOIN pkt] from MAC layer
 8.697271946235    SN.node[59].Communication.Routing        Msg type 4 org: 66 from: 66 to: 59
-8.702599805193    SN.node[59].Communication.Routing        Received [JOIN pkt] from MAC layer
 8.702599805193    SN.node[59].Communication.Routing        Msg type 4 org: 74 from: 74 to: 59
-8.707252984928    SN.node[71].Communication.Routing        Received [JOIN pkt] from MAC layer
 8.707252984928    SN.node[71].Communication.Routing        Msg type 4 org: 78 from: 78 to: 71
-8.708245632365    SN.node[53].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.708245632365    SN.node[53].Communication.Routing        Msg type 3 org: 12 from: 74 to: 53
-8.708245632365    SN.node[59].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.708245632365    SN.node[59].Communication.Routing        Msg type 3 org: 12 from: 74 to: 59
-8.709964095905    SN.node[59].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.709964095905    SN.node[59].Communication.Routing        Msg type 3 org: 12 from: 66 to: 59
-8.709964095905    SN.node[67].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.709964095905    SN.node[67].Communication.Routing        Msg type 3 org: 12 from: 66 to: 67
-8.709964095905    SN.node[67].Communication.Routing        Node 67 joint cluster: 12
-8.709964095905    SN.node[70].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.709964095905    SN.node[70].Communication.Routing        Msg type 3 org: 12 from: 66 to: 70
-8.709964095905    SN.node[71].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.709964095905    SN.node[71].Communication.Routing        Msg type 3 org: 12 from: 66 to: 71
-8.710605031267    SN.node[23].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.710605031267    SN.node[23].Communication.Routing        Msg type 3 org: 12 from: 69 to: 23
-8.710605031267    SN.node[33].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.710605031267    SN.node[33].Communication.Routing        Msg type 3 org: 12 from: 69 to: 33
-8.710605031267    SN.node[64].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.710605031267    SN.node[64].Communication.Routing        Msg type 3 org: 12 from: 69 to: 64
-8.710605031267    SN.node[70].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.710605031267    SN.node[70].Communication.Routing        Msg type 3 org: 12 from: 69 to: 70
-8.710605031267    SN.node[77].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.710605031267    SN.node[77].Communication.Routing        Msg type 3 org: 12 from: 69 to: 77
-8.710605031267    SN.node[83].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.710605031267    SN.node[83].Communication.Routing        Msg type 3 org: 12 from: 69 to: 83
-8.715284645338    SN.node[59].Communication.Routing        Received [JOIN pkt] from MAC layer
 8.715284645338    SN.node[59].Communication.Routing        Msg type 4 org: 52 from: 52 to: 59
-8.715297693825    SN.node[71].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.715297693825    SN.node[71].Communication.Routing        Msg type 3 org: 71 from: 78 to: 71
-8.715297693825    SN.node[72].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.715297693825    SN.node[72].Communication.Routing        Msg type 3 org: 71 from: 78 to: 72
-8.715297693825    SN.node[72].Communication.Routing        Node 72 joint cluster: 71
-8.715297693825    SN.node[77].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.715297693825    SN.node[77].Communication.Routing        Msg type 3 org: 71 from: 78 to: 77
-8.715297693825    SN.node[79].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.715297693825    SN.node[79].Communication.Routing        Msg type 3 org: 71 from: 78 to: 79
-8.715297693825    SN.node[79].Communication.Routing        Node 79 joint cluster: 71
-8.718999820758    SN.node[52].Communication.Routing        Received [BCAST pkt] from MAC layer
 8.718999820758    SN.node[52].Communication.Routing        Msg type 1 org: 0 from: 53 to: 52
-8.718999820758    SN.node[58].Communication.Routing        Received [BCAST pkt] from MAC layer
 8.718999820758    SN.node[58].Communication.Routing        Msg type 1 org: 0 from: 53 to: 58
-8.718999820758    SN.node[74].Communication.Routing        Received [BCAST pkt] from MAC layer
 8.718999820758    SN.node[74].Communication.Routing        Msg type 1 org: 0 from: 53 to: 74
-8.736490885448    SN.node[53].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.736490885448    SN.node[53].Communication.Routing        Msg type 3 org: 12 from: 52 to: 53
-8.736490885448    SN.node[59].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 8.736490885448    SN.node[59].Communication.Routing        Msg type 3 org: 12 from: 52 to: 59
-9.028079767959    SN.node[0].Communication.Routing         Received [Bridge test reprogram packet] from application layer
-9.279916174434    SN.node[93].Communication.Routing        Received [BCAST pkt] from MAC layer
 9.279916174434    SN.node[93].Communication.Routing        Msg type 1 org: 0 from: 98 to: 93
-9.279916174434    SN.node[96].Communication.Routing        Received [BCAST pkt] from MAC layer
 9.279916174434    SN.node[96].Communication.Routing        Msg type 1 org: 0 from: 98 to: 96
-9.280526351304    SN.node[87].Communication.Routing        Received [BCAST pkt] from MAC layer
 9.280526351304    SN.node[87].Communication.Routing        Msg type 1 org: 0 from: 88 to: 87
-9.280526351304    SN.node[93].Communication.Routing        Received [BCAST pkt] from MAC layer
 9.280526351304    SN.node[93].Communication.Routing        Msg type 1 org: 0 from: 88 to: 93
-9.280856318871    SN.node[33].Communication.Routing        Received [JOIN pkt] from MAC layer
 9.280856318871    SN.node[33].Communication.Routing        Msg type 4 org: 35 from: 35 to: 33
-9.281808076947    SN.node[67].Communication.Routing        Received [BCAST pkt] from MAC layer
 9.281808076947    SN.node[67].Communication.Routing        Msg type 1 org: 0 from: 72 to: 67
-9.281808076947    SN.node[68].Communication.Routing        Received [BCAST pkt] from MAC layer
 9.281808076947    SN.node[68].Communication.Routing        Msg type 1 org: 0 from: 72 to: 68
-9.281808076947    SN.node[73].Communication.Routing        Received [BCAST pkt] from MAC layer
 9.281808076947    SN.node[73].Communication.Routing        Msg type 1 org: 0 from: 72 to: 73
-9.281808076947    SN.node[78].Communication.Routing        Received [BCAST pkt] from MAC layer
 9.281808076947    SN.node[78].Communication.Routing        Msg type 1 org: 0 from: 72 to: 78
-9.281808076947    SN.node[81].Communication.Routing        Received [BCAST pkt] from MAC layer
 9.281808076947    SN.node[81].Communication.Routing        Msg type 1 org: 0 from: 72 to: 81
-9.282654185592    SN.node[23].Communication.Routing        Received [BCAST pkt] from MAC layer
 9.282654185592    SN.node[23].Communication.Routing        Msg type 1 org: 0 from: 83 to: 23
-9.282654185592    SN.node[33].Communication.Routing        Received [BCAST pkt] from MAC layer
 9.282654185592    SN.node[33].Communication.Routing        Msg type 1 org: 0 from: 83 to: 33
-9.282654185592    SN.node[35].Communication.Routing        Received [BCAST pkt] from MAC layer
 9.282654185592    SN.node[35].Communication.Routing        Msg type 1 org: 0 from: 83 to: 35
-9.282654185592    SN.node[38].Communication.Routing        Received [BCAST pkt] from MAC layer
 9.282654185592    SN.node[38].Communication.Routing        Msg type 1 org: 0 from: 83 to: 38
-9.282654185592    SN.node[69].Communication.Routing        Received [BCAST pkt] from MAC layer
 9.282654185592    SN.node[69].Communication.Routing        Msg type 1 org: 0 from: 83 to: 69
-9.282654185592    SN.node[75].Communication.Routing        Received [BCAST pkt] from MAC layer
 9.282654185592    SN.node[75].Communication.Routing        Msg type 1 org: 0 from: 83 to: 75
-9.282654185592    SN.node[76].Communication.Routing        Received [BCAST pkt] from MAC layer
 9.282654185592    SN.node[76].Communication.Routing        Msg type 1 org: 0 from: 83 to: 76
-9.282654185592    SN.node[85].Communication.Routing        Received [BCAST pkt] from MAC layer
 9.282654185592    SN.node[85].Communication.Routing        Msg type 1 org: 0 from: 83 to: 85
-9.282654185592    SN.node[86].Communication.Routing        Received [BCAST pkt] from MAC layer
 9.282654185592    SN.node[86].Communication.Routing        Msg type 1 org: 0 from: 83 to: 86
-9.282654185592    SN.node[91].Communication.Routing        Received [BCAST pkt] from MAC layer
 9.282654185592    SN.node[91].Communication.Routing        Msg type 1 org: 0 from: 83 to: 91
-9.28429532812     SN.node[25].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 9.28429532812     SN.node[25].Communication.Routing        Msg type 3 org: 12 from: 28 to: 25
-9.28429532812     SN.node[27].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 9.28429532812     SN.node[27].Communication.Routing        Msg type 3 org: 12 from: 28 to: 27
-9.28429532812     SN.node[30].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 9.28429532812     SN.node[30].Communication.Routing        Msg type 3 org: 12 from: 28 to: 30
-9.28429532812     SN.node[34].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 9.28429532812     SN.node[34].Communication.Routing        Msg type 3 org: 12 from: 28 to: 34
-9.286164559749    SN.node[57].Communication.Routing        Received [JOIN pkt] from MAC layer
 9.286164559749    SN.node[57].Communication.Routing        Msg type 4 org: 60 from: 60 to: 57
-9.287650951068    SN.node[69].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 9.287650951068    SN.node[69].Communication.Routing        Msg type 3 org: 71 from: 77 to: 69
-9.287650951068    SN.node[71].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 9.287650951068    SN.node[71].Communication.Routing        Msg type 3 org: 71 from: 77 to: 71
-9.287650951068    SN.node[75].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 9.287650951068    SN.node[75].Communication.Routing        Msg type 3 org: 71 from: 77 to: 75
-9.287650951068    SN.node[79].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 9.287650951068    SN.node[79].Communication.Routing        Msg type 3 org: 71 from: 77 to: 79
-9.290893131287    SN.node[91].Communication.Routing        Received [JOIN pkt] from MAC layer
 9.290893131287    SN.node[91].Communication.Routing        Msg type 4 org: 87 from: 87 to: 91
-9.291099819754    SN.node[72].Communication.Routing        Received [BCAST pkt] from MAC layer
 9.291099819754    SN.node[72].Communication.Routing        Msg type 1 org: 0 from: 81 to: 72
-9.291099819754    SN.node[73].Communication.Routing        Received [BCAST pkt] from MAC layer
 9.291099819754    SN.node[73].Communication.Routing        Msg type 1 org: 0 from: 81 to: 73
-9.291537299288    SN.node[18].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 9.291537299288    SN.node[18].Communication.Routing        Msg type 3 org: 12 from: 62 to: 18
-9.291537299288    SN.node[51].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 9.291537299288    SN.node[51].Communication.Routing        Msg type 3 org: 12 from: 62 to: 51
-9.291537299288    SN.node[58].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 9.291537299288    SN.node[58].Communication.Routing        Msg type 3 org: 12 from: 62 to: 58
-9.291537299288    SN.node[58].Communication.Routing        Node 58 joint cluster: 12
-9.291537299288    SN.node[64].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 9.291537299288    SN.node[64].Communication.Routing        Msg type 3 org: 12 from: 62 to: 64
-9.294434444714    SN.node[57].Communication.Routing        Received [JOIN pkt] from MAC layer
 9.294434444714    SN.node[57].Communication.Routing        Msg type 4 org: 53 from: 53 to: 57
-9.295615699051    SN.node[78].Communication.Routing        Received [JOIN pkt] from MAC layer
 9.295615699051    SN.node[78].Communication.Routing        Msg type 4 org: 79 from: 79 to: 78
-9.297367724164    SN.node[52].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 9.297367724164    SN.node[52].Communication.Routing        Msg type 3 org: 56 from: 54 to: 52
-9.297367724164    SN.node[53].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 9.297367724164    SN.node[53].Communication.Routing        Msg type 3 org: 56 from: 54 to: 53
-9.297367724164    SN.node[55].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 9.297367724164    SN.node[55].Communication.Routing        Msg type 3 org: 56 from: 54 to: 55
-9.297367724164    SN.node[57].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 9.297367724164    SN.node[57].Communication.Routing        Msg type 3 org: 56 from: 54 to: 57
-9.299555285593    SN.node[70].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 9.299555285593    SN.node[70].Communication.Routing        Msg type 3 org: 71 from: 79 to: 70
-9.299555285593    SN.node[76].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 9.299555285593    SN.node[76].Communication.Routing        Msg type 3 org: 71 from: 79 to: 76
-9.299555285593    SN.node[76].Communication.Routing        Node 76 joint cluster: 71
-9.299555285593    SN.node[77].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 9.299555285593    SN.node[77].Communication.Routing        Msg type 3 org: 71 from: 79 to: 77
-9.299555285593    SN.node[78].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 9.299555285593    SN.node[78].Communication.Routing        Msg type 3 org: 71 from: 79 to: 78
-9.299555285593    SN.node[80].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 9.299555285593    SN.node[80].Communication.Routing        Msg type 3 org: 71 from: 79 to: 80
-9.299555285593    SN.node[80].Communication.Routing        Node 80 joint cluster: 71
-9.299555285593    SN.node[84].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 9.299555285593    SN.node[84].Communication.Routing        Msg type 3 org: 71 from: 79 to: 84
-9.299555285593    SN.node[84].Communication.Routing        Node 84 joint cluster: 71
-9.299555285593    SN.node[87].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 9.299555285593    SN.node[87].Communication.Routing        Msg type 3 org: 71 from: 79 to: 87
-9.299555285593    SN.node[99].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 9.299555285593    SN.node[99].Communication.Routing        Msg type 3 org: 71 from: 79 to: 99
-9.300266985692    SN.node[58].Communication.Routing        Received [BCAST pkt] from MAC layer
 9.300266985692    SN.node[58].Communication.Routing        Msg type 1 org: 0 from: 67 to: 58
-9.300266985692    SN.node[60].Communication.Routing        Received [BCAST pkt] from MAC layer
 9.300266985692    SN.node[60].Communication.Routing        Msg type 1 org: 0 from: 67 to: 60
-9.300266985692    SN.node[66].Communication.Routing        Received [BCAST pkt] from MAC layer
 9.300266985692    SN.node[66].Communication.Routing        Msg type 1 org: 0 from: 67 to: 66
-9.300266985692    SN.node[68].Communication.Routing        Received [BCAST pkt] from MAC layer
 9.300266985692    SN.node[68].Communication.Routing        Msg type 1 org: 0 from: 67 to: 68
-9.300266985692    SN.node[72].Communication.Routing        Received [BCAST pkt] from MAC layer
 9.300266985692    SN.node[72].Communication.Routing        Msg type 1 org: 0 from: 67 to: 72
-9.304449388843    SN.node[40].Communication.Routing        Received [JOIN pkt] from MAC layer
 9.304449388843    SN.node[40].Communication.Routing        Msg type 4 org: 45 from: 45 to: 40
-9.304708902339    SN.node[66].Communication.Routing        Received [JOIN pkt] from MAC layer
 9.304708902339    SN.node[66].Communication.Routing        Msg type 4 org: 67 from: 67 to: 66
-9.308613814386    SN.node[58].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 9.308613814386    SN.node[58].Communication.Routing        Msg type 3 org: 12 from: 67 to: 58
-9.308613814386    SN.node[60].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 9.308613814386    SN.node[60].Communication.Routing        Msg type 3 org: 12 from: 67 to: 60
-9.308613814386    SN.node[68].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 9.308613814386    SN.node[68].Communication.Routing        Msg type 3 org: 12 from: 67 to: 68
-9.308613814386    SN.node[68].Communication.Routing        Node 68 joint cluster: 12
-9.308613814386    SN.node[72].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 9.308613814386    SN.node[72].Communication.Routing        Msg type 3 org: 12 from: 67 to: 72
-9.308613814386    SN.node[74].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 9.308613814386    SN.node[74].Communication.Routing        Msg type 3 org: 12 from: 67 to: 74
-9.314293290536    SN.node[40].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 9.314293290536    SN.node[40].Communication.Routing        Msg type 3 org: 12 from: 45 to: 40
-9.314293290536    SN.node[46].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 9.314293290536    SN.node[46].Communication.Routing        Msg type 3 org: 12 from: 45 to: 46
-9.314293290536    SN.node[46].Communication.Routing        Node 46 joint cluster: 12
-9.315485932764    SN.node[91].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 9.315485932764    SN.node[91].Communication.Routing        Msg type 3 org: 90 from: 96 to: 91
-9.315485932764    SN.node[93].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 9.315485932764    SN.node[93].Communication.Routing        Msg type 3 org: 90 from: 96 to: 93
-9.315485932764    SN.node[93].Communication.Routing        Node 93 joint cluster: 90
-9.315485932764    SN.node[97].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 9.315485932764    SN.node[97].Communication.Routing        Msg type 3 org: 90 from: 96 to: 97
-9.315485932764    SN.node[97].Communication.Routing        Node 97 joint cluster: 90
-9.316763951988    SN.node[34].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 9.316763951988    SN.node[34].Communication.Routing        Msg type 3 org: 12 from: 41 to: 34
-9.316763951988    SN.node[37].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 9.316763951988    SN.node[37].Communication.Routing        Msg type 3 org: 12 from: 41 to: 37
-9.316763951988    SN.node[42].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 9.316763951988    SN.node[42].Communication.Routing        Msg type 3 org: 12 from: 41 to: 42
-9.316763951988    SN.node[46].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 9.316763951988    SN.node[46].Communication.Routing        Msg type 3 org: 12 from: 41 to: 46
-9.316763951988    SN.node[47].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 9.316763951988    SN.node[47].Communication.Routing        Msg type 3 org: 12 from: 41 to: 47
-9.324381169625    SN.node[79].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 9.324381169625    SN.node[79].Communication.Routing        Msg type 3 org: 90 from: 99 to: 79
-9.324381169625    SN.node[84].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 9.324381169625    SN.node[84].Communication.Routing        Msg type 3 org: 90 from: 99 to: 84
-9.324381169625    SN.node[86].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 9.324381169625    SN.node[86].Communication.Routing        Msg type 3 org: 90 from: 99 to: 86
-9.324381169625    SN.node[87].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 9.324381169625    SN.node[87].Communication.Routing        Msg type 3 org: 90 from: 99 to: 87
-9.324381169625    SN.node[91].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 9.324381169625    SN.node[91].Communication.Routing        Msg type 3 org: 90 from: 99 to: 91
-9.336536166145    SN.node[36].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 9.336536166145    SN.node[36].Communication.Routing        Msg type 3 org: 12 from: 39 to: 36
-9.336536166145    SN.node[40].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 9.336536166145    SN.node[40].Communication.Routing        Msg type 3 org: 12 from: 39 to: 40
-9.528109760889    SN.node[0].Communication.Routing         Received [Bridge test reprogram packet] from application layer
-9.888200218166    SN.node[68].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 9.888200218166    SN.node[68].Communication.Routing        Msg type 3 org: 56 from: 60 to: 68
-9.890195534634    SN.node[80].Communication.Routing        Received [BCAST pkt] from MAC layer
 9.890195534634    SN.node[80].Communication.Routing        Msg type 1 org: 0 from: 84 to: 80
-9.890195534634    SN.node[82].Communication.Routing        Received [BCAST pkt] from MAC layer
 9.890195534634    SN.node[82].Communication.Routing        Msg type 1 org: 0 from: 84 to: 82
-9.890430767182    SN.node[46].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 9.890430767182    SN.node[46].Communication.Routing        Msg type 3 org: 12 from: 47 to: 46
-9.891544313132    SN.node[30].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 9.891544313132    SN.node[30].Communication.Routing        Msg type 3 org: 12 from: 35 to: 30
-9.891544313132    SN.node[31].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 9.891544313132    SN.node[31].Communication.Routing        Msg type 3 org: 12 from: 35 to: 31
-9.891544313132    SN.node[33].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 9.891544313132    SN.node[33].Communication.Routing        Msg type 3 org: 12 from: 35 to: 33
-9.891544313132    SN.node[37].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 9.891544313132    SN.node[37].Communication.Routing        Msg type 3 org: 12 from: 35 to: 37
-9.891544313132    SN.node[75].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 9.891544313132    SN.node[75].Communication.Routing        Msg type 3 org: 12 from: 35 to: 75
-9.891544313132    SN.node[83].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 9.891544313132    SN.node[83].Communication.Routing        Msg type 3 org: 12 from: 35 to: 83
-9.891544313132    SN.node[85].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 9.891544313132    SN.node[85].Communication.Routing        Msg type 3 org: 12 from: 35 to: 85
-9.891544313132    SN.node[89].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 9.891544313132    SN.node[89].Communication.Routing        Msg type 3 org: 12 from: 35 to: 89
-9.891544313132    SN.node[89].Communication.Routing        Node 89 joint cluster: 12
-9.894207157835    SN.node[78].Communication.Routing        Received [JOIN pkt] from MAC layer
 9.894207157835    SN.node[78].Communication.Routing        Msg type 4 org: 72 from: 72 to: 78
-9.894778762068    SN.node[27].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 9.894778762068    SN.node[27].Communication.Routing        Msg type 3 org: 12 from: 36 to: 27
-9.894778762068    SN.node[40].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 9.894778762068    SN.node[40].Communication.Routing        Msg type 3 org: 12 from: 36 to: 40
-9.894778762068    SN.node[49].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 9.894778762068    SN.node[49].Communication.Routing        Msg type 3 org: 12 from: 36 to: 49
-9.896244573368    SN.node[96].Communication.Routing        Received [JOIN pkt] from MAC layer
 9.896244573368    SN.node[96].Communication.Routing        Msg type 4 org: 97 from: 97 to: 96
-9.896271842144    SN.node[62].Communication.Routing        Received [JOIN pkt] from MAC layer
 9.896271842144    SN.node[62].Communication.Routing        Msg type 4 org: 58 from: 58 to: 62
-9.899179966827    SN.node[89].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 9.899179966827    SN.node[89].Communication.Routing        Msg type 3 org: 90 from: 95 to: 89
-9.899179966827    SN.node[91].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 9.899179966827    SN.node[91].Communication.Routing        Msg type 3 org: 90 from: 95 to: 91
-9.899179966827    SN.node[94].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 9.899179966827    SN.node[94].Communication.Routing        Msg type 3 org: 90 from: 95 to: 94
-9.901099971608    SN.node[96].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 9.901099971608    SN.node[96].Communication.Routing        Msg type 3 org: 90 from: 97 to: 96
-9.903816881361    SN.node[79].Communication.Routing        Received [JOIN pkt] from MAC layer
 9.903816881361    SN.node[79].Communication.Routing        Msg type 4 org: 76 from: 76 to: 79
-9.90510944648     SN.node[53].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 9.90510944648     SN.node[53].Communication.Routing        Msg type 3 org: 12 from: 58 to: 53
-9.90510944648     SN.node[62].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 9.90510944648     SN.node[62].Communication.Routing        Msg type 3 org: 12 from: 58 to: 62
-9.90510944648     SN.node[64].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 9.90510944648     SN.node[64].Communication.Routing        Msg type 3 org: 12 from: 58 to: 64
-9.90510944648     SN.node[65].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 9.90510944648     SN.node[65].Communication.Routing        Msg type 3 org: 12 from: 58 to: 65
-9.90510944648     SN.node[65].Communication.Routing        Node 65 joint cluster: 12
-9.90908732109     SN.node[87].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 9.90908732109     SN.node[87].Communication.Routing        Msg type 3 org: 90 from: 93 to: 87
-9.90908732109     SN.node[88].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 9.90908732109     SN.node[88].Communication.Routing        Msg type 3 org: 90 from: 93 to: 88
-9.90908732109     SN.node[88].Communication.Routing        Node 88 joint cluster: 90
-9.90908732109     SN.node[98].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 9.90908732109     SN.node[98].Communication.Routing        Msg type 3 org: 90 from: 93 to: 98
-9.90908732109     SN.node[98].Communication.Routing        Node 98 joint cluster: 90
-9.912045986799    SN.node[79].Communication.Routing        Received [JOIN pkt] from MAC layer
 9.912045986799    SN.node[79].Communication.Routing        Msg type 4 org: 80 from: 80 to: 79
-9.914681386071    SN.node[79].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 9.914681386071    SN.node[79].Communication.Routing        Msg type 3 org: 90 from: 87 to: 79
-9.914681386071    SN.node[91].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 9.914681386071    SN.node[91].Communication.Routing        Msg type 3 org: 90 from: 87 to: 91
-9.914681386071    SN.node[92].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 9.914681386071    SN.node[92].Communication.Routing        Msg type 3 org: 90 from: 87 to: 92
-9.914681386071    SN.node[92].Communication.Routing        Node 92 joint cluster: 90
-9.914681386071    SN.node[93].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 9.914681386071    SN.node[93].Communication.Routing        Msg type 3 org: 90 from: 87 to: 93
-9.914681386071    SN.node[99].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 9.914681386071    SN.node[99].Communication.Routing        Msg type 3 org: 90 from: 87 to: 99
-9.918699019196    SN.node[79].Communication.Routing        Received [JOIN pkt] from MAC layer
 9.918699019196    SN.node[79].Communication.Routing        Msg type 4 org: 84 from: 84 to: 79
-9.921763031335    SN.node[72].Communication.Routing        Received [BCAST pkt] from MAC layer
 9.921763031335    SN.node[72].Communication.Routing        Msg type 1 org: 0 from: 82 to: 72
-9.921763031335    SN.node[73].Communication.Routing        Received [BCAST pkt] from MAC layer
 9.921763031335    SN.node[73].Communication.Routing        Msg type 1 org: 0 from: 82 to: 73
-9.921763031335    SN.node[84].Communication.Routing        Received [BCAST pkt] from MAC layer
 9.921763031335    SN.node[84].Communication.Routing        Msg type 1 org: 0 from: 82 to: 84
-9.927322605121    SN.node[64].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 9.927322605121    SN.node[64].Communication.Routing        Msg type 3 org: 12 from: 70 to: 64
-9.927322605121    SN.node[65].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 9.927322605121    SN.node[65].Communication.Routing        Msg type 3 org: 12 from: 70 to: 65
-9.927522700291    SN.node[75].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 9.927522700291    SN.node[75].Communication.Routing        Msg type 3 org: 71 from: 76 to: 75
-9.927522700291    SN.node[83].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 9.927522700291    SN.node[83].Communication.Routing        Msg type 3 org: 71 from: 76 to: 83
-9.927522700291    SN.node[86].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 9.927522700291    SN.node[86].Communication.Routing        Msg type 3 org: 71 from: 76 to: 86
-10.028139753819   SN.node[0].Communication.Routing         Received [Bridge test reprogram packet] from application layer
-10.503107480846   SN.node[79].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 10.503107480846   SN.node[79].Communication.Routing        Msg type 3 org: 71 from: 84 to: 79
-10.503107480846   SN.node[80].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 10.503107480846   SN.node[80].Communication.Routing        Msg type 3 org: 71 from: 84 to: 80
-10.503107480846   SN.node[81].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 10.503107480846   SN.node[81].Communication.Routing        Msg type 3 org: 71 from: 84 to: 81
-10.503107480846   SN.node[81].Communication.Routing        Node 81 joint cluster: 71
-10.503107480846   SN.node[82].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 10.503107480846   SN.node[82].Communication.Routing        Msg type 3 org: 71 from: 84 to: 82
-10.503107480846   SN.node[82].Communication.Routing        Node 82 joint cluster: 71
-10.503107480846   SN.node[99].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 10.503107480846   SN.node[99].Communication.Routing        Msg type 3 org: 71 from: 84 to: 99
-10.50561436279    SN.node[87].Communication.Routing        Received [BCAST pkt] from MAC layer
 10.50561436279    SN.node[87].Communication.Routing        Msg type 1 org: 0 from: 92 to: 87
-10.506262542436   SN.node[67].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 10.506262542436   SN.node[67].Communication.Routing        Msg type 3 org: 71 from: 72 to: 67
-10.506262542436   SN.node[68].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 10.506262542436   SN.node[68].Communication.Routing        Msg type 3 org: 71 from: 72 to: 68
-10.506262542436   SN.node[73].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 10.506262542436   SN.node[73].Communication.Routing        Msg type 3 org: 71 from: 72 to: 73
-10.506262542436   SN.node[73].Communication.Routing        Node 73 joint cluster: 71
-10.506262542436   SN.node[78].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 10.506262542436   SN.node[78].Communication.Routing        Msg type 3 org: 71 from: 72 to: 78
-10.506262542436   SN.node[80].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 10.506262542436   SN.node[80].Communication.Routing        Msg type 3 org: 71 from: 72 to: 80
-10.506262542436   SN.node[81].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 10.506262542436   SN.node[81].Communication.Routing        Msg type 3 org: 71 from: 72 to: 81
-10.506262542436   SN.node[82].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 10.506262542436   SN.node[82].Communication.Routing        Msg type 3 org: 71 from: 72 to: 82
-10.506762233467   SN.node[93].Communication.Routing        Received [JOIN pkt] from MAC layer
 10.506762233467   SN.node[93].Communication.Routing        Msg type 4 org: 98 from: 98 to: 93
-10.508280409417   SN.node[35].Communication.Routing        Received [JOIN pkt] from MAC layer
 10.508280409417   SN.node[35].Communication.Routing        Msg type 4 org: 89 from: 89 to: 35
-10.510946445198   SN.node[87].Communication.Routing        Received [JOIN pkt] from MAC layer
 10.510946445198   SN.node[87].Communication.Routing        Msg type 4 org: 92 from: 92 to: 87
-10.511773252787   SN.node[50].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 10.511773252787   SN.node[50].Communication.Routing        Msg type 3 org: 56 from: 53 to: 50
-10.511773252787   SN.node[51].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 10.511773252787   SN.node[51].Communication.Routing        Msg type 3 org: 56 from: 53 to: 51
-10.511773252787   SN.node[52].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 10.511773252787   SN.node[52].Communication.Routing        Msg type 3 org: 56 from: 53 to: 52
-10.511773252787   SN.node[54].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 10.511773252787   SN.node[54].Communication.Routing        Msg type 3 org: 56 from: 53 to: 54
-10.511773252787   SN.node[58].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 10.511773252787   SN.node[58].Communication.Routing        Msg type 3 org: 56 from: 53 to: 58
-10.511773252787   SN.node[74].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 10.511773252787   SN.node[74].Communication.Routing        Msg type 3 org: 56 from: 53 to: 74
-10.513513121248   SN.node[87].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 10.513513121248   SN.node[87].Communication.Routing        Msg type 3 org: 90 from: 92 to: 87
-10.513513121248   SN.node[88].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 10.513513121248   SN.node[88].Communication.Routing        Msg type 3 org: 90 from: 92 to: 88
-10.513513121248   SN.node[91].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 10.513513121248   SN.node[91].Communication.Routing        Msg type 3 org: 90 from: 92 to: 91
-10.514971789587   SN.node[93].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 10.514971789587   SN.node[93].Communication.Routing        Msg type 3 org: 90 from: 98 to: 93
-10.514971789587   SN.node[97].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 10.514971789587   SN.node[97].Communication.Routing        Msg type 3 org: 90 from: 98 to: 97
-10.518713503693   SN.node[45].Communication.Routing        Received [JOIN pkt] from MAC layer
 10.518713503693   SN.node[45].Communication.Routing        Msg type 4 org: 46 from: 46 to: 45
-10.522801765697   SN.node[45].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 10.522801765697   SN.node[45].Communication.Routing        Msg type 3 org: 12 from: 46 to: 45
-10.522801765697   SN.node[47].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 10.522801765697   SN.node[47].Communication.Routing        Msg type 3 org: 12 from: 46 to: 47
-10.528169746749   SN.node[0].Communication.Routing         Received [Bridge test reprogram packet] from application layer
-10.530338540227   SN.node[35].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 10.530338540227   SN.node[35].Communication.Routing        Msg type 3 org: 12 from: 89 to: 35
-10.530338540227   SN.node[90].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 10.530338540227   SN.node[90].Communication.Routing        Msg type 3 org: 12 from: 89 to: 90
-10.530338540227   SN.node[94].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 10.530338540227   SN.node[94].Communication.Routing        Msg type 3 org: 12 from: 89 to: 94
-10.530338540227   SN.node[95].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 10.530338540227   SN.node[95].Communication.Routing        Msg type 3 org: 12 from: 89 to: 95
-10.531797332353   SN.node[23].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 10.531797332353   SN.node[23].Communication.Routing        Msg type 3 org: 12 from: 83 to: 23
-10.531797332353   SN.node[33].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 10.531797332353   SN.node[33].Communication.Routing        Msg type 3 org: 12 from: 83 to: 33
-10.531797332353   SN.node[35].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 10.531797332353   SN.node[35].Communication.Routing        Msg type 3 org: 12 from: 83 to: 35
-10.531797332353   SN.node[38].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 10.531797332353   SN.node[38].Communication.Routing        Msg type 3 org: 12 from: 83 to: 38
-10.531797332353   SN.node[75].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 10.531797332353   SN.node[75].Communication.Routing        Msg type 3 org: 12 from: 83 to: 75
-10.531797332353   SN.node[85].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 10.531797332353   SN.node[85].Communication.Routing        Msg type 3 org: 12 from: 83 to: 85
-10.531797332353   SN.node[86].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 10.531797332353   SN.node[86].Communication.Routing        Msg type 3 org: 12 from: 83 to: 86
-10.531797332353   SN.node[91].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 10.531797332353   SN.node[91].Communication.Routing        Msg type 3 org: 12 from: 83 to: 91
-11.028199739679   SN.node[0].Communication.Routing         Received [Bridge test reprogram packet] from application layer
-11.114080971903   SN.node[93].Communication.Routing        Received [JOIN pkt] from MAC layer
 11.114080971903   SN.node[93].Communication.Routing        Msg type 4 org: 88 from: 88 to: 93
-11.114227233631   SN.node[67].Communication.Routing        Received [JOIN pkt] from MAC layer
 11.114227233631   SN.node[67].Communication.Routing        Msg type 4 org: 68 from: 68 to: 67
-11.116593069735   SN.node[67].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 11.116593069735   SN.node[67].Communication.Routing        Msg type 3 org: 12 from: 68 to: 67
-11.116593069735   SN.node[72].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 11.116593069735   SN.node[72].Communication.Routing        Msg type 3 org: 12 from: 68 to: 72
-11.116593069735   SN.node[77].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 11.116593069735   SN.node[77].Communication.Routing        Msg type 3 org: 12 from: 68 to: 77
-11.118628351941   SN.node[87].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 11.118628351941   SN.node[87].Communication.Routing        Msg type 3 org: 90 from: 88 to: 87
-11.118628351941   SN.node[92].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 11.118628351941   SN.node[92].Communication.Routing        Msg type 3 org: 90 from: 88 to: 92
-11.118628351941   SN.node[93].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 11.118628351941   SN.node[93].Communication.Routing        Msg type 3 org: 90 from: 88 to: 93
-11.131038445055   SN.node[51].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 11.131038445055   SN.node[51].Communication.Routing        Msg type 3 org: 12 from: 65 to: 51
-11.131038445055   SN.node[58].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 11.131038445055   SN.node[58].Communication.Routing        Msg type 3 org: 12 from: 65 to: 58
-11.131038445055   SN.node[66].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 11.131038445055   SN.node[66].Communication.Routing        Msg type 3 org: 12 from: 65 to: 66
-11.131038445055   SN.node[70].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 11.131038445055   SN.node[70].Communication.Routing        Msg type 3 org: 12 from: 65 to: 70
-11.134216934868   SN.node[72].Communication.Routing        Received [JOIN pkt] from MAC layer
 11.134216934868   SN.node[72].Communication.Routing        Msg type 4 org: 73 from: 73 to: 72
-11.140232618519   SN.node[72].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 11.140232618519   SN.node[72].Communication.Routing        Msg type 3 org: 71 from: 80 to: 72
-11.140232618519   SN.node[73].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 11.140232618519   SN.node[73].Communication.Routing        Msg type 3 org: 71 from: 80 to: 73
-11.140232618519   SN.node[82].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 11.140232618519   SN.node[82].Communication.Routing        Msg type 3 org: 71 from: 80 to: 82
-11.145480500108   SN.node[72].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 11.145480500108   SN.node[72].Communication.Routing        Msg type 3 org: 71 from: 81 to: 72
-11.145480500108   SN.node[73].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 11.145480500108   SN.node[73].Communication.Routing        Msg type 3 org: 71 from: 81 to: 73
-11.145480500108   SN.node[84].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 11.145480500108   SN.node[84].Communication.Routing        Msg type 3 org: 71 from: 81 to: 84
-11.528229732609   SN.node[0].Communication.Routing         Received [Bridge test reprogram packet] from application layer
-11.720930571083   SN.node[72].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 11.720930571083   SN.node[72].Communication.Routing        Msg type 3 org: 71 from: 73 to: 72
-11.720930571083   SN.node[80].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 11.720930571083   SN.node[80].Communication.Routing        Msg type 3 org: 71 from: 73 to: 80
-11.720930571083   SN.node[81].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 11.720930571083   SN.node[81].Communication.Routing        Msg type 3 org: 71 from: 73 to: 81
-11.720930571083   SN.node[82].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 11.720930571083   SN.node[82].Communication.Routing        Msg type 3 org: 71 from: 73 to: 82
-12.028259725539   SN.node[0].Communication.Routing         Received [Bridge test reprogram packet] from application layer
-12.332700111219   SN.node[84].Communication.Routing        Received [JOIN pkt] from MAC layer
 12.332700111219   SN.node[84].Communication.Routing        Msg type 4 org: 82 from: 82 to: 84
-12.340644222048   SN.node[72].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 12.340644222048   SN.node[72].Communication.Routing        Msg type 3 org: 71 from: 82 to: 72
-12.340644222048   SN.node[73].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 12.340644222048   SN.node[73].Communication.Routing        Msg type 3 org: 71 from: 82 to: 73
-12.340644222048   SN.node[80].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 12.340644222048   SN.node[80].Communication.Routing        Msg type 3 org: 71 from: 82 to: 80
-12.340644222048   SN.node[84].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 12.340644222048   SN.node[84].Communication.Routing        Msg type 3 org: 71 from: 82 to: 84
-12.340644222048   SN.node[97].Communication.Routing        Received [RECRUIT pkt] from MAC layer
 12.340644222048   SN.node[97].Communication.Routing        Msg type 3 org: 71 from: 82 to: 97
-12.528289718469   SN.node[0].Communication.Routing         Received [Bridge test reprogram packet] from application layer
-13.028319711399   SN.node[0].Communication.Routing         Received [Bridge test reprogram packet] from application layer
-13.528349704329   SN.node[0].Communication.Routing         Received [Bridge test reprogram packet] from application layer
-14.028379697259   SN.node[0].Communication.Routing         Received [Bridge test reprogram packet] from application layer
-14.528409690189   SN.node[0].Communication.Routing         Received [Bridge test reprogram packet] from application layer
-15.028439683119   SN.node[0].Communication.Routing         Received [Bridge test reprogram packet] from application layer
-15.528469676049   SN.node[0].Communication.Routing         Received [Bridge test reprogram packet] from application layer
-16.028499668979   SN.node[0].Communication.Routing         Received [Bridge test reprogram packet] from application layer
-16.528529661909   SN.node[0].Communication.Routing         Received [Bridge test reprogram packet] from application layer
-17.028559654839   SN.node[0].Communication.Routing         Received [Bridge test reprogram packet] from application layer
-17.528589647769   SN.node[0].Communication.Routing         Received [Bridge test reprogram packet] from application layer
-18.028619640699   SN.node[0].Communication.Routing         Received [Bridge test reprogram packet] from application layer
-18.528649633629   SN.node[0].Communication.Routing         Received [Bridge test reprogram packet] from application layer
-19.028679626559   SN.node[0].Communication.Routing         Received [Bridge test reprogram packet] from application layer
-19.528709619489   SN.node[0].Communication.Routing         Received [Bridge test reprogram packet] from application layer
-20.028739612419   SN.node[0].Communication.Routing         Received [Bridge test reprogram packet] from application layer
