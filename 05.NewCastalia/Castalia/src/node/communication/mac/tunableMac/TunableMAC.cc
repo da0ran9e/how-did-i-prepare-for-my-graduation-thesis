@@ -15,14 +15,9 @@ Define_Module(TunableMAC);
 
 void TunableMAC::startup()
 {
-	dutyCycle = par("dutyCycle");
-	listenInterval = ((double)par("listenInterval")) / 1000.0;	// convert msecs to secs
-	beaconIntervalFraction = par("beaconIntervalFraction");
 	probTx = par("probTx");
 	numTx = par("numTx");
-	randomTxOffset = ((double)par("randomTxOffset")) / 1000.0;	// convert msecs to secs
 	reTxInterval = ((double)par("reTxInterval")) / 1000.0;		// convert msecs to secs
-	beaconFrameSize = par("beaconFrameSize");
 	backoffType = par("backoffType");
 	CSMApersistance = par("CSMApersistance");
 	txAllPacketsInFreeChannel = par("txAllPacketsInFreeChannel");
@@ -32,7 +27,6 @@ void TunableMAC::startup()
 	phyDelayForValidCS = (double)par("phyDelayForValidCS") / 1000.0;	// convert msecs to secs
 	phyLayerOverhead = par("phyFrameOverhead");
 
-	beaconTxTime = ((double)(beaconFrameSize + phyLayerOverhead)) * 8.0 / (1000.0 * phyDataRate);
 
 	switch (backoffType) {
 		case 0:{
@@ -64,12 +58,7 @@ void TunableMAC::startup()
 
 	// start listening, and schedule a timer to sleep if needed
 	toRadioLayer(createRadioCommand(SET_STATE, RX));
-	if ((dutyCycle > 0.0) && (dutyCycle < 1.0)) {
-		sleepInterval = listenInterval * ((1.0 - dutyCycle) / dutyCycle);
-		setTimer(START_SLEEPING, listenInterval);
-	} else {
-		sleepInterval = -1.0;
-	}
+	sleepInterval = -1;
 
 	macState = MAC_STATE_DEFAULT;
 	numTxTries = 0;
@@ -138,15 +127,10 @@ void TunableMAC::handleCarrierSenseResult(int returnCode)
 			 * sent based on sleep interval and beacon interval fraction
 			 */
 			backoffTimes = 0;
-			if ((dutyCycle > 0.0) && (dutyCycle < 1.0)) {
-				remainingBeaconsToTx = (int)ceil(sleepInterval * beaconIntervalFraction / beaconTxTime);
-			} else {
-				remainingBeaconsToTx = 0;
-			}
 
 			macState = MAC_STATE_TX;
-			trace() << "Channel Clear, MAC_STATE_TX, sending " << remainingBeaconsToTx << " beacons followed by data";
-			sendBeaconsOrData();
+			trace() << "Channel Clear, MAC_STATE_TX, sending data";
+			sendDataPacket(); // sendBeaconsOrData() to sendDataPacket()
 			break;
 
 		}
@@ -201,19 +185,6 @@ void TunableMAC::handleCarrierSenseResult(int returnCode)
 			backoffTimer = genk_dblrand(1) * backoffTimer;
 			setTimer(START_CARRIER_SENSING, backoffTimer);
 			trace() << "Channel busy, backing off for " << backoffTimer << " secs";
-
-			/* If having a dutyCycle or relevant parameter is enabled
-			 * go directly to sleep. One could say "wait for listenInterval
-			 * in the case we receive something". This is highly improbable
-			 * though as most of the cases we start the process of carrier
-			 * sensing from a sleep state (so most likely we have missed the
-			 * start of the packet). In the case we are in listen mode, if
-			 * someone else is transmitting then we would have entered
-			 * MAC_STATE_RX and the carrier sense (and TX) would be postponed.
-			 */
-			if ((sleepDuringBackoff) || ((dutyCycle > 0.0) && (dutyCycle < 1.0)))
-				toRadioLayer(createRadioCommand(SET_STATE, SLEEP));
-			break;
 		}
 
 		case CS_NOT_VALID:
@@ -288,12 +259,6 @@ void TunableMAC::attemptTx()
 		} else {
 			macState = MAC_STATE_DEFAULT;
 			trace() << "MAC_STATE_DEFAULT, no more pkts to attemptTx";
-			/* We have nothing left to transmit, need to resume
-			 * sleep/listen pattern. Starting by going to sleep
-			 * immediately (timer with 0 delay).
-			 */
-			if ((dutyCycle > 0.0) && (dutyCycle < 1.0))
-				setTimer(START_SLEEPING, 0);
 		}
 		return;
 	}
@@ -302,7 +267,7 @@ void TunableMAC::attemptTx()
 
 	if (genk_dblrand(0) < probTx) {
 		// This transmission attempt will happen after random offset
-		setTimer(START_CARRIER_SENSING, genk_dblrand(1) * randomTxOffset);
+		setTimer(START_CARRIER_SENSING, 0);
 		trace() << "MAC_STATE_CONTENDING, attempt " << numTx - numTxTries +1 << "/" << numTx << " contending";
 	} else {
 		// Move on to the next attempt after reTxInterval
@@ -315,33 +280,11 @@ void TunableMAC::attemptTx()
 void TunableMAC::sendBeaconsOrData()
 {
 
-	if (remainingBeaconsToTx > 0) {
-		remainingBeaconsToTx--;
-
-		TunableMacPacket *beaconFrame =
-			new TunableMacPacket("TunableMac beacon packet", MAC_LAYER_PACKET);
-		beaconFrame->setSource(SELF_MAC_ADDRESS);
-		beaconFrame->setDestination(BROADCAST_MAC_ADDRESS);
-		beaconFrame->setFrameType(BEACON_FRAME);
-		beaconFrame->setByteLength(beaconFrameSize);
-		toRadioLayer(beaconFrame);
-		toRadioLayer(createRadioCommand(SET_STATE, TX));
-		trace() << "Sending Beacon";
-		collectOutput("TunableMAC packet breakdown", "sent beacons");
-
-		/* Set timer to send next beacon (or data packet). Schedule
-		 * the timer a little faster than it actually takes to TX a
-		 * a beacon, because we want to TX beacons back to back and
-		 * we have to account for clock drift.
-		 */
-		setTimer(SEND_BEACONS_OR_DATA, beaconTxTime * 0.98);
-
-	} else {
-		if (TXBuffer.empty()) {
-			numTxTries = 0; // safeguarding
-			attemptTx(); 	// calling will set the sleeping patterns again.
-			return;
-		}
+	if (TXBuffer.empty()) {
+		numTxTries = 0; // safeguarding
+		attemptTx(); 	// calling will set the sleeping patterns again.
+		return;
+	}
 
 		toRadioLayer(TXBuffer.front()->dup());
 		toRadioLayer(createRadioCommand(SET_STATE, TX));
@@ -399,7 +342,7 @@ void TunableMAC::sendBeaconsOrData()
 		} else {
 			setTimer(ATTEMPT_TX, packetTxTime);
 		}
-	}
+	
 }
 
 void TunableMAC::fromRadioLayer(cPacket * pkt, double rssi, double lqi)

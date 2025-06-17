@@ -34,8 +34,8 @@ enum MacStates {
 };
 
 enum TunableMacTimers {
-	START_SLEEPING = 1,
-	START_LISTENING = 2,
+	// START_SLEEPING = 1,
+	// START_LISTENING = 2,
 	START_CARRIER_SENSING = 3,
 	ATTEMPT_TX = 4,
 	SEND_BEACONS_OR_DATA = 5,
@@ -44,16 +44,16 @@ enum TunableMacTimers {
 class TunableMAC: public VirtualMac {
  private:
 	/*--- The .ned file's parameters ---*/
-	double dutyCycle;		// sleeping interval / sleeping + listening intervals
-	double listenInterval;	// in secs, note: parammeter in omnetpp.ini in msecs
-	double beaconIntervalFraction;
+	// double dutyCycle;		// sleeping interval / sleeping + listening intervals
+	// double listenInterval;	// in secs, note: parammeter in omnetpp.ini in msecs
+	// double beaconIntervalFraction;
 	double probTx;			// probability of a single transmission to happen
 	int numTx;				// when we have something to send, how many times do we try to transmit it.
 							// We say "try" because probTx might be < 1
-	double randomTxOffset;	// when have somethingnto transmit, don't do it immediatelly
+	// double randomTxOffset;	// when have somethingnto transmit, don't do it immediatelly
 	double reTxInterval;	// the interval between retransmissions, in msec but after a
 							// time [0..randomTxOffset] chosen randomly (uniform)
-	int beaconFrameSize;	// in bytes
+	// int beaconFrameSize;	// in bytes
 	int backoffType;		// can be 0 or 1 or 2 or 3
 	double backoffBaseValue;// the backoff value
 	double CSMApersistance; // value in [0..1], is CSMA non-persistent, p-persistent, or 1-persistent
@@ -67,9 +67,9 @@ class TunableMAC: public VirtualMac {
 	int macState;
 	int numTxTries;
 	int backoffTimes;	// number of consequtive backoff times
-	int remainingBeaconsToTx;
-	double beaconTxTime;	// time it takes to TX a beacon in secs
-	double sleepInterval;	// in secs
+	// int remainingBeaconsToTx;
+	// double beaconTxTime;	// time it takes to TX a beacon in secs
+	// double sleepInterval;	// in secs
 
  protected:
 	void startup();
