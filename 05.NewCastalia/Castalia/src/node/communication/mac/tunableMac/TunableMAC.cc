@@ -1,12 +1,12 @@
 /***************************************************************************
- *  Copyright: National ICT Australia,  2007 - 2012                        *
- *  Developed at the ATP lab, Networked Systems theme                      *
- *  Author(s): Athanassios Boulis, Yuriy Tselishchev                       *
- *  This file is distributed under the terms in the attached LICENSE file. *
- *  If you do not find this file, copies can be found by writing to:       *
- *                                                                         *
- *      NICTA, Locked Bag 9013, Alexandria, NSW 1435, Australia            *
- *      Attention:  License Inquiry.                                       *
+ * Copyright: National ICT Australia,  2007 - 2012                        *
+ * Developed at the ATP lab, Networked Systems theme                      *
+ * Author(s): Athanassios Boulis, Yuriy Tselishchev                       *
+ * This file is distributed under the terms in the attached LICENSE file. *
+ * If you do not find this file, copies can be found by writing to:       *
+ * *
+ * NICTA, Locked Bag 9013, Alexandria, NSW 1435, Australia            *
+ * Attention:  License Inquiry.                                       *
  ***************************************************************************/
 
 #include "TunableMAC.h"
@@ -15,25 +15,31 @@ Define_Module(TunableMAC);
 
 void TunableMAC::startup()
 {
+	// <<< THAY ĐỔI: Loại bỏ việc đọc các tham số không cần thiết
+	// dutyCycle = par("dutyCycle");
+	// listenInterval = ((double)par("listenInterval")) / 1000.0;
+	// beaconIntervalFraction = par("beaconIntervalFraction");
+	// randomTxOffset = ((double)par("randomTxOffset")) / 1000.0;
+	// beaconFrameSize = par("beaconFrameSize");
+	
 	probTx = par("probTx");
 	numTx = par("numTx");
-	reTxInterval = ((double)par("reTxInterval")) / 1000.0;		// convert msecs to secs
+	reTxInterval = ((double)par("reTxInterval")) / 1000.0;
 	backoffType = par("backoffType");
 	CSMApersistance = par("CSMApersistance");
 	txAllPacketsInFreeChannel = par("txAllPacketsInFreeChannel");
 	sleepDuringBackoff = par("sleepDuringBackoff");
 
 	phyDataRate = par("phyDataRate");
-	phyDelayForValidCS = (double)par("phyDelayForValidCS") / 1000.0;	// convert msecs to secs
+	phyDelayForValidCS = (double)par("phyDelayForValidCS") / 1000.0;
 	phyLayerOverhead = par("phyFrameOverhead");
 
+	// <<< THAY ĐỔI: Không cần tính beaconTxTime
+	// beaconTxTime = ((double)(beaconFrameSize + phyLayerOverhead)) * 8.0 / (1000.0 * phyDataRate);
 
 	switch (backoffType) {
-		case 0:{
-			if ((dutyCycle > 0.0) && (dutyCycle < 1.0))
-				backoffType = BACKOFF_SLEEP_INT;
-			else
-				trace() << "Illegal value of parameter \"backoffType\" in omnetpp.ini.\n    Backoff timer = sleeping interval, but sleeping interval is not defined because duty cycle is zero, one, or invalid. Will use backOffBaseValue instead";
+		case 0:{ // <<< THAY ĐỔI: case này không còn hợp lệ vì dutyCycle không tồn tại, cần được xử lý
+			trace() << "WARNING: backoffType 0 (BACKOFF_SLEEP_INT) is deprecated. Using BACKOFF_CONSTANT instead.";
 			backoffType = BACKOFF_CONSTANT;
 			break;
 		}
@@ -54,15 +60,13 @@ void TunableMAC::startup()
 			break;
 		}
 	}
-	backoffBaseValue = ((double)par("backoffBaseValue")) / 1000.0;	// convert msecs to secs
+	backoffBaseValue = ((double)par("backoffBaseValue")) / 1000.0;
 
-	// start listening, and schedule a timer to sleep if needed
+	// <<< THAY ĐỔI: Radio luôn ở trạng thái RX
 	toRadioLayer(createRadioCommand(SET_STATE, RX));
-	sleepInterval = -1;
-
+	
 	macState = MAC_STATE_DEFAULT;
 	numTxTries = 0;
-	remainingBeaconsToTx = 0;
 	backoffTimes = 0;
 
 	declareOutput("TunableMAC packet breakdown");
@@ -71,21 +75,22 @@ void TunableMAC::startup()
 void TunableMAC::timerFiredCallback(int timer)
 {
 	switch (timer) {
-
+		// <<< THAY ĐỔI: Loại bỏ các case của timer không dùng nữa
+		/*
 		case START_SLEEPING:{
-			toRadioLayer(createRadioCommand(SET_STATE, SLEEP));
-			setTimer(START_LISTENING, sleepInterval);
+			...
 			break;
 		}
 
 		case START_LISTENING:{
-			toRadioLayer(createRadioCommand(SET_STATE, RX));
-			setTimer(START_SLEEPING, listenInterval);
+			...
 			break;
 		}
+		*/
 
 		case START_CARRIER_SENSING:{
-			toRadioLayer(createRadioCommand(SET_STATE, RX));
+			// Radio luôn ở trạng thái RX, không cần bật lại
+			// toRadioLayer(createRadioCommand(SET_STATE, RX));
 			handleCarrierSenseResult(radioModule->isChannelClear());
 			break;
 		}
@@ -94,9 +99,10 @@ void TunableMAC::timerFiredCallback(int timer)
 			attemptTx();
 			break;
 		}
-
-		case SEND_BEACONS_OR_DATA:{
-			sendBeaconsOrData();
+		
+		// <<< THAY ĐỔI: Đổi tên timer và hàm được gọi
+		case SEND_DATA_PACKET:{
+			sendDataPacket();
 			break;
 		}
 
@@ -111,60 +117,35 @@ void TunableMAC::handleCarrierSenseResult(int returnCode)
 	switch (returnCode) {
 
 		case CLEAR:{
-			/* For non-persistent and 1-persistent CSMA we just
-			 * start the transmission. But for p-persistent CSMA
-			 * we have to draw a random number and if this is
-			 * bigger than p (=CSMApersistence) then we do not
-			 * transmit but instead we carrier sense yet again.
-			 */
 			if (CSMApersistance > 0 && CSMApersistance < genk_dblrand(1)){
 				setTimer(START_CARRIER_SENSING, phyDelayForValidCS);
 				break;
 			}
-
-			/* We transmit: Reset the backoff counter, then
-			 * proceed to calculate the number of beacons required to be
-			 * sent based on sleep interval and beacon interval fraction
-			 */
+			
 			backoffTimes = 0;
+			
+			// <<< THAY ĐỔI: Không cần tính toán và gửi beacon nữa
+			// remainingBeaconsToTx = 0;
 
 			macState = MAC_STATE_TX;
 			trace() << "Channel Clear, MAC_STATE_TX, sending data";
-			sendDataPacket(); // sendBeaconsOrData() to sendDataPacket()
+			sendDataPacket(); // Gọi hàm đã được đổi tên
 			break;
 
 		}
 
 		case BUSY:{
-			/* For p-persistent and 1-persistent CSMA we carrier
-			 * sense at a very fast rate until we find the channel
-			 * free. Ideally we would get notified by the radio
-			 * when the channel becomes free. Since most radios
-			 * do not provide this capability, we have to poll.
-			 * Because of polling and random start times for each
-			 * node, 1-persistent does not necessarily cause colissions
-			 * when 2 or more nodes are waiting to TX. Its performance
-			 * can thus be better than p-persistent even with high
-			 * traffic and and high number of contending nodes.
-			 */
 			if (CSMApersistance > 0) {
 				setTimer(START_CARRIER_SENSING, phyDelayForValidCS);
 				trace() << "Channel busy, persistent mode: checking again in " << phyDelayForValidCS << " secs";
 				break;
 			}
-
-			/* For non-persistent CSMA, we simply calculate a back-off
-			 * random interval based on the chosen back-off mechanism
-			 */
+			
 			double backoffTimer = 0;
 			backoffTimes++;
 
 			switch (backoffType) {
-				case BACKOFF_SLEEP_INT:{
-					backoffTimer = (sleepInterval < 0) ? backoffBaseValue : sleepInterval;
-					break;
-				}
-
+				// ... (logic tính backoffTimer không đổi)
 				case BACKOFF_CONSTANT:{
 					backoffTimer = backoffBaseValue;
 					break;
@@ -185,6 +166,11 @@ void TunableMAC::handleCarrierSenseResult(int returnCode)
 			backoffTimer = genk_dblrand(1) * backoffTimer;
 			setTimer(START_CARRIER_SENSING, backoffTimer);
 			trace() << "Channel busy, backing off for " << backoffTimer << " secs";
+
+			// <<< THAY ĐỔI: Xóa logic chuyển sang chế độ ngủ khi backoff
+			// if ((sleepDuringBackoff) || ((dutyCycle > 0.0) && (dutyCycle < 1.0)))
+			// 	toRadioLayer(createRadioCommand(SET_STATE, SLEEP));
+			break;
 		}
 
 		case CS_NOT_VALID:
@@ -199,37 +185,23 @@ void TunableMAC::handleCarrierSenseResult(int returnCode)
 void TunableMAC::fromNetworkLayer(cPacket * netPkt, int destination)
 {
 	TunableMacPacket *macPkt = new TunableMacPacket("TunableMac data packet", MAC_LAYER_PACKET);
-	// *first* encapsulate the packet the then set its dest and source fields.
 	encapsulatePacket(macPkt, netPkt);
 	macPkt->setSource(SELF_MAC_ADDRESS);
 	macPkt->setDestination(destination);
 	macPkt->setFrameType(DATA_FRAME);
 	collectOutput("TunableMAC packet breakdown", "Received from App");
 
-	/* We always try to buffer the packet first */
 	if (bufferPacket(macPkt)) {
-		/* If the new packet is the only packet and we are in default state
-		 * then we need to initiate transmission process for this packet.
-		 * If there are more packets in the buffer, then transmission is
-		 * already being handled
-		 */
 		if (macState == MAC_STATE_DEFAULT && TXBuffer.size() == 1) {
-			/* First action to initiate new transmission is to deal with
-			 * all scheduled timers. In particular we need to suspend
-			 * duty cycle timers (if present) and attempt to transmit
-			 * the new packet with a maximum number of retries left.
-			 */
-			if ((dutyCycle > 0.0) && (dutyCycle < 1.0)) {
-				cancelTimer(START_LISTENING);
-				cancelTimer(START_SLEEPING);
-			}
+			// <<< THAY ĐỔI: Không cần hủy các timer của duty cycle
+			// if ((dutyCycle > 0.0) && (dutyCycle < 1.0)) {
+			// 	cancelTimer(START_LISTENING);
+			// 	cancelTimer(START_SLEEPING);
+			// }
 			numTxTries = numTx;
 			attemptTx();
 		}
 	} else {
-		/* bufferPacket() failed, buffer is full
-		 * FULL_BUFFER control msg sent by virtualMAC code
-		 */
 		collectOutput("TunableMAC packet breakdown", "Overflown");
 		trace() << "WARNING Tunable MAC buffer overflow";
 	}
@@ -240,25 +212,20 @@ void TunableMAC::attemptTx()
 	trace() << "attemptTx(), buffer size: " << TXBuffer.size() << ", numTxTries: " << numTxTries;
 
 	if (numTxTries <= 0) {
-		/* We can enter attemptTx from many places, in some cases
-		 * the buffer may be empty. If its not empty but we have
-		 * 0 tries left, then the front message is deleted.
-		 */
 		if (TXBuffer.size() > 0) {
 			cancelAndDelete(TXBuffer.front());
 			TXBuffer.pop();
 		}
 
-		/* Check the buffer again to see if a new packet has to be
-		 * transmitted, otherwise change to default state and
-		 * reestablish the sleeping schedule.
-		 */
 		if (TXBuffer.size() > 0) {
 			numTxTries = numTx;
 			attemptTx();
 		} else {
 			macState = MAC_STATE_DEFAULT;
 			trace() << "MAC_STATE_DEFAULT, no more pkts to attemptTx";
+			// <<< THAY ĐỔI: Không đặt lại timer ngủ
+			// if ((dutyCycle > 0.0) && (dutyCycle < 1.0))
+			// 	setTimer(START_SLEEPING, 0);
 		}
 		return;
 	}
@@ -266,83 +233,57 @@ void TunableMAC::attemptTx()
 	macState = MAC_STATE_CONTENDING;
 
 	if (genk_dblrand(0) < probTx) {
-		// This transmission attempt will happen after random offset
+		// <<< THAY ĐỔI: Loại bỏ randomTxOffset, bắt đầu cảm nhận kênh ngay lập tức
 		setTimer(START_CARRIER_SENSING, 0);
 		trace() << "MAC_STATE_CONTENDING, attempt " << numTx - numTxTries +1 << "/" << numTx << " contending";
 	} else {
-		// Move on to the next attempt after reTxInterval
 		setTimer(ATTEMPT_TX, reTxInterval);
 		trace() << "MAC_STATE_CONTENDING, attempt " << numTx - numTxTries +1 << "/" << numTx << " skipped";
 		numTxTries--;
 	}
 }
 
-void TunableMAC::sendBeaconsOrData()
+// <<< THAY ĐỔI: Đổi tên hàm và loại bỏ logic beacon
+void TunableMAC::sendDataPacket()
 {
-
+	// <<< THAY ĐỔI: Logic beacon đã bị xóa hoàn toàn.
 	if (TXBuffer.empty()) {
 		numTxTries = 0; // safeguarding
-		attemptTx(); 	// calling will set the sleeping patterns again.
+		attemptTx(); 	// Quay về trạng thái mặc định nếu không còn gì để gửi
 		return;
 	}
 
-		toRadioLayer(TXBuffer.front()->dup());
-		toRadioLayer(createRadioCommand(SET_STATE, TX));
+	toRadioLayer(TXBuffer.front()->dup());
+	toRadioLayer(createRadioCommand(SET_STATE, TX));
 
-		// Record whether this was an original transmission or a retransmission
-		if (numTxTries == numTx){
-			trace() << "Sending data packet";
-			collectOutput("TunableMAC packet breakdown", "sent data pkts");
-		}
-		else{
-			trace() << "Sending copy of data packet";
-			collectOutput("TunableMAC packet breakdown", "copies of sent data pkts");
-		}
+	if (numTxTries == numTx){
+		trace() << "Sending data packet";
+		collectOutput("TunableMAC packet breakdown", "sent data pkts");
+	}
+	else{
+		trace() << "Sending copy of data packet";
+		collectOutput("TunableMAC packet breakdown", "copies of sent data pkts");
+	}
 
-		double packetTxTime = ((double)(TXBuffer.front()->getByteLength() +
-		      phyLayerOverhead)) * 8.0 / (1000.0 * phyDataRate);
-		numTxTries--;
+	double packetTxTime = ((double)(TXBuffer.front()->getByteLength() +
+		  phyLayerOverhead)) * 8.0 / (1000.0 * phyDataRate);
+	numTxTries--;
 
-		/* If we have chosen to transmit all packets in our
-		 * buffer now that we found the channel free,
-		 * we schedule the transmission of the next packet
-		 * (or a copy of the current one) once the current
-		 * transmission is done. If all retransmissions are done,
-		 * we also delete the packet from the buffer. No beacons
-		 * or carrier sensing for these packets.
-		 */
-		if (txAllPacketsInFreeChannel){
-			/* schedule for sendBeaconsOrData() to be called
-			 * again, a little faster than it takes to TX the
-			 * packet. We want to keep the radio buffer non-
-			 * empty, and we have to account for the clock drift
-			 */
-			setTimer(SEND_BEACONS_OR_DATA, packetTxTime * 0.95);
-			if (numTxTries <= 0){
-				cancelAndDelete(TXBuffer.front());
-				TXBuffer.pop();
-				/* Set the numTxTries. If no more packets left, it
-				 * will be reset when sendBeaconsOrData() is called
-				 */
-				numTxTries = numTx;
-			}
-			return;
+	if (txAllPacketsInFreeChannel){
+		setTimer(SEND_DATA_PACKET, packetTxTime * 0.95); // <<< THAY ĐỔI: Đổi tên timer
+		if (numTxTries <= 0){
+			cancelAndDelete(TXBuffer.front());
+			TXBuffer.pop();
+			numTxTries = numTx;
 		}
-		/* If we have chosen to carrier sense (and TX beacons) for
-		 * every packet, then we've just sent a _copy_ of the packet
-		 * from the front of the buffer. We now move on to either
-		 * A) the next copy or B) the next packet if the current
-		 * packet has no TX attempts remaining. In case A, we need
-		 * to delay the attempt by reTxInterval. Otherwise, in case
-		 * B, attempt to transmit the next packet as soon as the
-		 * current transmission ends.
-		 */
-		if (numTxTries > 0) {
-			setTimer(ATTEMPT_TX, packetTxTime + reTxInterval);
-		} else {
-			setTimer(ATTEMPT_TX, packetTxTime);
-		}
+		return;
+	}
 	
+	if (numTxTries > 0) {
+		setTimer(ATTEMPT_TX, packetTxTime + reTxInterval);
+	} else {
+		setTimer(ATTEMPT_TX, packetTxTime);
+	}
 }
 
 void TunableMAC::fromRadioLayer(cPacket * pkt, double rssi, double lqi)
@@ -359,48 +300,13 @@ void TunableMAC::fromRadioLayer(cPacket * pkt, double rssi, double lqi)
 		return;
 	}
 
+	// <<< THAY ĐỔI: Xóa logic xử lý BEACON_FRAME
 	switch (macFrame->getFrameType()) {
-
-		case BEACON_FRAME:{
-			collectOutput("TunableMAC packet breakdown", "received beacons");
-			if (macState == MAC_STATE_DEFAULT) {
-				if ((dutyCycle > 0.0) && (dutyCycle < 1.0))
-					cancelTimer(START_SLEEPING);
-			} else if (macState == MAC_STATE_CONTENDING) {
-				cancelTimer(START_CARRIER_SENSING);
-				cancelTimer(ATTEMPT_TX);
-			} else if (macState == MAC_STATE_TX) {
-				/* We ignore the received beacon packet because we
-				 * are in the process of sending our own data
-				 */
-				trace() << "ignoring beacon, we are in MAC_STATE_TX"; 
-				collectOutput("TunableMAC packet breakdown", "received beacons, ignored");
-				break;
-			}
-			macState = MAC_STATE_RX;
-			trace() << "MAC_STATE_RX, received beacon";
-			if ((dutyCycle > 0.0) && (dutyCycle < 1.0)) {
-				setTimer(ATTEMPT_TX, sleepInterval);
-			} else {
-				trace() << "WARNING: received a beacon packet without duty cycle in place";
-				/* This happens only when one node has duty cycle while
-				 * another one does not. TunableMac was not designed for
-				 * this case as more thought is required a possible
-				 * solution could be to include duration information
-				 * in the beacon itself here we will just wait for 0.5
-				 * secs to complete the reception  before trying to
-				 * transmit again.
-				 */
-				setTimer(ATTEMPT_TX, 0.5);
-			}
-			break;
-		}
-
 		case DATA_FRAME:{
 			toNetworkLayer(decapsulatePacket(macFrame));
 			collectOutput("TunableMAC packet breakdown", "received data pkts");
-			if (macState == MAC_STATE_RX) {
-				cancelTimer(ATTEMPT_TX);
+			// Sau khi nhận xong, nếu đang rảnh thì kiểm tra buffer để gửi gói tiếp theo
+			if (macState == MAC_STATE_DEFAULT) {
 				attemptTx();
 			}
 			break;
@@ -416,68 +322,14 @@ int TunableMAC::handleControlCommand(cMessage * msg)
 {
 	TunableMacControlCommand *cmd = check_and_cast <TunableMacControlCommand*>(msg);
 
+	// <<< THAY ĐỔI: Loại bỏ các case không còn phù hợp
 	switch (cmd->getTunableMacCommandKind()) {
-
-		case SET_DUTY_CYCLE:{
-
-			bool hadDutyCycle = false;
-			// check if there was already a non zero valid duty cycle
-			if ((dutyCycle > 0.0) && (dutyCycle < 1.0))
-				hadDutyCycle = true;
-
-			dutyCycle = cmd->getParameter();
-
-			/* If a valid duty cycle is defined, calculate sleepInterval and
-			 * start the periodic sleep/listen cycle using a timer
-			 */
-			if ((dutyCycle > 0.0) && (dutyCycle < 1.0)) {
-				sleepInterval = listenInterval * ((1.0 - dutyCycle) / dutyCycle);
-				if (!hadDutyCycle)
-					setTimer(START_SLEEPING, listenInterval);
-
-			} else {
-				sleepInterval = -1.0;
-				/* We now have no duty cycle, but we had it prior to this command
-				 * Therefore we cancel all duty cycle related messages
-				 * and ensure that radio is not stuck in sleeping state
-				 * Since radio can sleep only when mac is in default state,
-				 * we only wake up the radio in default state also
-				 */
-				if (hadDutyCycle) {
-					cancelTimer(START_SLEEPING);
-					cancelTimer(START_LISTENING);
-					if (macState == MAC_STATE_DEFAULT)
-						toRadioLayer(createRadioCommand(SET_STATE, RX));
-				}
-			}
-			break;
-		}
-
-		case SET_LISTEN_INTERVAL:{
-
-			double tmpValue = cmd->getParameter() / 1000.0;
-			if (tmpValue < 0.0)
-				trace() << "WARNING: invalid listen interval value sent to TunableMac";
-			else {
-				listenInterval = tmpValue;
-				if ((dutyCycle > 0.0) && (dutyCycle < 1.0))
-					sleepInterval = listenInterval * ((1.0 - dutyCycle) / dutyCycle);
-				else
-					sleepInterval = -1.0;
-			}
-			break;
-		}
-
-		case SET_BEACON_INTERVAL_FRACTION:{
-
-			double tmpValue = cmd->getParameter();
-			if ((tmpValue < 0.0) || (tmpValue > 1.0))
-				trace() << "WARNING: invalid Beacon Interval Fraction value sent to TunableMac";
-			else
-				beaconIntervalFraction = tmpValue;
-			break;
-		}
-
+		/* Các case sau cần được xóa đi:
+		 * SET_DUTY_CYCLE
+		 * SET_LISTEN_INTERVAL
+		 * SET_BEACON_INTERVAL_FRACTION
+		 * SET_RANDOM_TX_OFFSET
+		*/
 		case SET_PROB_TX:{
 
 			double tmpValue = cmd->getParameter();
@@ -570,4 +422,3 @@ int TunableMAC::handleControlCommand(cMessage * msg)
 	delete cmd;
 	return 1;
 }
-

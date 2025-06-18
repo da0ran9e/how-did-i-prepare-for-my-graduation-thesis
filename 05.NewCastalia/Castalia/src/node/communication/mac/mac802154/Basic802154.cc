@@ -10,7 +10,7 @@
  *                                                                          *
  ****************************************************************************/
 
-#include "Basic802154.h"
+#include "node/communication/mac/mac802154/Basic802154.h"
 
 // This module is virtual and can not be used directly
 Define_Module(Basic802154); 
@@ -83,18 +83,18 @@ void Basic802154::startup()
 	// Coordinator initialisation
 	if (isPANCoordinator) {
 		if (!isFFD) {
-			opp_error("Only full-function devices (isFFD=true) can be PAN coordinators");
+			throw cRuntimeError("Only full-function devices (isFFD=true) can be PAN coordinators");
 		}
 
 		associatedPAN = SELF_MAC_ADDRESS;
-		macBSN = genk_intrand(0, 255) + 1;
+		macBSN = getRNG(0)->intRand( 255) + 1;
 		
 		//initialise frameOrder and beaconOrder 
 		frameOrder = par("frameOrder");
 		beaconOrder = par("beaconOrder");
 		if (frameOrder < 0 || beaconOrder < 0 || beaconOrder > 14
 		    || frameOrder > 14 || beaconOrder < frameOrder) {
-			opp_error("Invalid combination of frameOrder and beaconOrder parameters. Must be 0 <= frameOrder <= beaconOrder <= 14");
+			throw cRuntimeError("Invalid combination of frameOrder and beaconOrder parameters. Must be 0 <= frameOrder <= beaconOrder <= 14");
 		}
 
 		beaconInterval = baseSuperframeDuration * (1 << beaconOrder);
@@ -102,7 +102,7 @@ void Basic802154::startup()
 		CAPlength = numSuperframeSlots;
 
 		if (beaconInterval <= 0 || frameInterval <= 0) {
-			opp_error("Invalid parameter combination of baseSlotDuration and numSuperframeSlots");
+			throw cRuntimeError("Invalid parameter combination of baseSlotDuration and numSuperframeSlots");
 		}
 		
 		setTimer(FRAME_START, 0);	//frame start is NOW
@@ -272,7 +272,7 @@ void Basic802154::fromNetworkLayer(cPacket * pkt, int dstMacAddress)
 	macPacket->setDstID(dstMacAddress);
 	macPacket->setMac802154PacketType(MAC_802154_DATA_PACKET);
 	macPacket->setSeqNum(seqNum++);
-	if (seqNum > 255) seqNum == 0;
+	if (seqNum > 255) seqNum = 0;
 	if (!acceptNewPacket(macPacket)) packetoverflow++;
 }
 
@@ -670,7 +670,7 @@ void Basic802154::attemptTransmission(const char * descr)
 void Basic802154::performCSMACA()
 {
 	//generate a random delay, multiply it by backoff period length
-	int rnd = genk_intrand(1, (1 << BE) - 1) + 1;
+	int rnd = getRNG(1)->intRand( (1 << BE) - 1) + 1;
 	simtime_t CCAtime = rnd * (unitBackoffPeriod * symbolLen);
 
 	//if using slotted CSMA - need to locate backoff period boundary
