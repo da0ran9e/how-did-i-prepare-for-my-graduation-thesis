@@ -19,57 +19,70 @@
 
 using namespace std;
 
+// Giữ nguyên enum này
 enum backoffTypes {
-	BACKOFF_SLEEP_INT = 2200,
 	BACKOFF_CONSTANT = 2201,
 	BACKOFF_MULTIPLYING = 2202,
 	BACKOFF_EXPONENTIAL = 2203
 };
 
+// <<< THAY ĐỔI: Mở rộng MacStates để quản lý RTS/CTS và ACK
 enum MacStates {
-	MAC_STATE_DEFAULT = 1,
-	MAC_STATE_TX = 2,
-	MAC_STATE_CONTENDING = 3,
-	MAC_STATE_RX = 4
+	MAC_STATE_DEFAULT = 1,      // Trạng thái mặc định, sẵn sàng
+	MAC_STATE_TX = 2,           // Đang truyền gói tin vật lý
+	MAC_STATE_CONTENDING = 3,   // Đang trong quá trình tranh chấp kênh (backoff)
+	MAC_STATE_RX = 4,           // Đã nhận gói tin và đang xử lý
+	MAC_STATE_WAIT_FOR_CTS = 5, // Đã gửi RTS, đang đợi CTS
+	MAC_STATE_WAIT_FOR_ACK = 6  // Đã gửi DATA, đang đợi ACK
 };
 
+// <<< THAY ĐỔI: Mở rộng TunableMacTimers để quản lý timeout
 enum TunableMacTimers {
-	// START_SLEEPING = 1,
-	// START_LISTENING = 2,
 	START_CARRIER_SENSING = 3,
 	ATTEMPT_TX = 4,
-	SEND_BEACONS_OR_DATA = 5,
+	SEND_DATA_PACKET = 5,       // Đã đổi tên từ SEND_BEACONS_OR_DATA
+    CTS_TIMEOUT = 6,            // Timer cho việc chờ CTS
+    ACK_TIMEOUT = 7             // Timer cho việc chờ ACK
 };
 
 class TunableMAC: public VirtualMac {
  private:
-	/*--- The .ned file's parameters ---*/
-	// double dutyCycle;		// sleeping interval / sleeping + listening intervals
-	// double listenInterval;	// in secs, note: parammeter in omnetpp.ini in msecs
-	// double beaconIntervalFraction;
-	double probTx;			// probability of a single transmission to happen
-	int numTx;				// when we have something to send, how many times do we try to transmit it.
-							// We say "try" because probTx might be < 1
-	// double randomTxOffset;	// when have somethingnto transmit, don't do it immediatelly
-	double reTxInterval;	// the interval between retransmissions, in msec but after a
-							// time [0..randomTxOffset] chosen randomly (uniform)
-	// int beaconFrameSize;	// in bytes
-	int backoffType;		// can be 0 or 1 or 2 or 3
-	double backoffBaseValue;// the backoff value
-	double CSMApersistance; // value in [0..1], is CSMA non-persistent, p-persistent, or 1-persistent
-	bool txAllPacketsInFreeChannel; // when channel free, tx all packets in buffer?
-	bool sleepDuringBackoff;	// for no dutyCycle case: sleep when backing off?
+	/*--- Tham số từ file .ned ---*/
+	// Các tham số liên quan đến duty cycle và beacon đã được xóa
+	double probTx;
+	int numTx;
+	double reTxInterval;
+	int backoffType;
+	double backoffBaseValue;
+	double CSMApersistance;
+	bool txAllPacketsInFreeChannel;
+	bool sleepDuringBackoff;
+    
+    // <<< THÊM MỚI: Các tham số cho RTS/CTS và ACK
+    bool useRtsCts;
+    int rtsThreshold;
+    int ctsPacketSize;
+    int ackPacketSize;
+    int maxRetries;
+    simtime_t ctsTimeout; // Thời gian chờ CTS
 
 	int phyLayerOverhead;
-	simtime_t phyDelayForValidCS;	// delay for valid CS
+	simtime_t phyDelayForValidCS;
 	double phyDataRate;
 
 	int macState;
-	int numTxTries;
-	int backoffTimes;	// number of consequtive backoff times
-	// int remainingBeaconsToTx;
-	// double beaconTxTime;	// time it takes to TX a beacon in secs
-	// double sleepInterval;	// in secs
+	int backoffTimes;
+    
+    // <<< THAY ĐỔI: Biến quản lý truyền lại được thiết kế lại
+    int currentPacketRetries; // Số lần thử lại còn lại cho gói tin HIỆN TẠI
+
+    // <<< THÊM MỚI: Cấu trúc dữ liệu cho EDCA (4 Access Categories)
+    std::queue<cPacket*> TXBuffer_perAC[4];
+    int AIFSN[4];
+    int CWmin[4];
+    int CWmax[4];
+    int contentionWindow[4];   // Giá trị CW hiện tại cho mỗi AC
+    int backoffCounter[4];     // Bộ đếm backoff cho mỗi AC
 
  protected:
 	void startup();
@@ -79,7 +92,15 @@ class TunableMAC: public VirtualMac {
 	void timerFiredCallback(int);
 	void handleCarrierSenseResult(int);
 	void attemptTx();
-	void sendBeaconsOrData();
+	
+    // <<< THAY ĐỔI: Tên hàm đã được cập nhật
+	void sendDataPacket();
+
+    // <<< THÊM MỚI: Các hàm helper cho logic mới
+    void startContention();
+    void sendRTS();
+    void sendACK(int destination);
+
 };
 
-#endif				//TUNABLEMACMODULE
+#endif //TUNABLEMACMODULE

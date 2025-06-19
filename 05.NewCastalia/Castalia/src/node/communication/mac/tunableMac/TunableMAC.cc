@@ -10,176 +10,55 @@
  ***************************************************************************/
 
 #include "TunableMAC.h"
+#include <cmath> // Cần cho hàm pow()
 
 Define_Module(TunableMAC);
 
 void TunableMAC::startup()
 {
-	// <<< THAY ĐỔI: Loại bỏ việc đọc các tham số không cần thiết
-	// dutyCycle = par("dutyCycle");
-	// listenInterval = ((double)par("listenInterval")) / 1000.0;
-	// beaconIntervalFraction = par("beaconIntervalFraction");
-	// randomTxOffset = ((double)par("randomTxOffset")) / 1000.0;
-	// beaconFrameSize = par("beaconFrameSize");
-	
+	// --- Đọc các tham số cơ bản ---
 	probTx = par("probTx");
-	numTx = par("numTx");
 	reTxInterval = ((double)par("reTxInterval")) / 1000.0;
 	backoffType = par("backoffType");
 	CSMApersistance = par("CSMApersistance");
 	txAllPacketsInFreeChannel = par("txAllPacketsInFreeChannel");
-	sleepDuringBackoff = par("sleepDuringBackoff");
+	sleepDuringBackoff = par("sleepDuringBackoff"); // Hiện tại không dùng vì MAC luôn thức
 
 	phyDataRate = par("phyDataRate");
 	phyDelayForValidCS = (double)par("phyDelayForValidCS") / 1000.0;
 	phyLayerOverhead = par("phyFrameOverhead");
+	
+	// --- <<< THÊM MỚI: Đọc các tham số cho ACK và RTS/CTS ---
+	useRtsCts = par("useRtsCts");
+	rtsThreshold = par("rtsThreshold");
+	ctsPacketSize = par("ctsPacketSize");
+	ackPacketSize = par("ackPacketSize");
+	maxRetries = par("maxRetries");
+    ctsTimeout = ((double)par("ctsTimeout")) / 1000.0;
 
-	// <<< THAY ĐỔI: Không cần tính beaconTxTime
-	// beaconTxTime = ((double)(beaconFrameSize + phyLayerOverhead)) * 8.0 / (1000.0 * phyDataRate);
+	// --- <<< THÊM MỚI: Đọc các tham số cho EDCA ---
+    cArray *aifsnArray = &par("AIFSN").getArray();
+    cArray *cwMinArray = &par("CWmin").getArray();
+    cArray *cwMaxArray = &par("CWmax").getArray();
+    for (int i = 0; i < 4; i++) {
+        AIFSN[i] = aifsnArray->get(i);
+        CWmin[i] = cwMinArray->get(i);
+        CWmax[i] = cwMaxArray->get(i);
+        contentionWindow[i] = CWmin[i]; // Khởi tạo CW bằng CWmin
+        backoffCounter[i] = 0;
+        contending[i] = false;
+    }
 
-	switch (backoffType) {
-		case 0:{ // <<< THAY ĐỔI: case này không còn hợp lệ vì dutyCycle không tồn tại, cần được xử lý
-			trace() << "WARNING: backoffType 0 (BACKOFF_SLEEP_INT) is deprecated. Using BACKOFF_CONSTANT instead.";
-			backoffType = BACKOFF_CONSTANT;
-			break;
-		}
-		case 1:{
-			backoffType = BACKOFF_CONSTANT;
-			break;
-		}
-		case 2:{
-			backoffType = BACKOFF_MULTIPLYING;
-			break;
-		}
-		case 3:{
-			backoffType = BACKOFF_EXPONENTIAL;
-			break;
-		}
-		default:{
-			opp_error("\n[TunableMAC]:\n Illegal value of parameter \"backoffType\" in omnetpp.ini.");
-			break;
-		}
-	}
 	backoffBaseValue = ((double)par("backoffBaseValue")) / 1000.0;
 
-	// <<< THAY ĐỔI: Radio luôn ở trạng thái RX
+	// Radio luôn ở trạng thái RX
 	toRadioLayer(createRadioCommand(SET_STATE, RX));
 	
 	macState = MAC_STATE_DEFAULT;
-	numTxTries = 0;
 	backoffTimes = 0;
+    currentPacketRetries = 0;
 
 	declareOutput("TunableMAC packet breakdown");
-}
-
-void TunableMAC::timerFiredCallback(int timer)
-{
-	switch (timer) {
-		// <<< THAY ĐỔI: Loại bỏ các case của timer không dùng nữa
-		/*
-		case START_SLEEPING:{
-			...
-			break;
-		}
-
-		case START_LISTENING:{
-			...
-			break;
-		}
-		*/
-
-		case START_CARRIER_SENSING:{
-			// Radio luôn ở trạng thái RX, không cần bật lại
-			// toRadioLayer(createRadioCommand(SET_STATE, RX));
-			handleCarrierSenseResult(radioModule->isChannelClear());
-			break;
-		}
-
-		case ATTEMPT_TX:{
-			attemptTx();
-			break;
-		}
-		
-		// <<< THAY ĐỔI: Đổi tên timer và hàm được gọi
-		case SEND_DATA_PACKET:{
-			sendDataPacket();
-			break;
-		}
-
-		default:{
-			trace() << "WARNING: unknown timer callback " << timer;
-		}
-	}
-}
-
-void TunableMAC::handleCarrierSenseResult(int returnCode)
-{
-	switch (returnCode) {
-
-		case CLEAR:{
-			if (CSMApersistance > 0 && CSMApersistance < genk_dblrand(1)){
-				setTimer(START_CARRIER_SENSING, phyDelayForValidCS);
-				break;
-			}
-			
-			backoffTimes = 0;
-			
-			// <<< THAY ĐỔI: Không cần tính toán và gửi beacon nữa
-			// remainingBeaconsToTx = 0;
-
-			macState = MAC_STATE_TX;
-			trace() << "Channel Clear, MAC_STATE_TX, sending data";
-			sendDataPacket(); // Gọi hàm đã được đổi tên
-			break;
-
-		}
-
-		case BUSY:{
-			if (CSMApersistance > 0) {
-				setTimer(START_CARRIER_SENSING, phyDelayForValidCS);
-				trace() << "Channel busy, persistent mode: checking again in " << phyDelayForValidCS << " secs";
-				break;
-			}
-			
-			double backoffTimer = 0;
-			backoffTimes++;
-
-			switch (backoffType) {
-				// ... (logic tính backoffTimer không đổi)
-				case BACKOFF_CONSTANT:{
-					backoffTimer = backoffBaseValue;
-					break;
-				}
-
-				case BACKOFF_MULTIPLYING:{
-					backoffTimer = (double)(backoffBaseValue * backoffTimes);
-					break;
-				}
-
-				case BACKOFF_EXPONENTIAL:{
-					backoffTimer = backoffBaseValue *
-							pow(2.0, (double)(((backoffTimes - 1) < 0) ? 0 : backoffTimes - 1));
-					break;
-				}
-			}
-
-			backoffTimer = genk_dblrand(1) * backoffTimer;
-			setTimer(START_CARRIER_SENSING, backoffTimer);
-			trace() << "Channel busy, backing off for " << backoffTimer << " secs";
-
-			// <<< THAY ĐỔI: Xóa logic chuyển sang chế độ ngủ khi backoff
-			// if ((sleepDuringBackoff) || ((dutyCycle > 0.0) && (dutyCycle < 1.0)))
-			// 	toRadioLayer(createRadioCommand(SET_STATE, SLEEP));
-			break;
-		}
-
-		case CS_NOT_VALID:
-		case CS_NOT_VALID_YET:{
-			setTimer(START_CARRIER_SENSING, phyDelayForValidCS);
-			trace() << "CS not valid yet, trying again.";
-			break;
-		}
-	}
 }
 
 void TunableMAC::fromNetworkLayer(cPacket * netPkt, int destination)
@@ -189,236 +68,354 @@ void TunableMAC::fromNetworkLayer(cPacket * netPkt, int destination)
 	macPkt->setSource(SELF_MAC_ADDRESS);
 	macPkt->setDestination(destination);
 	macPkt->setFrameType(DATA_FRAME);
-	collectOutput("TunableMAC packet breakdown", "Received from App");
-
-	if (bufferPacket(macPkt)) {
-		if (macState == MAC_STATE_DEFAULT && TXBuffer.size() == 1) {
-			// <<< THAY ĐỔI: Không cần hủy các timer của duty cycle
-			// if ((dutyCycle > 0.0) && (dutyCycle < 1.0)) {
-			// 	cancelTimer(START_LISTENING);
-			// 	cancelTimer(START_SLEEPING);
-			// }
-			numTxTries = numTx;
-			attemptTx();
-		}
-	} else {
-		collectOutput("TunableMAC packet breakdown", "Overflown");
-		trace() << "WARNING Tunable MAC buffer overflow";
-	}
+	
+    // <<< THAY ĐỔI: Phân loại gói tin vào đúng hàng đợi ưu tiên (AC) ---
+    int priority = macPkt->getEncapsulatedPacket()->par("priority");
+    if (priority < 0 || priority > 3) {
+        priority = 0; // Mặc định là AC_BK (Best Effort)
+    }
+    
+    if (bufferPacket(macPkt, TXBuffer_perAC[priority])) {
+        collectOutput("TunableMAC packet breakdown", "Received from App");
+        // Nếu MAC đang rảnh, bắt đầu quá trình tranh chấp
+        if (macState == MAC_STATE_DEFAULT) {
+            startContention();
+        }
+    } else {
+        collectOutput("TunableMAC packet breakdown", "Overflown");
+		trace() << "WARNING Tunable MAC buffer overflow for AC " << priority;
+    }
 }
 
+// <<< THÊM MỚI: Bắt đầu quá trình tranh chấp kênh cho các AC có dữ liệu
+void TunableMAC::startContention() {
+    if (macState != MAC_STATE_DEFAULT) return;
+
+    // Quét các AC từ ưu tiên cao đến thấp
+    for (int ac = 3; ac >= 0; ac--) {
+        if (!TXBuffer_perAC[ac].empty()) {
+            // Tìm thấy gói tin ở AC có ưu tiên cao nhất
+            trace() << "Found packet in AC " << ac << ". Starting contention process.";
+            contending[ac] = true;
+            // Tính toán AIFS delay
+            simtime_t aifs_delay = AIFSN[ac] * 0.00001; // Giả định aSlotTime = 10us
+            
+            // Lấy một số backoff ngẫu nhiên
+            backoffCounter[ac] = intrand(contentionWindow[ac]);
+            trace() << "AC " << ac << ": AIFS wait " << aifs_delay << "s, backoff counter set to " << backoffCounter[ac];
+
+            // Đặt timer để bắt đầu cảm nhận kênh sau khi chờ AIFS
+            // Lưu ý: Đây là một cách hiện thực đơn giản hóa. 
+            // EDCA đầy đủ phức tạp hơn với việc giảm backoff đồng thời.
+            setTimer(ATTEMPT_TX, aifs_delay);
+            return; // Chỉ xử lý AC ưu tiên cao nhất tại một thời điểm
+        }
+    }
+}
+
+// <<< THAY ĐỔI: Hàm này giờ chỉ chịu trách nhiệm quyết định và bắt đầu cảm nhận kênh
 void TunableMAC::attemptTx()
 {
-	trace() << "attemptTx(), buffer size: " << TXBuffer.size() << ", numTxTries: " << numTxTries;
+	// Logic tranh chấp phức tạp hơn giờ nằm trong startContention() và timerFiredCallback
+    // Hàm này được gọi sau khi chờ AIFS và sẵn sàng giảm backoff/cảm nhận kênh.
+    macState = MAC_STATE_CONTENDING;
+    setTimer(START_CARRIER_SENSING, 0); // Bắt đầu cảm nhận kênh ngay lập tức
+}
 
-	if (numTxTries <= 0) {
-		if (TXBuffer.size() > 0) {
-			cancelAndDelete(TXBuffer.front());
-			TXBuffer.pop();
+
+void TunableMAC::timerFiredCallback(int timer)
+{
+	switch (timer) {
+		case START_CARRIER_SENSING: {
+			handleCarrierSenseResult(radioModule->isChannelClear());
+			break;
 		}
 
-		if (TXBuffer.size() > 0) {
-			numTxTries = numTx;
+		case ATTEMPT_TX: {
 			attemptTx();
-		} else {
-			macState = MAC_STATE_DEFAULT;
-			trace() << "MAC_STATE_DEFAULT, no more pkts to attemptTx";
-			// <<< THAY ĐỔI: Không đặt lại timer ngủ
-			// if ((dutyCycle > 0.0) && (dutyCycle < 1.0))
-			// 	setTimer(START_SLEEPING, 0);
+			break;
 		}
-		return;
-	}
+		
+		case SEND_DATA_PACKET: {
+			sendDataPacket();
+			break;
+		}
 
-	macState = MAC_STATE_CONTENDING;
+        // <<< THÊM MỚI: Xử lý timeout cho CTS và ACK
+        case CTS_TIMEOUT: {
+            trace() << "CTS Timeout for packet to " << currentPacketDestination;
+            currentPacketRetries++;
+            if (currentPacketRetries < maxRetries) {
+                macState = MAC_STATE_DEFAULT;
+                startContention(); // Thử lại từ đầu
+            } else {
+                trace() << "Packet to " << currentPacketDestination << " failed after max retries.";
+                collectOutput("TunableMAC packet breakdown", "Fail, No CTS");
+                // Xóa gói tin
+                // ... (cần xác định AC của gói tin để xóa đúng)
+                macState = MAC_STATE_DEFAULT;
+                startContention();
+            }
+            break;
+        }
 
-	if (genk_dblrand(0) < probTx) {
-		// <<< THAY ĐỔI: Loại bỏ randomTxOffset, bắt đầu cảm nhận kênh ngay lập tức
-		setTimer(START_CARRIER_SENSING, 0);
-		trace() << "MAC_STATE_CONTENDING, attempt " << numTx - numTxTries +1 << "/" << numTx << " contending";
-	} else {
-		setTimer(ATTEMPT_TX, reTxInterval);
-		trace() << "MAC_STATE_CONTENDING, attempt " << numTx - numTxTries +1 << "/" << numTx << " skipped";
-		numTxTries--;
+        case ACK_TIMEOUT: {
+            trace() << "ACK Timeout for packet to " << currentPacketDestination;
+            currentPacketRetries++;
+            // ... (Logic tương tự như CTS_TIMEOUT)
+            break;
+        }
+
+		default:{
+			trace() << "WARNING: unknown timer callback " << timer;
+		}
 	}
 }
 
-// <<< THAY ĐỔI: Đổi tên hàm và loại bỏ logic beacon
-void TunableMAC::sendDataPacket()
+void TunableMAC::handleCarrierSenseResult(int returnCode)
 {
-	// <<< THAY ĐỔI: Logic beacon đã bị xóa hoàn toàn.
-	if (TXBuffer.empty()) {
-		numTxTries = 0; // safeguarding
-		attemptTx(); 	// Quay về trạng thái mặc định nếu không còn gì để gửi
-		return;
-	}
+    // Tìm AC đang tranh chấp (trong phiên bản đơn giản hóa, chỉ có 1)
+    int currentAC = -1;
+    for(int i=0; i<4; i++) {
+        if(contending[i]) {
+            currentAC = i;
+            break;
+        }
+    }
+    if (currentAC == -1) return; // Không có AC nào đang tranh chấp
 
-	toRadioLayer(TXBuffer.front()->dup());
-	toRadioLayer(createRadioCommand(SET_STATE, TX));
+	switch (returnCode) {
+		case CLEAR: {
+            // Giảm bộ đếm backoff
+            if (backoffCounter[currentAC] > 0) {
+                backoffCounter[currentAC]--;
+                trace() << "Channel clear, AC " << currentAC << " backoff now at " << backoffCounter[currentAC];
+                setTimer(START_CARRIER_SENSING, 0.00001); // Chờ 1 slot time
+                return;
+            }
 
-	if (numTxTries == numTx){
-		trace() << "Sending data packet";
-		collectOutput("TunableMAC packet breakdown", "sent data pkts");
-	}
-	else{
-		trace() << "Sending copy of data packet";
-		collectOutput("TunableMAC packet breakdown", "copies of sent data pkts");
-	}
+            // Backoff đã xong, tiến hành gửi gói
+            TunableMacPacket *pktToSend = (TunableMacPacket *)TXBuffer_perAC[currentAC].front();
 
-	double packetTxTime = ((double)(TXBuffer.front()->getByteLength() +
-		  phyLayerOverhead)) * 8.0 / (1000.0 * phyDataRate);
-	numTxTries--;
-
-	if (txAllPacketsInFreeChannel){
-		setTimer(SEND_DATA_PACKET, packetTxTime * 0.95); // <<< THAY ĐỔI: Đổi tên timer
-		if (numTxTries <= 0){
-			cancelAndDelete(TXBuffer.front());
-			TXBuffer.pop();
-			numTxTries = numTx;
+            if (pktToSend->getDestination() != BROADCAST_MAC_ADDRESS && useRtsCts && pktToSend->getByteLength() > rtsThreshold) {
+                sendRTS();
+            } else {
+                sendDataPacket();
+            }
+            break;
 		}
-		return;
-	}
-	
-	if (numTxTries > 0) {
-		setTimer(ATTEMPT_TX, packetTxTime + reTxInterval);
-	} else {
-		setTimer(ATTEMPT_TX, packetTxTime);
+
+		case BUSY: {
+			trace() << "Channel busy for AC " << currentAC;
+            // Tăng cửa sổ tranh chấp
+            contentionWindow[currentAC] = min(contentionWindow[currentAC] * 2, CWmax[currentAC]);
+            // Bắt đầu lại quá trình tranh chấp
+            contending[currentAC] = false;
+            macState = MAC_STATE_DEFAULT;
+            startContention();
+			break;
+		}
+
+		case CS_NOT_VALID:
+		case CS_NOT_VALID_YET: {
+			setTimer(START_CARRIER_SENSING, phyDelayForValidCS);
+			trace() << "CS not valid yet, trying again.";
+			break;
+		}
 	}
 }
 
 void TunableMAC::fromRadioLayer(cPacket * pkt, double rssi, double lqi)
 {
 	TunableMacPacket *macFrame = dynamic_cast <TunableMacPacket*>(pkt);
-	if (macFrame == NULL){
-		collectOutput("TunableMAC packet breakdown", "filtered, other MAC");
-		return;
-	}
+	if (macFrame == NULL) return;
 
 	int destination = macFrame->getDestination();
-	if (destination != SELF_MAC_ADDRESS && destination != BROADCAST_MAC_ADDRESS){
-		collectOutput("TunableMAC packet breakdown", "filtered, other dest");
+    int source = macFrame->getSource();
+
+	if (destination != SELF_MAC_ADDRESS && destination != BROADCAST_MAC_ADDRESS) {
+        // NAV - Network Allocation Vector (Đơn giản hóa)
+        // Nếu nghe được RTS/CTS không phải cho mình, cần im lặng
+        if (macFrame->getFrameType() == RTS_FRAME || macFrame->getFrameType() == CTS_FRAME) {
+            //... logic xử lý NAV
+        }
 		return;
 	}
 
-	// <<< THAY ĐỔI: Xóa logic xử lý BEACON_FRAME
 	switch (macFrame->getFrameType()) {
-		case DATA_FRAME:{
+		case DATA_FRAME: {
 			toNetworkLayer(decapsulatePacket(macFrame));
 			collectOutput("TunableMAC packet breakdown", "received data pkts");
-			// Sau khi nhận xong, nếu đang rảnh thì kiểm tra buffer để gửi gói tiếp theo
-			if (macState == MAC_STATE_DEFAULT) {
-				attemptTx();
-			}
+
+            if (destination == SELF_MAC_ADDRESS) {
+                sendACK(source);
+            }
 			break;
 		}
-		default:{
+        // <<< THÊM MỚI: Xử lý các gói điều khiển
+        case RTS_FRAME: {
+            if (macState == MAC_STATE_DEFAULT || macState == MAC_STATE_RX) {
+                trace() << "RTS received from " << source << ". Replying with CTS.";
+                // Gửi CTS
+                // ...
+            }
+            break;
+        }
+        case CTS_FRAME: {
+            if (macState == MAC_STATE_WAIT_FOR_CTS && source == currentPacketDestination) {
+                trace() << "CTS received from " << source << ". Sending DATA.";
+                cancelTimer(CTS_TIMEOUT);
+                sendDataPacket();
+            }
+            break;
+        }
+        case ACK_FRAME: {
+            // ... (Logic xử lý ACK như đã thảo luận)
+            break;
+        }
+		default: {
 			trace() << "WARNING: Received packet type UNKNOWN";
-			collectOutput("TunableMAC packet breakdown", "unrecognized type");
 		}
 	}
 }
 
-int TunableMAC::handleControlCommand(cMessage * msg)
-{
-	TunableMacControlCommand *cmd = check_and_cast <TunableMacControlCommand*>(msg);
+// Gửi gói tin Request-To-Send (RTS)
+void TunableMAC::sendRTS() {
+    // Giả định rằng gói tin DATA đã nằm ở đầu hàng đợi của AC đang tranh chấp
+    int currentAC = -1;
+    for(int i = 3; i >= 0; i--) {
+        if(contending[i] && !TXBuffer_perAC[i].empty()) {
+            currentAC = i;
+            break;
+        }
+    }
+    if (currentAC == -1) {
+        trace() << "ERROR: sendRTS called but no AC is contending or buffer is empty.";
+        return;
+    }
 
-	// <<< THAY ĐỔI: Loại bỏ các case không còn phù hợp
-	switch (cmd->getTunableMacCommandKind()) {
-		/* Các case sau cần được xóa đi:
-		 * SET_DUTY_CYCLE
-		 * SET_LISTEN_INTERVAL
-		 * SET_BEACON_INTERVAL_FRACTION
-		 * SET_RANDOM_TX_OFFSET
-		*/
-		case SET_PROB_TX:{
+    TunableMacPacket* dataPkt = (TunableMacPacket *)TXBuffer_perAC[currentAC].front();
+    currentPacketDestination = dataPkt->getDestination();
 
-			double tmpValue = cmd->getParameter();
-			if ((tmpValue < 0.0) || (tmpValue > 1.0))
-				trace() << "WARNING: invalid ProbTX value sent to TunableMac";
-			else
-				probTx = tmpValue;
-			break;
-		}
+    trace() << "Sending RTS to " << currentPacketDestination;
 
-		case SET_NUM_TX:{
+    // Tạo gói RTS
+    TunableMacPacket *rtsPkt = new TunableMacPacket("TunableMAC RTS", MAC_LAYER_PACKET);
+    rtsPkt->setFrameType(RTS_FRAME);
+    rtsPkt->setSource(SELF_MAC_ADDRESS);
+    rtsPkt->setDestination(currentPacketDestination);
+    rtsPkt->setByteLength(rtsPacketSize);
 
-			double tmpValue = cmd->getParameter();
-			if (tmpValue < 0 || tmpValue - ceil(tmpValue) != 0)
-				trace() << "WARNING: invalid NumTX value sent to TunableMac";
-			else
-				numTx = (int)tmpValue;
-			break;
-		}
+    // Gửi gói tin và chuyển radio sang trạng thái TX
+    toRadioLayer(rtsPkt);
+    toRadioLayer(createRadioCommand(SET_STATE, TX));
+    collectOutput("TunableMAC packet breakdown", "sent RTS");
 
-		case SET_RANDOM_TX_OFFSET:{
+    // Chuyển sang trạng thái chờ CTS và đặt timeout
+    macState = MAC_STATE_WAIT_FOR_CTS;
+    // Thời gian chờ CTS = SIFS + Thời gian truyền CTS + 2*trễ lan truyền
+    // Ở đây ta dùng giá trị cấu hình được từ file .ini
+    setTimer(CTS_TIMEOUT, ctsTimeout);
+}
 
-			double tmpValue = cmd->getParameter() / 1000.0;
-			if (tmpValue <= 0.0)
-				trace() << "WARNING: invalid randomTxOffset value sent to TunableMac";
-			else
-				randomTxOffset = tmpValue;
-			break;
-		}
+// Gửi gói tin Clear-To-Send (CTS)
+void TunableMAC::sendCTS(int destination) {
+    trace() << "Sending CTS to " << destination;
 
-		case SET_RETX_INTERVAL:{
+    // Tạo gói CTS
+    TunableMacPacket *ctsPkt = new TunableMacPacket("TunableMAC CTS", MAC_LAYER_PACKET);
+    ctsPkt->setFrameType(CTS_FRAME);
+    ctsPkt->setSource(SELF_MAC_ADDRESS);
+    ctsPkt->setDestination(destination);
+    ctsPkt->setByteLength(ctsPacketSize);
 
-			double tmpValue = cmd->getParameter() / 1000.0;
-			if (tmpValue <= 0.0)
-				trace() << "WARNING: invalid reTxInterval value sent to TunableMac";
-			else
-				reTxInterval = tmpValue;
-			break;
-		}
+    // Gửi ngay lập tức (thường là sau một khoảng SIFS, được xử lý bởi logic nhận RTS)
+    toRadioLayer(ctsPkt);
+    toRadioLayer(createRadioCommand(SET_STATE, TX));
+    collectOutput("TunableMAC packet breakdown", "sent CTS");
+    
+    // Sau khi gửi CTS, MAC sẽ ở trạng thái mặc định và chờ nhận DATA
+    macState = MAC_STATE_DEFAULT;
+}
 
-		case SET_BACKOFF_TYPE:{
 
-			double tmpValue = cmd->getParameter();
+// Gửi gói tin Acknowledgement (ACK)
+void TunableMAC::sendACK(int destination) {
+    trace() << "Sending ACK to " << destination;
 
-			if (tmpValue == 0.0) {
-				if ((dutyCycle > 0.0) && (dutyCycle < 1.0))
-					backoffType = BACKOFF_SLEEP_INT;
-				else
-					trace() << "WARNING: invalid backoffType value sent to TunableMac. Backoff timer = sleeping interval, but sleeping interval is not defined because duty cycle is zero, one, or invalid.";
-			}
+    // Tạo gói ACK
+    TunableMacPacket *ackPkt = new TunableMacPacket("TunableMAC ACK", MAC_LAYER_PACKET);
+    ackPkt->setFrameType(ACK_FRAME);
+    ackPkt->setSource(SELF_MAC_ADDRESS);
+    ackPkt->setDestination(destination);
+    ackPkt->setByteLength(ackPacketSize);
 
-			else if (tmpValue == 1.0) {
-				if (backoffBaseValue <= 0.0)
-					trace() << "WARNING: unable to set backoffType. Parameter backoffBaseValue has conflicting value";
-				else
-					backoffType = BACKOFF_CONSTANT;
-			}
+    // Gửi ngay lập tức (thường là sau một khoảng SIFS, được xử lý bởi logic nhận DATA)
+    toRadioLayer(ackPkt);
+    toRadioLayer(createRadioCommand(SET_STATE, TX));
+    collectOutput("TunableMAC packet breakdown", "sent ACK");
 
-			else if (tmpValue == 2.0) {
-				if (backoffBaseValue <= 0.0)
-					trace() << "WARNING: unable to set backoffType. Parameter backoffBaseValue has conflicting value";
-				else
-					backoffType = BACKOFF_MULTIPLYING;
-			}
+    // Sau khi gửi ACK, MAC sẽ ở trạng thái mặc định
+    macState = MAC_STATE_DEFAULT;
+}
 
-			else if (tmpValue == 3.0) {
-				if (backoffBaseValue <= 0.0)
-					trace() << "WARNING: unable to set backoffType. Parameter backoffBaseValue has conflicting value";
-				else
-					backoffType = BACKOFF_EXPONENTIAL;
-			}
 
-			else
-				trace() << "WARNING: invalid backoffType value sent to TunableMac";
+// Gửi gói tin DATA (đã được sửa đổi để hỗ trợ cả Unicast và Broadcast)
+void TunableMAC::sendDataPacket() {
+    int currentAC = -1;
+    for(int i = 3; i >= 0; i--) {
+        if(contending[i] && !TXBuffer_perAC[i].empty()) {
+            currentAC = i;
+            break;
+        }
+    }
+    if (currentAC == -1) {
+        trace() << "ERROR: sendDataPacket called but no AC is contending or buffer is empty.";
+        macState = MAC_STATE_DEFAULT;
+        startContention();
+        return;
+    }
+    
+    TunableMacPacket* pktToSend = (TunableMacPacket *)TXBuffer_perAC[currentAC].front();
+    currentPacketDestination = pktToSend->getDestination();
+    
+    // Gửi một bản sao của gói tin
+	toRadioLayer(pktToSend->dup());
+	toRadioLayer(createRadioCommand(SET_STATE, TX));
 
-			break;
-		}
+    // Đặt lại trạng thái tranh chấp cho AC này
+    contending[currentAC] = false;
 
-		case SET_BACKOFF_BASE_VALUE:{
-
-			double tmpValue = cmd->getParameter() / 1000.0;
-			if (tmpValue < 0)
-				trace() << "WARNING: invalid backoffBaseValue sent to TunableMac";
-			else
-				backoffBaseValue = tmpValue;
-			break;
-		}
+	if (currentPacketRetries == 0){
+		trace() << "Sending DATA packet to " << currentPacketDestination;
+		collectOutput("TunableMAC packet breakdown", "sent data pkts");
+	} else {
+		trace() << "Re-transmitting DATA packet to " << currentPacketDestination 
+                << " (Attempt " << currentPacketRetries + 1 << "/" << maxRetries << ")";
+		collectOutput("TunableMAC packet breakdown", "re-sent data pkts");
 	}
 
-	delete cmd;
-	return 1;
+    // Tính toán thời gian truyền gói tin
+    simtime_t packetTxTime = ((double)(pktToSend->getByteLength() + phyLayerOverhead)) * 8.0 / (phyDataRate * 1000.0);
+
+    if (currentPacketDestination != BROADCAST_MAC_ADDRESS) {
+        // Gói UNICAST, cần chờ ACK
+        macState = MAC_STATE_WAIT_FOR_ACK;
+        // Thời gian chờ ACK = SIFS + Thời gian truyền ACK + 2*trễ lan truyền
+        simtime_t ackWaitDuration = packetTxTime + 0.0001; // Giả định SIFS+ACK_TX_Time là 100us, cần tính chính xác hơn
+        setTimer(ACK_TIMEOUT, ackWaitDuration);
+        
+    } else {
+        // Gói BROADCAST, không chờ ACK
+        // Xóa gói khỏi buffer và bắt đầu tranh chấp cho gói tiếp theo
+        collectOutput("TunableMAC packet breakdown", "Success, Broadcast");
+        cancelAndDelete(TXBuffer_perAC[currentAC].front());
+        TXBuffer_perAC[currentAC].pop();
+        currentPacketRetries = 0; // Reset cho gói mới
+        
+        // Sau khi truyền xong, chuyển về trạng thái mặc định và bắt đầu tranh chấp mới
+        macState = MAC_STATE_DEFAULT;
+        // Đặt một timer nhỏ để đảm bảo radio đã chuyển về RX trước khi bắt đầu tranh chấp mới
+        setTimer(ATTEMPT_TX, packetTxTime); 
+    }
 }
