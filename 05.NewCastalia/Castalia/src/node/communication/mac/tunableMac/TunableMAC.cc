@@ -10,80 +10,114 @@
  ***************************************************************************/
 
 #include "TunableMAC.h"
+#include <vector>
 #include <cmath> // Cần cho hàm pow()
 
 Define_Module(TunableMAC);
 
 void TunableMAC::startup()
 {
-	// --- Đọc các tham số cơ bản ---
-	probTx = par("probTx");
-	reTxInterval = ((double)par("reTxInterval")) / 1000.0;
-	backoffType = par("backoffType");
-	CSMApersistance = par("CSMApersistance");
-	txAllPacketsInFreeChannel = par("txAllPacketsInFreeChannel");
-	sleepDuringBackoff = par("sleepDuringBackoff"); // Hiện tại không dùng vì MAC luôn thức
+    // --- Đọc các tham số cơ bản ---
+    probTx = par("probTx");
+    reTxInterval = ((double)par("reTxInterval")) / 1000.0;
+    backoffType = par("backoffType");
+    CSMApersistance = par("CSMApersistance");
+    txAllPacketsInFreeChannel = par("txAllPacketsInFreeChannel");
+    sleepDuringBackoff = par("sleepDuringBackoff");
 
-	phyDataRate = par("phyDataRate");
-	phyDelayForValidCS = (double)par("phyDelayForValidCS") / 1000.0;
-	phyLayerOverhead = par("phyFrameOverhead");
-	
-	// --- <<< THÊM MỚI: Đọc các tham số cho ACK và RTS/CTS ---
-	useRtsCts = par("useRtsCts");
-	rtsThreshold = par("rtsThreshold");
-	ctsPacketSize = par("ctsPacketSize");
-	ackPacketSize = par("ackPacketSize");
-	maxRetries = par("maxRetries");
+    phyDataRate = par("phyDataRate");
+    phyDelayForValidCS = (double)par("phyDelayForValidCS") / 1000.0;
+    phyLayerOverhead = par("phyFrameOverhead");
+
+    // --- Đọc các tham số cho ACK và RTS/CTS ---
+    useRtsCts = par("useRtsCts");
+    rtsThreshold = par("rtsThreshold");
+    rtsPacketSize = par("rtsPacketSize");
+    ctsPacketSize = par("ctsPacketSize");
+    ackPacketSize = par("ackPacketSize");
+    maxRetries = par("maxRetries");
     ctsTimeout = ((double)par("ctsTimeout")) / 1000.0;
 
-	// --- <<< THÊM MỚI: Đọc các tham số cho EDCA ---
-    cArray *aifsnArray = &par("AIFSN").getArray();
-    cArray *cwMinArray = &par("CWmin").getArray();
-    cArray *cwMaxArray = &par("CWmax").getArray();
+    // --- <<< SỬA LỖI: Đọc các tham số EDCA từ chuỗi bằng cStringTokenizer và asVector() ---
+    cStringTokenizer aifsnTokenizer(par("AIFSN").stringValue());
+    std::vector<std::string> aifsnVector = aifsnTokenizer.asVector();
+
+    cStringTokenizer cwMinTokenizer(par("CWmin").stringValue());
+    std::vector<std::string> cwMinVector = cwMinTokenizer.asVector();
+
+    cStringTokenizer cwMaxTokenizer(par("CWmax").stringValue());
+    std::vector<std::string> cwMaxVector = cwMaxTokenizer.asVector();
+
+    // Kiểm tra số lượng tham số
+    if (aifsnVector.size() != 4 || cwMinVector.size() != 4 || cwMaxVector.size() != 4) {
+        // Sử dụng opp_error để báo lỗi và dừng mô phỏng
+        throw cRuntimeError("TunableMAC EDCA parameters (AIFSN, CWmin, CWmax) must have exactly 4 integer values each, separated by spaces.");
+    }
+
+    // Gán giá trị vào các mảng
     for (int i = 0; i < 4; i++) {
-        AIFSN[i] = aifsnArray->get(i);
-        CWmin[i] = cwMinArray->get(i);
-        CWmax[i] = cwMaxArray->get(i);
+        AIFSN[i] = atoi(aifsnVector[i].c_str());
+        CWmin[i] = atoi(cwMinVector[i].c_str());
+        CWmax[i] = atoi(cwMaxVector[i].c_str());
         contentionWindow[i] = CWmin[i]; // Khởi tạo CW bằng CWmin
         backoffCounter[i] = 0;
         contending[i] = false;
     }
 
-	backoffBaseValue = ((double)par("backoffBaseValue")) / 1000.0;
+    backoffBaseValue = ((double)par("backoffBaseValue")) / 1000.0;
 
-	// Radio luôn ở trạng thái RX
-	toRadioLayer(createRadioCommand(SET_STATE, RX));
-	
-	macState = MAC_STATE_DEFAULT;
-	backoffTimes = 0;
+    toRadioLayer(createRadioCommand(SET_STATE, RX));
+
+    macState = MAC_STATE_DEFAULT;
+    backoffTimes = 0;
     currentPacketRetries = 0;
+    currentPacketDestination = -1;
 
-	declareOutput("TunableMAC packet breakdown");
+    declareOutput("TunableMAC packet breakdown");
 }
 
 void TunableMAC::fromNetworkLayer(cPacket * netPkt, int destination)
 {
-	TunableMacPacket *macPkt = new TunableMacPacket("TunableMac data packet", MAC_LAYER_PACKET);
-	encapsulatePacket(macPkt, netPkt);
-	macPkt->setSource(SELF_MAC_ADDRESS);
-	macPkt->setDestination(destination);
-	macPkt->setFrameType(DATA_FRAME);
-	
-    // <<< THAY ĐỔI: Phân loại gói tin vào đúng hàng đợi ưu tiên (AC) ---
-    int priority = macPkt->getEncapsulatedPacket()->par("priority");
-    if (priority < 0 || priority > 3) {
-        priority = 0; // Mặc định là AC_BK (Best Effort)
+    TunableMacPacket *macPkt = new TunableMacPacket("TunableMac data packet", MAC_LAYER_PACKET);
+    encapsulatePacket(macPkt, netPkt);
+    macPkt->setSource(SELF_MAC_ADDRESS);
+    macPkt->setDestination(destination);
+    macPkt->setFrameType(DATA_FRAME);
+
+    // Xác định độ ưu tiên từ gói tin của tầng Application
+    // Giả định tầng Application có tham số 'priority'
+    int priority = 0;
+    if (macPkt->getEncapsulatedPacket()->hasPar("priority")) {
+        priority = macPkt->getEncapsulatedPacket()->par("priority");
     }
-    
-    if (bufferPacket(macPkt, TXBuffer_perAC[priority])) {
+    if (priority < 0 || priority > 3) {
+        priority = 0; // Mặc định là AC_BE (Best Effort) nếu không có hoặc giá trị không hợp lệ
+    }
+
+    // <<< SỬA LỖI: Tự hiện thực logic buffer thay vì gọi hàm bufferPacket cũ
+    if ((int)TXBuffer_perAC[priority].size() >= macBufferSize) {
+        // Hàng đợi của AC này đã đầy
+        collectOutput("TunableMAC packet breakdown", "Overflown", priority);
+        trace() << "WARNING: Tunable MAC buffer overflow for AC " << priority << ". Packet dropped.";
+        cancelAndDelete(macPkt); // Hủy gói tin
+
+        // Gửi thông báo buffer đầy lên tầng trên (tùy chọn)
+        MacControlMessage *fullBuffMsg =
+            new MacControlMessage("MAC buffer full", MAC_CONTROL_MESSAGE);
+        fullBuffMsg->setMacControlMessageKind(MAC_BUFFER_FULL);
+        send(fullBuffMsg, "toNetworkModule");
+
+    } else {
+        // Buffer còn chỗ, thêm gói tin vào hàng đợi
+        TXBuffer_perAC[priority].push(macPkt);
+        trace() << "Packet buffered for AC " << priority << ", buffer state: "
+            << TXBuffer_perAC[priority].size() << "/" << macBufferSize;
         collectOutput("TunableMAC packet breakdown", "Received from App");
+
         // Nếu MAC đang rảnh, bắt đầu quá trình tranh chấp
         if (macState == MAC_STATE_DEFAULT) {
             startContention();
         }
-    } else {
-        collectOutput("TunableMAC packet breakdown", "Overflown");
-		trace() << "WARNING Tunable MAC buffer overflow for AC " << priority;
     }
 }
 
@@ -277,6 +311,86 @@ void TunableMAC::fromRadioLayer(cPacket * pkt, double rssi, double lqi)
 			trace() << "WARNING: Received packet type UNKNOWN";
 		}
 	}
+}
+
+/**
+ * handleControlCommand - Xử lý các lệnh điều khiển từ tầng trên hoặc các module khác.
+ *
+ * Hàm này được gọi khi MAC nhận được một tin nhắn có kind là MAC_CONTROL_COMMAND.
+ * Nó cho phép thay đổi các tham số của MAC một cách linh động trong lúc mô phỏng đang chạy.
+ */
+int TunableMAC::handleControlCommand(cMessage * msg)
+{
+    TunableMacControlCommand *cmd = check_and_cast <TunableMacControlCommand*>(msg);
+
+    switch (cmd->getTunableMacCommandKind()) {
+
+        case SET_PROB_TX: {
+            double tmpValue = cmd->getParameter();
+            if ((tmpValue < 0.0) || (tmpValue > 1.0))
+                trace() << "WARNING: invalid ProbTX value sent to TunableMac";
+            else
+                probTx = tmpValue;
+            break;
+        }
+
+        case SET_NUM_TX: {
+            int tmpValue = (int)cmd->getParameter();
+            if (tmpValue < 0)
+                trace() << "WARNING: invalid NumTX value sent to TunableMac";
+            else
+                numTx = tmpValue;
+            break;
+        }
+
+        case SET_RETX_INTERVAL: {
+            double tmpValue = cmd->getParameter() / 1000.0;
+            if (tmpValue <= 0.0)
+                trace() << "WARNING: invalid reTxInterval value sent to TunableMac";
+            else
+                reTxInterval = tmpValue;
+            break;
+        }
+
+        case SET_BACKOFF_TYPE: {
+            int tmpValue = (int)cmd->getParameter();
+            if (tmpValue >= BACKOFF_CONSTANT && tmpValue <= BACKOFF_EXPONENTIAL) {
+                if (backoffBaseValue <= 0.0)
+                    trace() << "WARNING: unable to set backoffType. Parameter backoffBaseValue has conflicting value";
+                else
+                    backoffType = tmpValue;
+            } else {
+                trace() << "WARNING: invalid backoffType value sent to TunableMac";
+            }
+            break;
+        }
+
+        case SET_BACKOFF_BASE_VALUE: {
+            double tmpValue = cmd->getParameter() / 1000.0;
+            if (tmpValue < 0)
+                trace() << "WARNING: invalid backoffBaseValue sent to TunableMac";
+            else
+                backoffBaseValue = tmpValue;
+            break;
+        }
+
+        // <<< THÊM MỚI: Xử lý các lệnh điều khiển không còn được hỗ trợ
+        case SET_DUTY_CYCLE:
+        case SET_LISTEN_INTERVAL:
+        case SET_BEACON_INTERVAL_FRACTION:
+        case SET_RANDOM_TX_OFFSET: {
+            trace() << "WARNING: Control command for a deprecated parameter received. Command ignored.";
+            break;
+        }
+
+        default: {
+            trace() << "WARNING: Unknown control command received.";
+            break;
+        }
+    }
+
+    delete cmd;
+    return 1;
 }
 
 // Gửi gói tin Request-To-Send (RTS)

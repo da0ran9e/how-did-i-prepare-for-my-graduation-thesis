@@ -51,6 +51,18 @@ simple TunableMAC like node.communication.mac.iMac {
 	double phyDataRate = default (250.0);
 	double phyDelayForValidCS = default (0.128);
 	int phyFrameOverhead = default (6);
+	
+	bool useRtsCts = default(true);
+        int rtsThreshold = default(512); // Gói > 512 bytes sẽ dùng RTS/CTS
+        int maxRetries = default(3);
+        int rtsPacketSize = default(20);
+        int ctsPacketSize = default(14);
+        int ackPacketSize = default(14);
+        double ctsTimeout = default(1); // in ms
+
+        string AIFSN = default("3 7 1 2");    // AIFSN cho AC_BE, AC_BK, AC_VI, AC_VO
+        string CWmin = default("31 31 7 3");  // CWmin tương ứng
+        string CWmax = default("1023 1023 15 7"); // CWmax tương ứng
 
  gates:
 	output toNetworkModule;
