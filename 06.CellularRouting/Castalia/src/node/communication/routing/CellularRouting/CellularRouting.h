@@ -8,6 +8,11 @@
 
 using namespace std;
 
+struct Point {
+    double x;
+    double y;
+};
+
 enum NodeRole {
     NORMAL_NODE = 0,
     CELL_LEADER,       
@@ -70,6 +75,7 @@ class CellularRouting : public VirtualRouting {
     void fromApplicationLayer(cPacket *, const char *) override;
     void fromMacLayer(cPacket *, int, double, double) override;
 
+    void parseNetworkLayout();
     void calculateCellInfo();
     void sendHelloPacket();
     void handleHelloPacket(CellularRoutingPacket* pkt);

@@ -76,7 +76,7 @@ void CellularRouting::startup()
             << "). Cell ID: " << myCellId << ", Color: " << myColor
             << ", Is CH: " << (amI_CH ? "Yes" : "No");
 
-    // setTimer(SEND_HELLO_TIMER, uniform(0, helloInterval));
+    setTimer(SEND_HELLO_TIMER, uniform(0, helloInterval));
 }
 
 void CellularRouting::timerFiredCallback(int index)

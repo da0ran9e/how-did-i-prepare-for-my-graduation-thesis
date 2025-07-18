@@ -16,8 +16,9 @@ simple CellularRouting like node.communication.routing.iRouting {
 
     gates:
 
-        input fromApplicationModule;
-        output toApplicationModule;
-        input fromMacModule;
+        output toCommunicationModule;
         output toMacModule;
+        input fromCommunicationModule;
+        input fromMacModule;
+        input fromCommModuleResourceMgr;
 }
