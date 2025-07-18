@@ -81,32 +81,27 @@ void CellularRouting::startup()
 
 void CellularRouting::timerFiredCallback(int index)
 {
-    // Sử dụng switch để xử lý các timer khác nhau
     switch (index) {
         case SEND_HELLO_TIMER: {
             trace() << "Timer SEND_HELLO_TIMER fired.";
             sendHelloPacket();
-            setTimer(SEND_HELLO_TIMER, helloInterval); // Đặt lại timer cho lần kế tiếp
+            setTimer(SEND_HELLO_TIMER, helloInterval); 
             break;
         }
 
-        // Timer này được đặt bởi CL khi ra lệnh cho CGW
         case LINK_REQUEST_TIMEOUT: {
             trace() << "WARNING: Link Request timed out. Timer index: " << index;
 
-            // Lấy thông tin về yêu cầu đã timeout
             if (pendingLinkRequests.count(index)) {
                 LinkRequestState failed_request = pendingLinkRequests[index];
                 trace() << "  -> Failed to establish link from CGW " << failed_request.source_cgw_id
                         << " to NGW " << failed_request.target_ngw_id;
 
-                // Xóa yêu cầu khỏi danh sách chờ
                 pendingLinkRequests.erase(index);
 
-                // TODO: Thêm logic thử lại với một gateway khác nếu cần.
+                // TODO: ...
             }
 
-            // Nếu không còn yêu cầu nào đang chờ, tiến hành xây dựng cây nội bộ
             if (amI_CL && pendingLinkRequests.empty()) {
                 calculateAndDistributeIntraCellTree();
             }
@@ -215,8 +210,29 @@ void CellularRouting::parseNetworkLayout() {
 }
 
 void CellularRouting::calculateCellInfo() {
-    myCellId = (int)(floor(myX / (cellRadius * 1.732)) + floor(myY / (cellRadius * 1.5)));
-    myColor = myCellId % 3;
+    double frac_q = (sqrt(3.0)/3.0 * myX - 1.0/3.0 * myY) / cellRadius;
+    double frac_r = (2.0/3.0 * myY) / cellRadius;
+    double frac_s = -frac_q - frac_r;
+
+    int q = round(frac_q);
+    int r = round(frac_r);
+    int s = round(frac_s);
+
+    double q_diff = abs(q - frac_q);
+    double r_diff = abs(r - frac_r);
+    double s_diff = abs(s - frac_s);
+
+    if (q_diff > r_diff && q_diff > s_diff) {
+        q = -r - s;
+    } else if (r_diff > s_diff) {
+        r = -q - s;
+    } else {
+        s = -q - r;
+    }
+
+    const int grid_offset = 10000;
+    myCellId = q + r * grid_offset;
+    myColor = ((q - r) % 3 + 3) % 3;
 }
 
 

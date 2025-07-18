@@ -5,6 +5,7 @@
 #include "CellularRoutingPacket_m.h"
 #include <vector>
 #include <map>
+#include <cmath>
 
 using namespace std;
 
