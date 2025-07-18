@@ -8,8 +8,8 @@ simple CellularRouting like node.communication.routing.iRouting {
         int netDataFrameOverhead = default(12);   
         int netBufferSize = default(32);          
 
-        double helloInterval = default(10s);      
-        double cellRadius = default(50m);       
+        double helloInterval = default(10);      
+        double cellRadius = default(50);       
         bool isCH = default(false);              
         
         @display("i=block/routing");

@@ -2,23 +2,276 @@
 
 Define_Module(CellularRouting);
 
-void CellularRouting::fromApplicationLayer(cPacket * pkt, const char *destination)
+//hard-coded 
+static std::map<int, Point> allNodesPositions;
+static std::vector<int> clusterHeadList;
+const std::string networkLayoutData = R"(
+SN.node[0].Communication.Routing.isSink = true
+SN.node[0].xCoor = 18
+SN.node[0].yCoor = 17
+SN.node[1].xCoor = 2
+SN.node[1].yCoor = 3
+SN.node[2].xCoor = 1
+SN.node[2].yCoor = 52
+SN.node[3].xCoor = 2
+SN.node[3].yCoor = 101
+SN.node[4].xCoor = 1
+SN.node[4].yCoor = 150
+SN.node[5].xCoor = 49
+SN.node[5].yCoor = 0
+SN.node[6].xCoor = 50
+SN.node[6].yCoor = 48
+SN.node[7].xCoor = 52
+SN.node[7].yCoor = 101
+SN.node[8].xCoor = 50
+SN.node[8].yCoor = 150
+SN.node[9].xCoor = 100
+SN.node[9].yCoor = 4
+SN.node[10].xCoor = 101
+SN.node[10].yCoor = 50
+SN.node[11].xCoor = 102
+SN.node[11].yCoor = 101
+SN.node[12].xCoor = 109
+SN.node[12].yCoor = 150
+SN.node[13].xCoor = 150
+SN.node[13].yCoor = 4
+SN.node[14].xCoor = 151
+SN.node[14].yCoor = 50
+SN.node[15].xCoor = 150
+SN.node[15].yCoor = 104
+SN.node[16].xCoor = 151
+SN.node[16].yCoor = 150
+)";
+
+
+void CellularRouting::startup()
 {
-	CellularRoutingPacket *netPacket = new CellularRoutingPacket("CellularRouting packet", NETWORK_LAYER_PACKET);
-	netPacket->setSource(SELF_NETWORK_ADDRESS);
+    helloInterval = par("helloInterval");
+    cellRadius = par("cellRadius");
+
+// Read parameters from the network layout data
+    parseNetworkLayout();
+
+    // Pos
+    if (allNodesPositions.count(self)) {
+        myX = allNodesPositions[self].x;
+        myY = allNodesPositions[self].y;
+    } else {
+        throw cRuntimeError("Node %d not found in hard-coded network layout!", self);
+    }
+    
+    // Role
+    amI_CH = false;
+    for (int ch_id : clusterHeadList) {
+        if (ch_id == self) {
+            amI_CH = true;
+            break;
+        }
+    }
+    
+    myRole = amI_CH ? CLUSTER_HEAD : NORMAL_NODE;
+
+    calculateCellInfo();
+    trace() << "Node " << self << " initialized at (" << myX << ", " << myY 
+            << "). Cell ID: " << myCellId << ", Color: " << myColor
+            << ", Is CH: " << (amI_CH ? "Yes" : "No");
+
+    // setTimer(SEND_HELLO_TIMER, uniform(0, helloInterval));
+}
+
+void CellularRouting::timerFiredCallback(int index)
+{
+    // Sử dụng switch để xử lý các timer khác nhau
+    switch (index) {
+        case SEND_HELLO_TIMER: {
+            trace() << "Timer SEND_HELLO_TIMER fired.";
+            sendHelloPacket();
+            setTimer(SEND_HELLO_TIMER, helloInterval); // Đặt lại timer cho lần kế tiếp
+            break;
+        }
+
+        // Timer này được đặt bởi CL khi ra lệnh cho CGW
+        case LINK_REQUEST_TIMEOUT: {
+            trace() << "WARNING: Link Request timed out. Timer index: " << index;
+
+            // Lấy thông tin về yêu cầu đã timeout
+            if (pendingLinkRequests.count(index)) {
+                LinkRequestState failed_request = pendingLinkRequests[index];
+                trace() << "  -> Failed to establish link from CGW " << failed_request.source_cgw_id
+                        << " to NGW " << failed_request.target_ngw_id;
+
+                // Xóa yêu cầu khỏi danh sách chờ
+                pendingLinkRequests.erase(index);
+
+                // TODO: Thêm logic thử lại với một gateway khác nếu cần.
+            }
+
+            // Nếu không còn yêu cầu nào đang chờ, tiến hành xây dựng cây nội bộ
+            if (amI_CL && pendingLinkRequests.empty()) {
+                calculateAndDistributeIntraCellTree();
+            }
+            break;
+        }
+
+        default: {
+            trace() << "WARNING: Unknown timer with index " << index << " fired.";
+            break;
+        }
+    }
+}
+
+void CellularRouting::fromApplicationLayer(cPacket* pkt, const char* destination)
+{
+    CellularRoutingPacket* netPacket = new CellularRoutingPacket("CellularRouting data packet", NETWORK_LAYER_PACKET);
+    netPacket->setSource(SELF_NETWORK_ADDRESS);
 	netPacket->setDestination(destination);
-	encapsulatePacket(netPacket, pkt);
-	toMacLayer(netPacket, resolveNetworkAddress(destination));
+    encapsulatePacket(netPacket, pkt);
+
+    // TODO...
+
+    toMacLayer(netPacket, resolveNetworkAddress(destination));
 }
 
-void CellularRouting::fromMacLayer(cPacket * pkt, int srcMacAddress, double rssi, double lqi)
+void CellularRouting::fromMacLayer(cPacket* pkt, int macAddress, double rssi, double lqi)
 {
-	RoutingPacket *netPacket = dynamic_cast <RoutingPacket*>(pkt);
-	if (netPacket) {
-		string destination(netPacket->getDestination());
-		if (destination.compare(SELF_NETWORK_ADDRESS) == 0 ||
-		    destination.compare(BROADCAST_NETWORK_ADDRESS) == 0)
-			toApplicationLayer(decapsulatePacket(pkt));
-	}
+    CellularRoutingPacket* netPacket = dynamic_cast<CellularRoutingPacket*>(pkt);
+    if (!netPacket) {
+        return;
+    }
+
+    switch (netPacket->getPacketType()) {
+        case HELLO_PACKET: {
+            //handleHelloPacket(netPacket);
+            trace() << "Received HELLO packet from " << netPacket->getSource();
+            break;
+        }
+        case CL_ANNOUNCEMENT: {
+            // Sẽ hiện thực trong giai đoạn bầu cử
+            trace() << "Received CL_ANNOUNCEMENT from " << netPacket->getSource();
+            break;
+        }
+        case BS_UPDATE_PACKET: {
+            // Sẽ hiện thực sau
+            trace() << "Received BS_UPDATE_PACKET from " << netPacket->getSource();
+            break;
+        }
+        case LINK_REQUEST: {
+            //handleLinkRequest(netPacket);
+            trace() << "Received LINK_REQUEST from " << netPacket->getSource();
+            break;
+        }
+        case LINK_ACK: {
+            //handleLinkAck(netPacket);
+            trace() << "Received LINK_ACK from " << netPacket->getSource();
+            break;
+        }
+        case LINK_ESTABLISHED: {
+            //handleLinkEstablishedConfirmation(netPacket);
+            trace() << "Received LINK_ESTABLISHED from " << netPacket->getSource();
+            break;
+        }
+        case INTRA_CELL_ROUTING_UPDATE: {
+            //handleRoutingTableUpdate(netPacket);
+            trace() << "Received INTRA_CELL_ROUTING_UPDATE from " << netPacket->getSource();
+            break;
+        }
+        default: {
+            trace() << "WARNING: Received unknown packet type.";
+            break;
+        }
+    }
 }
 
+void CellularRouting::parseNetworkLayout() {
+    if (!allNodesPositions.empty()) {
+        return;
+    }
+
+    std::stringstream stream(networkLayoutData);
+    std::string line;
+    int currentNodeId = -1;
+
+    while (std::getline(stream, line)) {
+        if (line.find("SN.node[") != std::string::npos) {
+            size_t start_pos = line.find("[");
+            size_t end_pos = line.find("]");
+            std::string id_str = line.substr(start_pos + 1, end_pos - start_pos - 1);
+            currentNodeId = std::stoi(id_str);
+        }
+
+        if (currentNodeId == -1) continue;
+
+        if (line.find("isSink = true") != std::string::npos || line.find("isCH = true") != std::string::npos) {
+            clusterHeadList.push_back(currentNodeId);
+        } else if (line.find("xCoor") != std::string::npos) {
+            size_t eq_pos = line.find("=");
+            allNodesPositions[currentNodeId].x = std::stod(line.substr(eq_pos + 1));
+        } else if (line.find("yCoor") != std::string::npos) {
+            size_t eq_pos = line.find("=");
+            allNodesPositions[currentNodeId].y = std::stod(line.substr(eq_pos + 1));
+        }
+    }
+    EV << "Parsed network layout. Found " << allNodesPositions.size() << " nodes and " << clusterHeadList.size() << " CHs.\n";
+}
+
+void CellularRouting::calculateCellInfo() {
+    myCellId = (int)(floor(myX / (cellRadius * 1.732)) + floor(myY / (cellRadius * 1.5)));
+    myColor = myCellId % 3;
+}
+
+
+// Giai đoạn 1: Khám phá
+void CellularRouting::sendHelloPacket() {
+    // Hàm này đã được viết chi tiết ở bước trước, bạn có thể sử dụng lại
+    trace() << "Function sendHelloPacket() called.";
+}
+
+void CellularRouting::handleHelloPacket(CellularRoutingPacket* pkt) {
+    // Hàm này đã được viết chi tiết ở bước trước, bạn có thể sử dụng lại
+    trace() << "Function handleHelloPacket() called for packet from " << pkt->getSource();
+}
+
+void CellularRouting::runCLElection() {
+    trace() << "Function runCLElection() called.";
+    // TODO:
+    // 1. Duyệt qua neighborTable
+    // 2. Tìm node có năng lượng cao nhất (hoặc tiêu chí khác)
+    // 3. Nếu là mình, tự nhận vai trò CL và gọi send(CL_ANNOUNCEMENT)
+}
+
+
+// Giai đoạn 2: Tái cấu trúc
+void CellularRouting::startReconfiguration() {
+    trace() << "Function startReconfiguration() called.";
+    // Đây là hàm chỉ được gọi bởi CL
+}
+
+void CellularRouting::findAndEstablishInterCellLinks() {
+    trace() << "Function findAndEstablishInterCellLinks() called.";
+    // Đây là hàm chỉ được gọi bởi CL
+}
+
+void CellularRouting::handleLinkRequest(CellularRoutingPacket* pkt) {
+    trace() << "Function handleLinkRequest() called for packet from " << pkt->getSource();
+    // Logic của NGW -> chuyển tiếp lên NCL
+}
+
+void CellularRouting::handleLinkAck(CellularRoutingPacket* pkt) {
+    trace() << "Function handleLinkAck() called for packet from " << pkt->getSource();
+    // Logic của CGW -> gửi xác nhận về CL
+}
+
+void CellularRouting::handleLinkEstablishedConfirmation(CellularRoutingPacket* pkt) {
+    trace() << "Function handleLinkEstablishedConfirmation() called for packet from " << pkt->getSource();
+    // Logic của CL -> hủy timer, cập nhật bảng định tuyến liên ô
+}
+
+void CellularRouting::calculateAndDistributeIntraCellTree() {
+    trace() << "Function calculateAndDistributeIntraCellTree() called.";
+    // Logic của CL -> tính toán và gửi INTRA_CELL_ROUTING_UPDATE cho các thành viên
+}
+
+void CellularRouting::handleRoutingTableUpdate(CellularRoutingPacket* pkt) {
+    trace() << "Function handleRoutingTableUpdate() called for packet from " << pkt->getSource();
+    // Logic của node thường -> cập nhật next-hop của mình
+}
