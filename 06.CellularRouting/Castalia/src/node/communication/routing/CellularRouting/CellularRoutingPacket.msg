@@ -24,6 +24,14 @@ struct HelloInfo {
     double y;
 };
 
+struct CLAnnouncementInfo {
+    int cellId;
+    int color;
+    double energyLevel;
+    double x;
+    double y;
+};
+
 struct LinkRequestInfo {
     int sourceCellId;
     int targetCH_id; 
@@ -34,6 +42,7 @@ packet CellularRoutingPacket extends RoutingPacket {
     int packetType @enum(CellularRoutingPacketType);
 
     HelloInfo helloData;
+    CLAnnouncementInfo clAnnouncementData;
     LinkRequestInfo linkRequestData;
     int nextHopId; 
 };

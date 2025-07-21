@@ -48,6 +48,7 @@ void CellularRouting::startup()
 {
     helloInterval = par("helloInterval");
     cellRadius = par("cellRadius");
+    myCL_id = -1;
 
 // Read parameters from the network layout data
     parseNetworkLayout();
@@ -77,6 +78,7 @@ void CellularRouting::startup()
             << ", Is CH: " << (amI_CH ? "Yes" : "No");
 
     setTimer(SEND_HELLO_TIMER, uniform(0, helloInterval));
+    setTimer(RECONFIGURATION_TIMER, 500);
 }
 
 void CellularRouting::timerFiredCallback(int index)
@@ -89,16 +91,23 @@ void CellularRouting::timerFiredCallback(int index)
             break;
         }
 
+        case RECONFIGURATION_TIMER: {
+            cancelTimer(SEND_HELLO_TIMER);
+            trace() << "Timer RECONFIGURATION_TIMER fired.";
+            startCLElectionContention();
+            break;
+        }
+
         case CL_ANNOUNCEMENT_TIMER: {
             trace() << "My CL announcement timer fired. I AM THE NEW CELL LEADER for cell " << myCellId;
-            
+
             myRole = CELL_LEADER;
             amI_CL = true;
             myCL_id = self;
 
             sendCLAnnouncement();
 
-            startReconfiguration();
+            //startReconfiguration();
             break;
         }
 
@@ -155,24 +164,8 @@ void CellularRouting::fromMacLayer(cPacket* pkt, int macAddress, double rssi, do
             break;
         }
         case CL_ANNOUNCEMENT: {
-            int announcerId = atoi(netPacket->getSource());
-            double announcerDistance = netPacket->getData(); // Giả sử khoảng cách được gửi trong trường data
-
-            if (myCL_id != -1) {
-                return;
-            }
-
-            Point cellCenter = calculateCellCenter(myCellId, cellRadius);
-            double myDistanceToCenter = sqrt(pow(myX - cellCenter.x, 2) + pow(myY - cellCenter.y, 2));
-
-            if (myDistanceToCenter < announcerDistance) {
-                trace() << "Ignoring CL announcement from " << announcerId << " as I am closer to the center.";
-            } else {
-                trace() << "Accepting node " << announcerId << " as my new CL.";
-                myCL_id = announcerId;
-
-                cancelTimer(CL_ANNOUNCEMENT_TIMER);
-            }
+            handleCLAnnouncementPacket(netPacket);
+            trace() << "Received CL_ANNOUNCEMENT packet from " << netPacket->getSource();
             break;
         }
         case BS_UPDATE_PACKET: {
@@ -270,13 +263,13 @@ void CellularRouting::startCLElectionContention() {
         return;
     }
 
-    Point cellCenter = calculateCellCenter(myCellId, cellRadius); 
+    Point cellCenter = calculateCellCenter(myCellId);
     double myDistanceToCenter = sqrt(pow(myX - cellCenter.x, 2) + pow(myY - cellCenter.y, 2));
 
-    double contentionScalingFactor = 0.005; 
+    double contentionScalingFactor = 0.005;
     simtime_t contentionDelay = (contentionScalingFactor * myDistanceToCenter) + uniform(0, 0.001);
 
-    setTimer(CL_ANNOUNCEMENT_TIMER, contentionDelay);
+    setTimer(CL_ANNOUNCEMENT_TIMER, myDistanceToCenter+100);
 
     trace() << "Starting CL election contention. My distance to center is " << myDistanceToCenter
             << "m. Will announce myself as CL in " << contentionDelay << "s.";
@@ -297,7 +290,7 @@ Point CellularRouting::calculateCellCenter(int cell_id) {
         q += grid_offset;
         r -= 1;
     }
-    
+
     Point center;
     center.x = cellRadius * (sqrt(3.0) * q + sqrt(3.0) / 2.0 * r);
     center.y = cellRadius * (3.0 / 2.0 * r);
@@ -347,12 +340,20 @@ void CellularRouting::handleHelloPacket(CellularRoutingPacket* pkt) {
 void CellularRouting::sendCLAnnouncement() {
     CellularRoutingPacket* pkt = new CellularRoutingPacket("CL Announcement", NETWORK_LAYER_PACKET);
     pkt->setPacketType(CL_ANNOUNCEMENT);
-
-    Point cellCenter = calculateCellCenter(myCellId, cellRadius);
-    double myDistanceToCenter = sqrt(pow(myX - cellCenter.x, 2) + pow(myY - cellCenter.y, 2));
-    pkt->setData(myDistanceToCenter); 
-    
-    toMacLayer(pkt, BROADCAST_MAC_ADDRESS);
+    CLAnnouncementInfo newCLAnnouncementInfo;
+    newCLAnnouncementInfo.x = myX;
+    newCLAnnouncementInfo.y = myY;
+    newCLAnnouncementInfo.cellId = myCellId;
+    pkt->setClAnnouncementData(newCLAnnouncementInfo);
+    for (const auto& neighbor : neighborTable) {
+           int neighborId = neighbor.id;
+           CellularRoutingPacket* pkt_for_neighbor = pkt->dup();
+           pkt_for_neighbor->setSource(SELF_NETWORK_ADDRESS);
+           std::stringstream dest_addr;
+           dest_addr << neighborId;
+           pkt_for_neighbor->setDestination(dest_addr.str().c_str());
+           toMacLayer(pkt_for_neighbor, neighborId);
+       }
 }
 
 void CellularRouting::runCLElection() {
@@ -363,6 +364,30 @@ void CellularRouting::runCLElection() {
     // 3. Nếu là mình, tự nhận vai trò CL và gọi send(CL_ANNOUNCEMENT)
 }
 
+void CellularRouting::handleCLAnnouncementPacket(CellularRoutingPacket* pkt) {
+    int announcerId = atoi(pkt->getSource());
+    double announcerX = pkt->getClAnnouncementData().x;
+    double announcerY = pkt->getClAnnouncementData().y;
+    Point cellCenter = calculateCellCenter(pkt->getClAnnouncementData().cellId);
+    double announcerDistance = sqrt(pow(announcerX - cellCenter.x, 2) + pow(announcerY - cellCenter.y, 2));
+    trace() << "Received CL announcement from " << announcerId
+              << " at (" << announcerX << ", " << announcerY << ") with distance to center: "
+              << announcerDistance;
+    if (myCL_id != -1) {
+           return;
+    }
+
+    double myDistanceToCenter = sqrt(pow(myX - cellCenter.x, 2) + pow(myY - cellCenter.y, 2));
+
+    if (myDistanceToCenter < announcerDistance) {
+        trace() << "Ignoring CL announcement from " << announcerId << " as I am closer to the center.";
+        //TODO
+    } else {
+        trace() << "Accepting node " << announcerId << " as my new CL.";
+        myCL_id = announcerId;
+        cancelTimer(CL_ANNOUNCEMENT_TIMER);
+    }
+}
 
 // Giai đoạn 2: Tái cấu trúc
 void CellularRouting::startReconfiguration() {

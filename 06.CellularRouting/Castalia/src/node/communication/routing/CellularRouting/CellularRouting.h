@@ -16,15 +16,17 @@ struct Point {
 
 enum NodeRole {
     NORMAL_NODE = 0,
-    CELL_LEADER,       
-    CLUSTER_HEAD,      
-    CELL_GATEWAY    
+    CELL_LEADER,
+    CLUSTER_HEAD,
+    CELL_GATEWAY
 };
 
 // timer
 enum CellularRoutingTimers {
-    SEND_HELLO_TIMER = 1,           
-    LINK_REQUEST_TIMEOUT = 2        
+    SEND_HELLO_TIMER = 1,
+    RECONFIGURATION_TIMER = 2,
+    CL_ANNOUNCEMENT_TIMER = 3,
+    LINK_REQUEST_TIMEOUT = 4
     // ...
 };
 
@@ -41,7 +43,7 @@ struct LinkRequestState {
     int target_ngw_id;
     int target_cell_id;
     int to_final_ch_id;
-    cMessage* timeout_timer; 
+    cMessage* timeout_timer;
 };
 
 
@@ -59,14 +61,14 @@ class CellularRouting : public VirtualRouting {
     double myX, myY;
 
     int myCL_id;
-    int myCH_id; 
+    int myCH_id;
 
     vector<NeighborRecord> neighborTable;
-    map<int, int> intraCellRoutingTable;      
-    map<int, int> interCellRoutingTable;      
+    map<int, int> intraCellRoutingTable;
+    map<int, int> interCellRoutingTable;
 
 
-    map<int, LinkRequestState> pendingLinkRequests; 
+    map<int, LinkRequestState> pendingLinkRequests;
     int nextTimerIndex;
 
 
@@ -79,11 +81,15 @@ class CellularRouting : public VirtualRouting {
     void parseNetworkLayout();
     void calculateCellInfo();
     Point calculateCellCenter(int cell_id);
+
     void sendHelloPacket();
     void handleHelloPacket(CellularRoutingPacket* pkt);
-    void runCLElection();
 
-    void startCLElectionContention() ;
+    void runCLElection();
+    void startCLElectionContention();
+    void sendCLAnnouncement();
+    void handleCLAnnouncementPacket(CellularRoutingPacket* pkt);
+
     void startReconfiguration();
     void findAndEstablishInterCellLinks();
     void handleLinkRequest(CellularRoutingPacket* pkt);
