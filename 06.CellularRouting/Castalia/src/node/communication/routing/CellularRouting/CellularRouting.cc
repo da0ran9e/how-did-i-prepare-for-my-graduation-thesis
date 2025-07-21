@@ -2,7 +2,7 @@
 
 Define_Module(CellularRouting);
 
-//hard-coded 
+//hard-coded
 static std::map<int, Point> allNodesPositions;
 static std::vector<int> clusterHeadList;
 const std::string networkLayoutData = R"(
@@ -57,9 +57,9 @@ void CellularRouting::startup()
         myX = allNodesPositions[self].x;
         myY = allNodesPositions[self].y;
     } else {
-        throw cRuntimeError("Node %d not found in hard-coded network layout!", self);
+        throw cRuntimeError("Node %d not found in network layout!", self);
     }
-    
+
     // Role
     amI_CH = false;
     for (int ch_id : clusterHeadList) {
@@ -68,11 +68,11 @@ void CellularRouting::startup()
             break;
         }
     }
-    
+
     myRole = amI_CH ? CLUSTER_HEAD : NORMAL_NODE;
 
     calculateCellInfo();
-    trace() << "Node " << self << " initialized at (" << myX << ", " << myY 
+    trace() << "Node " << self << " initialized at (" << myX << ", " << myY
             << "). Cell ID: " << myCellId << ", Color: " << myColor
             << ", Is CH: " << (amI_CH ? "Yes" : "No");
 
@@ -85,7 +85,7 @@ void CellularRouting::timerFiredCallback(int index)
         case SEND_HELLO_TIMER: {
             trace() << "Timer SEND_HELLO_TIMER fired.";
             sendHelloPacket();
-            setTimer(SEND_HELLO_TIMER, helloInterval); 
+            setTimer(SEND_HELLO_TIMER, helloInterval);
             break;
         }
 
@@ -119,9 +119,9 @@ void CellularRouting::fromApplicationLayer(cPacket* pkt, const char* destination
 {
     CellularRoutingPacket* netPacket = new CellularRoutingPacket("CellularRouting data packet", NETWORK_LAYER_PACKET);
     netPacket->setSource(SELF_NETWORK_ADDRESS);
-	netPacket->setDestination(destination);
+    netPacket->setDestination(destination);
     encapsulatePacket(netPacket, pkt);
-
+    trace() << "fromApplicationLayer received";
     // TODO...
 
     toMacLayer(netPacket, resolveNetworkAddress(destination));
@@ -129,14 +129,15 @@ void CellularRouting::fromApplicationLayer(cPacket* pkt, const char* destination
 
 void CellularRouting::fromMacLayer(cPacket* pkt, int macAddress, double rssi, double lqi)
 {
+    trace() << "Packet received";
     CellularRoutingPacket* netPacket = dynamic_cast<CellularRoutingPacket*>(pkt);
     if (!netPacket) {
         return;
     }
-
+    trace() << "Packet received from MAC layer with type " << netPacket->getPacketType();
     switch (netPacket->getPacketType()) {
         case HELLO_PACKET: {
-            //handleHelloPacket(netPacket);
+            handleHelloPacket(netPacket);
             trace() << "Received HELLO packet from " << netPacket->getSource();
             break;
         }
@@ -236,15 +237,43 @@ void CellularRouting::calculateCellInfo() {
 }
 
 
-// Giai đoạn 1: Khám phá
 void CellularRouting::sendHelloPacket() {
-    // Hàm này đã được viết chi tiết ở bước trước, bạn có thể sử dụng lại
     trace() << "Function sendHelloPacket() called.";
+        CellularRoutingPacket *netPacket = new CellularRoutingPacket("CellularRouting packet", NETWORK_LAYER_PACKET);
+        netPacket->setPacketType(HELLO_PACKET);
+        netPacket->setSource(SELF_NETWORK_ADDRESS);
+        netPacket->setDestination(BROADCAST_NETWORK_ADDRESS);
+        toMacLayer(netPacket, resolveNetworkAddress(BROADCAST_NETWORK_ADDRESS));
 }
 
 void CellularRouting::handleHelloPacket(CellularRoutingPacket* pkt) {
-    // Hàm này đã được viết chi tiết ở bước trước, bạn có thể sử dụng lại
-    trace() << "Function handleHelloPacket() called for packet from " << pkt->getSource();
+    int sourceId = atoi(pkt->getSource());
+    trace() << "Received HELLO from " << sourceId << ". Triggering neighbor table update.";
+
+    neighborTable.clear();
+
+    double communicationRadius = 2.0 * cellRadius;
+
+    for (auto const& [node_id, position] : allNodesPositions) {
+        if (node_id == self) {
+            continue;
+        }
+
+        double distance = sqrt(pow(myX - position.x, 2) + pow(myY - position.y, 2));
+
+        if (distance <= communicationRadius) {
+            NeighborRecord newNeighbor;
+            newNeighbor.id = node_id;
+            newNeighbor.x = position.x;
+            newNeighbor.y = position.y;
+            // newNeighbor.cellId = ...;
+            newNeighbor.lastHeard = simTime();
+
+            neighborTable.push_back(newNeighbor);
+        }
+    }
+
+    trace() << "Neighbor table updated. Found " << neighborTable.size() << " neighbors.";
 }
 
 void CellularRouting::runCLElection() {
