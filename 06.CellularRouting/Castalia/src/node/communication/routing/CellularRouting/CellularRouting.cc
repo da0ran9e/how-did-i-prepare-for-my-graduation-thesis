@@ -89,6 +89,19 @@ void CellularRouting::timerFiredCallback(int index)
             break;
         }
 
+        case CL_ANNOUNCEMENT_TIMER: {
+            trace() << "My CL announcement timer fired. I AM THE NEW CELL LEADER for cell " << myCellId;
+            
+            myRole = CELL_LEADER;
+            amI_CL = true;
+            myCL_id = self;
+
+            sendCLAnnouncement();
+
+            startReconfiguration();
+            break;
+        }
+
         case LINK_REQUEST_TIMEOUT: {
             trace() << "WARNING: Link Request timed out. Timer index: " << index;
 
@@ -142,12 +155,28 @@ void CellularRouting::fromMacLayer(cPacket* pkt, int macAddress, double rssi, do
             break;
         }
         case CL_ANNOUNCEMENT: {
-            // Sẽ hiện thực trong giai đoạn bầu cử
-            trace() << "Received CL_ANNOUNCEMENT from " << netPacket->getSource();
+            int announcerId = atoi(netPacket->getSource());
+            double announcerDistance = netPacket->getData(); // Giả sử khoảng cách được gửi trong trường data
+
+            if (myCL_id != -1) {
+                return;
+            }
+
+            Point cellCenter = calculateCellCenter(myCellId, cellRadius);
+            double myDistanceToCenter = sqrt(pow(myX - cellCenter.x, 2) + pow(myY - cellCenter.y, 2));
+
+            if (myDistanceToCenter < announcerDistance) {
+                trace() << "Ignoring CL announcement from " << announcerId << " as I am closer to the center.";
+            } else {
+                trace() << "Accepting node " << announcerId << " as my new CL.";
+                myCL_id = announcerId;
+
+                cancelTimer(CL_ANNOUNCEMENT_TIMER);
+            }
             break;
         }
         case BS_UPDATE_PACKET: {
-            // Sẽ hiện thực sau
+            // TODO
             trace() << "Received BS_UPDATE_PACKET from " << netPacket->getSource();
             break;
         }
@@ -236,6 +265,45 @@ void CellularRouting::calculateCellInfo() {
     myColor = ((q - r) % 3 + 3) % 3;
 }
 
+void CellularRouting::startCLElectionContention() {
+    if (amI_CL) {
+        return;
+    }
+
+    Point cellCenter = calculateCellCenter(myCellId, cellRadius); 
+    double myDistanceToCenter = sqrt(pow(myX - cellCenter.x, 2) + pow(myY - cellCenter.y, 2));
+
+    double contentionScalingFactor = 0.005; 
+    simtime_t contentionDelay = (contentionScalingFactor * myDistanceToCenter) + uniform(0, 0.001);
+
+    setTimer(CL_ANNOUNCEMENT_TIMER, contentionDelay);
+
+    trace() << "Starting CL election contention. My distance to center is " << myDistanceToCenter
+            << "m. Will announce myself as CL in " << contentionDelay << "s.";
+}
+
+Point CellularRouting::calculateCellCenter(int cell_id) {
+
+    const int grid_offset = 10000;
+
+    int r = cell_id / grid_offset;
+    int q = cell_id % grid_offset;
+
+    if (cell_id < 0 && q > 0) {
+        q -= grid_offset;
+        r += 1;
+    }
+    if (cell_id > 0 && q < 0) {
+        q += grid_offset;
+        r -= 1;
+    }
+    
+    Point center;
+    center.x = cellRadius * (sqrt(3.0) * q + sqrt(3.0) / 2.0 * r);
+    center.y = cellRadius * (3.0 / 2.0 * r);
+
+    return center;
+}
 
 void CellularRouting::sendHelloPacket() {
     trace() << "Function sendHelloPacket() called.";
@@ -274,6 +342,17 @@ void CellularRouting::handleHelloPacket(CellularRoutingPacket* pkt) {
     }
 
     trace() << "Neighbor table updated. Found " << neighborTable.size() << " neighbors.";
+}
+
+void CellularRouting::sendCLAnnouncement() {
+    CellularRoutingPacket* pkt = new CellularRoutingPacket("CL Announcement", NETWORK_LAYER_PACKET);
+    pkt->setPacketType(CL_ANNOUNCEMENT);
+
+    Point cellCenter = calculateCellCenter(myCellId, cellRadius);
+    double myDistanceToCenter = sqrt(pow(myX - cellCenter.x, 2) + pow(myY - cellCenter.y, 2));
+    pkt->setData(myDistanceToCenter); 
+    
+    toMacLayer(pkt, BROADCAST_MAC_ADDRESS);
 }
 
 void CellularRouting::runCLElection() {

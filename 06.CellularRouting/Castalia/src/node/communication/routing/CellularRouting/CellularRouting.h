@@ -78,10 +78,12 @@ class CellularRouting : public VirtualRouting {
 
     void parseNetworkLayout();
     void calculateCellInfo();
+    Point calculateCellCenter(int cell_id);
     void sendHelloPacket();
     void handleHelloPacket(CellularRoutingPacket* pkt);
     void runCLElection();
 
+    void startCLElectionContention() ;
     void startReconfiguration();
     void findAndEstablishInterCellLinks();
     void handleLinkRequest(CellularRoutingPacket* pkt);
