@@ -26,7 +26,9 @@ enum CellularRoutingTimers {
     SEND_HELLO_TIMER = 1,
     RECONFIGURATION_TIMER = 2,
     CL_ANNOUNCEMENT_TIMER = 3,
-    LINK_REQUEST_TIMEOUT = 4
+    CL_CONFIRMATION_TIMER = 4,
+    CONFIRMATION_SENDER_TIMER = 5,
+    LINK_REQUEST_TIMEOUT = 6
     // ...
 };
 
@@ -44,6 +46,14 @@ struct LinkRequestState {
     int target_cell_id;
     int to_final_ch_id;
     cMessage* timeout_timer;
+};
+
+struct CellMemberRecord {
+    int id;
+    double x;
+    double y;
+    double energy;
+    vector<NeighborRecord> neighbors;
 };
 
 
@@ -66,7 +76,7 @@ class CellularRouting : public VirtualRouting {
     vector<NeighborRecord> neighborTable;
     map<int, int> intraCellRoutingTable;
     map<int, int> interCellRoutingTable;
-
+    vector<CellMemberRecord> cellMembers;
 
     map<int, LinkRequestState> pendingLinkRequests;
     int nextTimerIndex;
@@ -89,6 +99,9 @@ class CellularRouting : public VirtualRouting {
     void startCLElectionContention();
     void sendCLAnnouncement();
     void handleCLAnnouncementPacket(CellularRoutingPacket* pkt);
+    
+    void sendCLConfirmationPacket();
+    void handleCLConfirmationPacket(CellularRoutingPacket* pkt);
 
     void startReconfiguration();
     void findAndEstablishInterCellLinks();

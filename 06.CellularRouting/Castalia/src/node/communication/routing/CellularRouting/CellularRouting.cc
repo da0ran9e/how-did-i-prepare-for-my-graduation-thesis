@@ -111,6 +111,18 @@ void CellularRouting::timerFiredCallback(int index)
             break;
         }
 
+        case CONFIRMATION_SENDER_TIMER: {
+            trace() << "Confirmation sender timer fired. Sending CL confirmation.";
+            sendCLConfirmationPacket();
+            break;
+        }
+
+        case CL_CONFIRMATION_TIMER: {
+            trace() << "CL confirmation timer fired. I am the CL, waiting for confirmations from cell members.";
+            // Logic to handle CL confirmation
+            break;
+        }
+
         case LINK_REQUEST_TIMEOUT: {
             trace() << "WARNING: Link Request timed out. Timer index: " << index;
 
@@ -166,6 +178,11 @@ void CellularRouting::fromMacLayer(cPacket* pkt, int macAddress, double rssi, do
         case CL_ANNOUNCEMENT: {
             handleCLAnnouncementPacket(netPacket);
             trace() << "Received CL_ANNOUNCEMENT packet from " << netPacket->getSource();
+            break;
+        }
+        case CL_CONFIRMATION: {
+            handleCLConfirmationPacket(netPacket);
+            trace() << "Received CL_CONFIRMATION packet from " << netPacket->getSource();
             break;
         }
         case BS_UPDATE_PACKET: {
@@ -269,7 +286,7 @@ void CellularRouting::startCLElectionContention() {
     double contentionScalingFactor = 0.005;
     simtime_t contentionDelay = (contentionScalingFactor * myDistanceToCenter) + uniform(0, 0.001);
 
-    setTimer(CL_ANNOUNCEMENT_TIMER, myDistanceToCenter+100);
+    setTimer(CL_ANNOUNCEMENT_TIMER, myDistanceToCenter+50);
 
     trace() << "Starting CL election contention. My distance to center is " << myDistanceToCenter
             << "m. Will announce myself as CL in " << contentionDelay << "s.";
@@ -387,6 +404,84 @@ void CellularRouting::handleCLAnnouncementPacket(CellularRoutingPacket* pkt) {
         myCL_id = announcerId;
         cancelTimer(CL_ANNOUNCEMENT_TIMER);
     }
+    setTimer(CONFIRMATION_SENDER_TIMER, myDistanceToCenter+50);
+}
+
+void CellularRouting::sendCLConfirmationPacket() {
+    if (myCL_id != -1) {
+        trace() << "Sending confirmation to " << myCL_id;
+
+        CellularRoutingPacket* confirmPkt = new CellularRoutingPacket("CL Confirmation", NETWORK_LAYER_PACKET);
+        confirmPkt->setPacketType(CL_CONFIRMATION);
+
+        NodeInfo myInfo;
+        myInfo.nodeId = self;
+        myInfo.x = myX;
+        myInfo.y = myY;
+
+        for (int i = 0; i < 20; ++i) {
+            myInfo.neighbors[i].nodeId = -1;
+        }
+
+        for (size_t i = 0; i < neighborTable.size(); ++i) {
+            myInfo.neighbors[i].nodeId = neighborTable[i].id;
+            myInfo.neighbors[i].x = neighborTable[i].x;
+            myInfo.neighbors[i].y = neighborTable[i].y;
+            myInfo.neighbors[i].cellId = neighborTable[i].cellId;
+        }
+
+        confirmPkt->setNodeInfoData(myInfo);
+
+        confirmPkt->setSource(SELF_NETWORK_ADDRESS);
+        std::stringstream dest_addr;
+        dest_addr << myCL_id;
+        confirmPkt->setDestination(dest_addr.str().c_str());
+
+        toMacLayer(confirmPkt, myCL_id);
+    }
+}
+
+void CellularRouting::handleCLConfirmationPacket(CellularRoutingPacket* pkt) {
+    if (!amI_CL) return;
+
+    NodeInfo senderInfo = pkt->getNodeInfoData();
+    int senderId = senderInfo.nodeId;
+
+    for (const auto& member : cellMembers) {
+        if (member.id == senderId) {
+            return;
+        }
+    }
+
+    CellMemberRecord newMember;
+    newMember.id = senderId;
+    newMember.x = senderInfo.x;
+    newMember.y = senderInfo.y;
+    newMember.energy = senderInfo.energyLevel;
+    trace() << "Received confirmation from node " << senderId
+            << " at (" << newMember.x << ", " << newMember.y << ") with energy: "
+            << newMember.energy;
+
+    for (size_t i = 0; i < 20; ++i) {
+        NeighborInfo neighbor_of_sender = pkt->getNodeInfoData().neighbors[i];
+        if (neighbor_of_sender.nodeId == -1) {
+            continue; // Skip empty neighbors
+        }
+        NeighborRecord neighbor_of_sender_record;
+        neighbor_of_sender_record.id = neighbor_of_sender.nodeId;
+        neighbor_of_sender_record.x = neighbor_of_sender.x;
+        neighbor_of_sender_record.y = neighbor_of_sender.y;
+        neighbor_of_sender_record.cellId = neighbor_of_sender.cellId;
+        newMember.neighbors.push_back(neighbor_of_sender_record);
+        trace() << "  -> Neighbor: " << neighbor_of_sender_record.id
+                << " at (" << neighbor_of_sender_record.x << ", "
+                << neighbor_of_sender_record.y << ") with cell ID: "
+                << neighbor_of_sender_record.cellId;
+    }
+    cellMembers.push_back(newMember);
+
+    trace() << "Received confirmation from node " << senderId
+            << ". Total confirmed members: " << cellMembers.size();
 }
 
 // Giai đoạn 2: Tái cấu trúc
