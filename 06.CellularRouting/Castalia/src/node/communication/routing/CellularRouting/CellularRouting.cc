@@ -137,7 +137,24 @@ void CellularRouting::timerFiredCallback(int index)
 
         case CL_CONFIRMATION_TIMER: {
             trace() << "CL confirmation timer fired. I am the CL, waiting for confirmations from cell members.";
-            // Logic to handle CL confirmation
+            trace() << "Total cell members: " << cellMembers.size();
+            trace() << " --> Nodes in cell: ";
+            for (const auto& member : cellMembers) {
+                trace() << member.id << " at (" << member.x << ", " << member.y
+                        << ") With neighbors: ";
+                for (const auto& neighbor : member.neighbors) {
+                    trace() << "  - Neighbor ID: " << neighbor.id
+                            << " at (" << neighbor.x << ", " << neighbor.y
+                            << ") Last heard: " << neighbor.lastHeard;
+                }
+            }
+            setTimer(CL_VOTE_CH, 10);
+                break;
+        }
+
+        case CL_VOTE_CH: {
+            trace() << "CL_VOTE_CH timer fired. Starting CL election process.";
+            voteCH();
             break;
         }
 
@@ -288,7 +305,7 @@ void CellularRouting::calculateCellInfo() {
         s = -q - r;
     }
 
-    const int grid_offset = 10000;
+    const int grid_offset = 100;
     myCellId = q + r * grid_offset;
     myColor = ((q - r) % 3 + 3) % 3;
 }
@@ -312,7 +329,7 @@ void CellularRouting::startCLElectionContention() {
 
 Point CellularRouting::calculateCellCenter(int cell_id) {
 
-    const int grid_offset = 10000;
+    const int grid_offset = 100;
 
     int r = cell_id / grid_offset;
     int q = cell_id % grid_offset;
@@ -383,7 +400,7 @@ void CellularRouting::handleHelloPacket(CellularRoutingPacket* pkt) {
                 s = -q - r;
             }
 
-            const int grid_offset = 10000;
+            const int grid_offset = 100;
             newNeighbor.cellId = q + r * grid_offset;
 
             newNeighbor.lastHeard = simTime();
@@ -488,6 +505,11 @@ void CellularRouting::handleCLConfirmationPacket(CellularRoutingPacket* pkt) {
     NodeInfo senderInfo = pkt->getNodeInfoData();
     int senderId = senderInfo.nodeId;
 
+    if (cellMembers.empty()) {
+        trace() << "Received first confirmation, starting CL confirmation timer.";
+        setTimer(CL_CONFIRMATION_TIMER, 200);
+    } 
+
     for (const auto& member : cellMembers) {
         if (member.id == senderId) {
             return;
@@ -519,10 +541,51 @@ void CellularRouting::handleCLConfirmationPacket(CellularRoutingPacket* pkt) {
                 << neighbor_of_sender_record.y << ") with cell ID: "
                 << neighbor_of_sender_record.cellId;
     }
+
     cellMembers.push_back(newMember);
 
     trace() << "Received confirmation from node " << senderId
             << ". Total confirmed members: " << cellMembers.size();
+    
+}
+
+void CellularRouting::voteCH() {
+    if (!amI_CL) {
+        return;
+    }
+
+    trace() << "I am the CL. Starting the process to select the closest CH.";
+
+    if (clusterHeadList.empty()) {
+        trace() << "WARNING: Cluster Head list is empty. Cannot select a target CH.";
+        myCH_id = -1; 
+        return;
+    }
+
+    int best_ch_id = -1;
+    double min_distance_sq = -1.0; 
+
+    for (int ch_id : clusterHeadList) {
+        if (allNodesPositions.count(ch_id)) {
+            Point ch_position = allNodesPositions[ch_id];
+            
+            double distance_sq = pow(myX - ch_position.x, 2) + pow(myY - ch_position.y, 2);
+
+            if (best_ch_id == -1 || distance_sq < min_distance_sq) {
+                min_distance_sq = distance_sq;
+                best_ch_id = ch_id;
+            }
+        }
+    }
+
+    if (best_ch_id != -1) {
+        myCH_id = best_ch_id;
+        trace() << "Election complete. My cell will route data towards CH " << myCH_id
+                << " at distance " << sqrt(min_distance_sq) << "m.";
+    } else {
+        trace() << "WARNING: Could not find a valid CH from the provided list.";
+        myCH_id = -1;
+    }
 }
 
 // Giai đoạn 2: Tái cấu trúc

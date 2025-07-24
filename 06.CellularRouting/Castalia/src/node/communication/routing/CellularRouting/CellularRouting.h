@@ -28,8 +28,9 @@ enum CellularRoutingTimers {
     CL_ANNOUNCEMENT_TIMER = 3,
     CL_CONFIRMATION_TIMER = 4,
     CONFIRMATION_SENDER_TIMER = 5,
-    LINK_REQUEST_TIMEOUT = 6
-    // ...
+    CL_VOTE_CH = 6,
+    LINK_REQUEST_TIMEOUT = 7,
+    
 };
 
 struct NeighborRecord {
