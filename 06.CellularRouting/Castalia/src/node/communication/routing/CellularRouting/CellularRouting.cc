@@ -41,6 +41,24 @@ SN.node[15].xCoor = 150
 SN.node[15].yCoor = 104
 SN.node[16].xCoor = 151
 SN.node[16].yCoor = 150
+SN.node[17].xCoor = 200
+SN.node[17].yCoor = 4
+SN.node[18].xCoor = 201
+SN.node[18].yCoor = 50
+SN.node[19].xCoor = 200
+SN.node[19].yCoor = 104
+SN.node[20].xCoor = 201 
+SN.node[20].yCoor = 150
+SN.node[21].xCoor = 250
+SN.node[21].yCoor = 4
+SN.node[22].xCoor = 251
+SN.node[22].yCoor = 50
+SN.node[23].xCoor = 250
+SN.node[23].yCoor = 104
+SN.node[24].xCoor = 251
+SN.node[24].yCoor = 150
+SN.node[25].xCoor = 300
+SN.node[25].yCoor = 4
 )";
 
 
@@ -344,7 +362,30 @@ void CellularRouting::handleHelloPacket(CellularRoutingPacket* pkt) {
             newNeighbor.id = node_id;
             newNeighbor.x = position.x;
             newNeighbor.y = position.y;
-            // newNeighbor.cellId = ...;
+
+            double frac_q = (sqrt(3.0)/3.0 * newNeighbor.x - 1.0/3.0 * newNeighbor.y) / cellRadius;
+            double frac_r = (2.0/3.0 * newNeighbor.y) / cellRadius;
+            double frac_s = -frac_q - frac_r;
+
+            int q = round(frac_q);
+            int r = round(frac_r);
+            int s = round(frac_s);
+
+            double q_diff = abs(q - frac_q);
+            double r_diff = abs(r - frac_r);
+            double s_diff = abs(s - frac_s);
+
+            if (q_diff > r_diff && q_diff > s_diff) {
+                q = -r - s;
+            } else if (r_diff > s_diff) {
+                r = -q - s;
+            } else {
+                s = -q - r;
+            }
+
+            const int grid_offset = 10000;
+            newNeighbor.cellId = q + r * grid_offset;
+
             newNeighbor.lastHeard = simTime();
 
             neighborTable.push_back(newNeighbor);
