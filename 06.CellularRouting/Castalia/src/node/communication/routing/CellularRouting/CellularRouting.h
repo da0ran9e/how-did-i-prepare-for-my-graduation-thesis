@@ -105,6 +105,7 @@ class CellularRouting : public VirtualRouting {
     void handleCLConfirmationPacket(CellularRoutingPacket* pkt);
 
     void startReconfiguration();
+    void voteCH();
     void findAndEstablishInterCellLinks();
     void handleLinkRequest(CellularRoutingPacket* pkt);
     void handleLinkAck(CellularRoutingPacket* pkt);
