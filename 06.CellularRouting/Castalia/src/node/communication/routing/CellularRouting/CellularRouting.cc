@@ -156,6 +156,7 @@ void CellularRouting::timerFiredCallback(int index)
         case CL_VOTE_CH: {
             trace() << "CL_VOTE_CH timer fired. Starting CL election process.";
             voteCH();
+            startReconfiguration();
             break;
         }
 
@@ -583,35 +584,89 @@ void CellularRouting::voteCH() {
 
 // Giai đoạn 2: Tái cấu trúc
 void CellularRouting::startReconfiguration() {
-    trace() << "Function startReconfiguration() called.";
-    // Đây là hàm chỉ được gọi bởi CL
+    if (!amI_CL) return;
+
+    trace() << "I am CL, starting reconfiguration process...";
+
+    if (myCH_id == -1) {
+        trace() << "No target CH found. Reconfiguration cannot proceed.";
+        return;
+    }
+
+    findAndEstablishInterCellLinks();
 }
 
 void CellularRouting::findAndEstablishInterCellLinks() {
+    if (!amI_CL) {
+        return;
+    }
+    trace() << "I am CL, discovering and evaluating potential gateway pairs...";
 
+    if (myCH_id == -1) {
+        trace() << "  ERROR: Target CH is not set. Cannot proceed.";
+        return;
+    }
+    Point targetCH_pos = allNodesPositions[myCH_id];
+    trace() << "  Target CH is " << myCH_id << " at (" << targetCH_pos.x << ", " << targetCH_pos.y << ")";
+
+    struct GatewayCandidate {
+        int cgw_id;
+        int ngw_id;
+        int target_cell_id;
+        double link_distance; 
+        double ngw_to_ch_distance; 
+    };
+    vector<GatewayCandidate> candidates;
+
+    for (const auto& member : cellMembers) {
+        for (const auto& neighbor : member.neighbors) {
+            if (neighbor.cellId != myCellId) {
+                GatewayCandidate candidate;
+                candidate.cgw_id = member.id;
+                candidate.ngw_id = neighbor.id;
+                candidate.target_cell_id = neighbor.cellId;
+
+                Point cgw_pos = allNodesPositions[member.id];
+                Point ngw_pos = allNodesPositions[neighbor.id];
+                candidate.link_distance = sqrt(pow(cgw_pos.x - ngw_pos.x, 2) + pow(cgw_pos.y - ngw_pos.y, 2));
+
+                candidate.ngw_to_ch_distance = sqrt(pow(ngw_pos.x - targetCH_pos.x, 2) + pow(ngw_pos.y - targetCH_pos.y, 2));
+                
+                candidates.push_back(candidate);
+            }
+        }
+    }
+
+    if (candidates.empty()) {
+        trace() << "  No potential inter-cell links found.";
+        return;
+    }
+
+    trace() << "--- Gateway Candidates Evaluation ---";
+    for (const auto& cand : candidates) {
+        trace() << "  Pair: (CGW:" << cand.cgw_id << " -> NGW:" << cand.ngw_id << ") | Link Dist: " << cand.link_distance 
+                << "m | NGW to CH Dist: " << cand.ngw_to_ch_distance << "m";
+    }
+    trace() << "------------------------------------";
 }
 
 void CellularRouting::handleLinkRequest(CellularRoutingPacket* pkt) {
     trace() << "Function handleLinkRequest() called for packet from " << pkt->getSource();
-    // Logic của NGW -> chuyển tiếp lên NCL
+    
 }
 
 void CellularRouting::handleLinkAck(CellularRoutingPacket* pkt) {
     trace() << "Function handleLinkAck() called for packet from " << pkt->getSource();
-    // Logic của CGW -> gửi xác nhận về CL
 }
 
 void CellularRouting::handleLinkEstablishedConfirmation(CellularRoutingPacket* pkt) {
     trace() << "Function handleLinkEstablishedConfirmation() called for packet from " << pkt->getSource();
-    // Logic của CL -> hủy timer, cập nhật bảng định tuyến liên ô
 }
 
 void CellularRouting::calculateAndDistributeIntraCellTree() {
     trace() << "Function calculateAndDistributeIntraCellTree() called.";
-    // Logic của CL -> tính toán và gửi INTRA_CELL_ROUTING_UPDATE cho các thành viên
 }
 
 void CellularRouting::handleRoutingTableUpdate(CellularRoutingPacket* pkt) {
     trace() << "Function handleRoutingTableUpdate() called for packet from " << pkt->getSource();
-    // Logic của node thường -> cập nhật next-hop của mình
 }
