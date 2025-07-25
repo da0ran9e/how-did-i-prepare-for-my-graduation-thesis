@@ -600,21 +600,20 @@ void CellularRouting::findAndEstablishInterCellLinks() {
     if (!amI_CL) {
         return;
     }
-    trace() << "I am CL, discovering and evaluating potential gateway pairs...";
+    trace() << "I am CL, starting gateway selection process for CH " << myCH_id << "...";
 
     if (myCH_id == -1) {
         trace() << "  ERROR: Target CH is not set. Cannot proceed.";
         return;
     }
     Point targetCH_pos = allNodesPositions[myCH_id];
-    trace() << "  Target CH is " << myCH_id << " at (" << targetCH_pos.x << ", " << targetCH_pos.y << ")";
 
     struct GatewayCandidate {
         int cgw_id;
         int ngw_id;
         int target_cell_id;
-        double link_distance; 
-        double ngw_to_ch_distance; 
+        double link_distance;       
+        double ngw_to_ch_distance;  
     };
     vector<GatewayCandidate> candidates;
 
@@ -628,8 +627,8 @@ void CellularRouting::findAndEstablishInterCellLinks() {
 
                 Point cgw_pos = allNodesPositions[member.id];
                 Point ngw_pos = allNodesPositions[neighbor.id];
+                
                 candidate.link_distance = sqrt(pow(cgw_pos.x - ngw_pos.x, 2) + pow(cgw_pos.y - ngw_pos.y, 2));
-
                 candidate.ngw_to_ch_distance = sqrt(pow(ngw_pos.x - targetCH_pos.x, 2) + pow(ngw_pos.y - targetCH_pos.y, 2));
                 
                 candidates.push_back(candidate);
@@ -642,12 +641,31 @@ void CellularRouting::findAndEstablishInterCellLinks() {
         return;
     }
 
-    trace() << "--- Gateway Candidates Evaluation ---";
-    for (const auto& cand : candidates) {
-        trace() << "  Pair: (CGW:" << cand.cgw_id << " -> NGW:" << cand.ngw_id << ") | Link Dist: " << cand.link_distance 
-                << "m | NGW to CH Dist: " << cand.ngw_to_ch_distance << "m";
+    GatewayCandidate best_candidate;
+    bool first_candidate = true;
+
+    for (const auto& current_candidate : candidates) {
+        if (first_candidate) {
+            best_candidate = current_candidate;
+            first_candidate = false;
+            continue;
+        }
+
+        if (current_candidate.ngw_to_ch_distance < best_candidate.ngw_to_ch_distance) {
+            best_candidate = current_candidate;
+        } 
+        else if (current_candidate.ngw_to_ch_distance == best_candidate.ngw_to_ch_distance) {
+            if (current_candidate.link_distance < best_candidate.link_distance) {
+                best_candidate = current_candidate;
+            }
+        }
     }
-    trace() << "------------------------------------";
+    
+    trace() << "--- Gateway Selection Complete ---";
+    trace() << "  Optimal Pair: (CGW:" << best_candidate.cgw_id << " -> NGW:" << best_candidate.ngw_id << ")";
+    trace() << "  Link Distance: " << best_candidate.link_distance << "m";
+    trace() << "  NGW to CH Distance: " << best_candidate.ngw_to_ch_distance << "m";
+    trace() << "---------------------------------";
 }
 
 void CellularRouting::handleLinkRequest(CellularRoutingPacket* pkt) {
