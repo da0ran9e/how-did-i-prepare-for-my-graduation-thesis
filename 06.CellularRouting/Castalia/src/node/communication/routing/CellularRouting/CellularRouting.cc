@@ -49,16 +49,16 @@ SN.node[19].xCoor = 200
 SN.node[19].yCoor = 104
 SN.node[20].xCoor = 201 
 SN.node[20].yCoor = 150
-SN.node[21].xCoor = 250
-SN.node[21].yCoor = 4
-SN.node[22].xCoor = 251
-SN.node[22].yCoor = 50
-SN.node[23].xCoor = 250
-SN.node[23].yCoor = 104
-SN.node[24].xCoor = 251
-SN.node[24].yCoor = 150
-SN.node[25].xCoor = 300
-SN.node[25].yCoor = 4
+SN.node[21].xCoor = 2
+SN.node[21].yCoor = 200
+SN.node[22].xCoor = 53
+SN.node[22].yCoor = 200
+SN.node[23].xCoor = 98
+SN.node[23].yCoor = 201
+SN.node[24].xCoor = 144
+SN.node[24].yCoor = 200
+SN.node[25].xCoor = 200
+SN.node[25].yCoor = 199
 )";
 
 
@@ -67,6 +67,7 @@ void CellularRouting::startup()
     helloInterval = par("helloInterval");
     cellRadius = par("cellRadius");
     myCL_id = -1;
+    amI_CL = false;
 
 // Read parameters from the network layout data
     parseNetworkLayout();
@@ -311,7 +312,7 @@ void CellularRouting::calculateCellInfo() {
 }
 
 void CellularRouting::startCLElectionContention() {
-    if (amI_CL) {
+    if (amI_CL || myCL_id != -1) {
         return;
     }
 
@@ -321,27 +322,17 @@ void CellularRouting::startCLElectionContention() {
     double contentionScalingFactor = 0.005;
     simtime_t contentionDelay = (contentionScalingFactor * myDistanceToCenter) + uniform(0, 0.001);
 
-    setTimer(CL_ANNOUNCEMENT_TIMER, myDistanceToCenter+50);
-
     trace() << "Starting CL election contention. My distance to center is " << myDistanceToCenter
             << "m. Will announce myself as CL in " << contentionDelay << "s.";
+
+    setTimer(CL_ANNOUNCEMENT_TIMER, myDistanceToCenter+50);
 }
 
 Point CellularRouting::calculateCellCenter(int cell_id) {
-
     const int grid_offset = 100;
 
-    int r = cell_id / grid_offset;
-    int q = cell_id % grid_offset;
-
-    if (cell_id < 0 && q > 0) {
-        q -= grid_offset;
-        r += 1;
-    }
-    if (cell_id > 0 && q < 0) {
-        q += grid_offset;
-        r -= 1;
-    }
+    int r = round((double)cell_id / grid_offset);
+    int q = cell_id - r * grid_offset;
 
     Point center;
     center.x = cellRadius * (sqrt(3.0) * q + sqrt(3.0) / 2.0 * r);
@@ -365,8 +356,6 @@ void CellularRouting::handleHelloPacket(CellularRoutingPacket* pkt) {
 
     neighborTable.clear();
 
-    double communicationRadius = 2.0 * cellRadius;
-
     for (auto const& [node_id, position] : allNodesPositions) {
         if (node_id == self) {
             continue;
@@ -374,7 +363,7 @@ void CellularRouting::handleHelloPacket(CellularRoutingPacket* pkt) {
 
         double distance = sqrt(pow(myX - position.x, 2) + pow(myY - position.y, 2));
 
-        if (distance <= communicationRadius) {
+        if (distance <= cellRadius) {
             NeighborRecord newNeighbor;
             newNeighbor.id = node_id;
             newNeighbor.x = position.x;
@@ -409,7 +398,10 @@ void CellularRouting::handleHelloPacket(CellularRoutingPacket* pkt) {
         }
     }
 
-    trace() << "Neighbor table updated. Found " << neighborTable.size() << " neighbors.";
+    trace() << "Neighbor table updated. Found " << neighborTable.size() << " neighbors: ";
+    for (const auto& neighbor : neighborTable) {
+        trace() << " - Neighbor ID: " << neighbor.id << ", Position: (" << neighbor.x << ", " << neighbor.y << ")";
+    }
 }
 
 void CellularRouting::sendCLAnnouncement() {
@@ -428,18 +420,19 @@ void CellularRouting::sendCLAnnouncement() {
            dest_addr << neighborId;
            pkt_for_neighbor->setDestination(dest_addr.str().c_str());
            toMacLayer(pkt_for_neighbor, neighborId);
+           trace() << "Sending CL announcement to neighbor " << neighborId
+                   << " at (" << neighbor.x << ", " << neighbor.y << ")";
        }
 }
 
 void CellularRouting::runCLElection() {
     trace() << "Function runCLElection() called.";
-    // TODO:
-    // 1. Duyệt qua neighborTable
-    // 2. Tìm node có năng lượng cao nhất (hoặc tiêu chí khác)
-    // 3. Nếu là mình, tự nhận vai trò CL và gọi send(CL_ANNOUNCEMENT)
 }
 
 void CellularRouting::handleCLAnnouncementPacket(CellularRoutingPacket* pkt) {
+    if (myCellId != pkt->getClAnnouncementData().cellId) {
+        return;
+    }
     int announcerId = atoi(pkt->getSource());
     double announcerX = pkt->getClAnnouncementData().x;
     double announcerY = pkt->getClAnnouncementData().y;
@@ -508,7 +501,7 @@ void CellularRouting::handleCLConfirmationPacket(CellularRoutingPacket* pkt) {
     if (cellMembers.empty()) {
         trace() << "Received first confirmation, starting CL confirmation timer.";
         setTimer(CL_CONFIRMATION_TIMER, 200);
-    } 
+    }
 
     for (const auto& member : cellMembers) {
         if (member.id == senderId) {
@@ -546,7 +539,7 @@ void CellularRouting::handleCLConfirmationPacket(CellularRoutingPacket* pkt) {
 
     trace() << "Received confirmation from node " << senderId
             << ". Total confirmed members: " << cellMembers.size();
-    
+
 }
 
 void CellularRouting::voteCH() {
@@ -558,17 +551,17 @@ void CellularRouting::voteCH() {
 
     if (clusterHeadList.empty()) {
         trace() << "WARNING: Cluster Head list is empty. Cannot select a target CH.";
-        myCH_id = -1; 
+        myCH_id = -1;
         return;
     }
 
     int best_ch_id = -1;
-    double min_distance_sq = -1.0; 
+    double min_distance_sq = -1.0;
 
     for (int ch_id : clusterHeadList) {
         if (allNodesPositions.count(ch_id)) {
             Point ch_position = allNodesPositions[ch_id];
-            
+
             double distance_sq = pow(myX - ch_position.x, 2) + pow(myY - ch_position.y, 2);
 
             if (best_ch_id == -1 || distance_sq < min_distance_sq) {
@@ -595,8 +588,7 @@ void CellularRouting::startReconfiguration() {
 }
 
 void CellularRouting::findAndEstablishInterCellLinks() {
-    trace() << "Function findAndEstablishInterCellLinks() called.";
-    // Đây là hàm chỉ được gọi bởi CL
+
 }
 
 void CellularRouting::handleLinkRequest(CellularRoutingPacket* pkt) {

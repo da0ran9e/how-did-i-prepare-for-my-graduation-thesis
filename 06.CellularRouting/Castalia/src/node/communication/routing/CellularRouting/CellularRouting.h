@@ -107,6 +107,7 @@ class CellularRouting : public VirtualRouting {
     void startReconfiguration();
     void voteCH();
     void findAndEstablishInterCellLinks();
+    pair<int, int> CellularRouting::findBestGatewayPair(int targetCellId)
     void handleLinkRequest(CellularRoutingPacket* pkt);
     void handleLinkAck(CellularRoutingPacket* pkt);
     void handleLinkEstablishedConfirmation(CellularRoutingPacket* pkt);
