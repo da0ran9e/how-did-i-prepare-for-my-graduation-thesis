@@ -58,6 +58,15 @@ struct CellMemberRecord {
     vector<NeighborRecord> neighbors;
 };
 
+struct GatewayCandidate {
+    int cgw_id;
+    int ngw_id;
+    int target_cell_id;
+    double link_distance;       // CGW <-> NGW
+    double ngw_to_ch_distance;  // NGW -> CH
+};
+vector<GatewayCandidate> candidates;
+
 
 class CellularRouting : public VirtualRouting {
  private:
@@ -108,6 +117,8 @@ class CellularRouting : public VirtualRouting {
     void startReconfiguration();
     void voteCH();
     void findAndEstablishInterCellLinks();
+    void handleCLCommandPacket(CellularRoutingPacket* pkt);
+    void sendLinkRequest();
     void handleLinkRequest(CellularRoutingPacket* pkt);
     void handleLinkAck(CellularRoutingPacket* pkt);
     void handleLinkEstablishedConfirmation(CellularRoutingPacket* pkt);

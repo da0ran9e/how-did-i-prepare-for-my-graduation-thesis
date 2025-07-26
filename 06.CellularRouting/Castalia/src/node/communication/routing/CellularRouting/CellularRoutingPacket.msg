@@ -14,6 +14,7 @@ enum CellularRoutingPacketType {
     LINK_ESTABLISHED = 6;      
 
     INTRA_CELL_ROUTING_UPDATE = 7;
+    CL_COMMAND_PACKET = 8;
 };
 
 struct HelloInfo {
@@ -52,6 +53,11 @@ struct LinkRequestInfo {
     int targetCH_id; 
 };
 
+struct CLCommandInfo {
+    int target_ngw_id;
+    int target_cell_id;
+    int final_ch_id;
+};
 
 packet CellularRoutingPacket extends RoutingPacket {
     int packetType @enum(CellularRoutingPacketType);
@@ -61,5 +67,6 @@ packet CellularRoutingPacket extends RoutingPacket {
     NodeInfo nodeInfoData;
     
     LinkRequestInfo linkRequestData;
+    CLCommandInfo clCommandData;
     int nextHopId; 
 };

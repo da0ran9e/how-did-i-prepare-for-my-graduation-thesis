@@ -161,20 +161,13 @@ void CellularRouting::timerFiredCallback(int index)
         }
 
         case LINK_REQUEST_TIMEOUT: {
-            trace() << "WARNING: Link Request timed out. Timer index: " << index;
-
-            if (pendingLinkRequests.count(index)) {
-                LinkRequestState failed_request = pendingLinkRequests[index];
-                trace() << "  -> Failed to establish link from CGW " << failed_request.source_cgw_id
-                        << " to NGW " << failed_request.target_ngw_id;
-
-                pendingLinkRequests.erase(index);
-
-                // TODO: ...
-            }
-
-            if (amI_CL && pendingLinkRequests.empty()) {
-                calculateAndDistributeIntraCellTree();
+            trace() << "WARNING: Link Request timed out." << index;
+            if (!candidates.empty()) {
+                candidates.erase(candidates.begin());
+                trace() << "Removed the first candidate due to timeout. Remaining candidates: " << candidates.size();
+                sendLinkRequest();
+            } else {
+                trace() << "No more candidates left to process.";
             }
             break;
         }
@@ -245,6 +238,10 @@ void CellularRouting::fromMacLayer(cPacket* pkt, int macAddress, double rssi, do
         case INTRA_CELL_ROUTING_UPDATE: {
             //handleRoutingTableUpdate(netPacket);
             trace() << "Received INTRA_CELL_ROUTING_UPDATE from " << netPacket->getSource();
+            break;
+        }
+        case CL_COMMAND_PACKET: {
+            handleCLCommandPacket(netPacket);
             break;
         }
         default: {
@@ -606,17 +603,6 @@ void CellularRouting::findAndEstablishInterCellLinks() {
         return;
     }
     Point targetCH_pos = allNodesPositions[myCH_id];
-
-    struct GatewayCandidate {
-        int cgw_id;
-        int ngw_id;
-        int target_cell_id;
-        double link_distance;       // CGW <-> NGW
-        double ngw_to_ch_distance;  // NGW -> CH
-    };
-    vector<GatewayCandidate> candidates;
-
-
     for (const auto& member : cellMembers) {
         for (const auto& neighbor : member.neighbors) {
             if (neighbor.cellId != myCellId) {
@@ -660,16 +646,85 @@ void CellularRouting::findAndEstablishInterCellLinks() {
     }
     trace() << "---------------------------------------------";
 
+    sendLinkRequest();
+}
+
+void CellularRouting::sendLinkRequest() {
+    if (!amI_CL) {
+        return;
+    }
+
     if (!candidates.empty()) {
         GatewayCandidate best_candidate = candidates.front();
         trace() << "Attempting to establish link with the best candidate: CGW "
                 << best_candidate.cgw_id << " -> NGW " << best_candidate.ngw_id;
+        int best_cgw = best_candidate.cgw_id;
+        int best_ngw = best_candidate.ngw_id;
+        int best_next_hop_cell = best_candidate.target_cell_id;
+        int best_final_ch_id = myCH_id;
+
+        if (best_cgw != -1 && best_ngw != -1) {
+            trace() << "  BEST GATEWAY PAIR FOUND: CGW " << best_cgw << " -> NGW " << best_ngw;
+
+            CellularRoutingPacket* cmdPkt = new CellularRoutingPacket("CL Command to CGW", NETWORK_LAYER_PACKET);
+            cmdPkt->setPacketType(CL_COMMAND_PACKET);
+
+            CLCommandInfo cmdInfo;
+            cmdInfo.target_ngw_id = best_ngw;
+            cmdInfo.target_cell_id = best_next_hop_cell;
+            cmdInfo.final_ch_id = myCH_id;
+            cmdPkt->setClCommandData(cmdInfo);
+            cmdPkt->setSource(SELF_NETWORK_ADDRESS);
+            std::stringstream dest_addr;
+            dest_addr << best_cgw;
+            cmdPkt->setDestination(dest_addr.str().c_str());
+
+            trace() << "  Sending command to my CGW " << best_cgw << " to link with NGW " << best_ngw;
+            toMacLayer(cmdPkt, best_cgw);
+
+            setTimer(LINK_REQUEST_TIMEOUT, 100);
+        }
     }
 }
 
-void CellularRouting::handleLinkRequest(CellularRoutingPacket* pkt) {
-    trace() << "Function handleLinkRequest() called for packet from " << pkt->getSource();
+void CellularRouting::handleCLCommandPacket(CellularRoutingPacket* pkt) {
+    CLCommandInfo cmdData = pkt->getClCommandData();
+    int target_ngw_id = cmdData.target_ngw_id;
 
+    CellularRoutingPacket* reqPkt = new CellularRoutingPacket("Link Request", NETWORK_LAYER_PACKET);
+    reqPkt->setPacketType(LINK_REQUEST);
+
+    LinkRequestInfo reqInfo;
+    reqInfo.sourceCellId = myCellId;
+    reqInfo.targetCH_id = cmdData.final_ch_id;
+    reqPkt->setLinkRequestData(reqInfo);
+    reqPkt->setSource(SELF_NETWORK_ADDRESS);
+    std::stringstream dest_addr;
+    dest_addr << target_ngw_id;
+    reqPkt->setDestination(dest_addr.str().c_str());
+    trace() << "Sending LINK_REQUEST to NGW " << target_ngw_id << " cell " << cmdData.target_cell_id
+            << " with target CH " << cmdData.final_ch_id;
+
+    toMacLayer(reqPkt, target_ngw_id);
+    // set timer
+}
+
+void CellularRouting::handleLinkRequest(CellularRoutingPacket* pkt) {
+    if (myCL_id == -1) {
+        return;
+    }
+
+    int source_cgw_id = atoi(pkt->getSource());
+    trace() << "I am an NGW. Received LINK_REQUEST from CGW " << source_cgw_id
+            << ". Forwarding to my CL " << myCL_id;
+
+    CellularRoutingPacket* fwdPkt = pkt->dup();
+    fwdPkt->setSource(SELF_NETWORK_ADDRESS);
+    std::stringstream dest_addr;
+    dest_addr << myCL_id;
+    fwdPkt->setDestination(dest_addr.str().c_str());
+
+    toMacLayer(fwdPkt, myCL_id);
 }
 
 void CellularRouting::handleLinkAck(CellularRoutingPacket* pkt) {
