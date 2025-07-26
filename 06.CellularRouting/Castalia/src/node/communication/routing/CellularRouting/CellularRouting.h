@@ -88,6 +88,8 @@ class CellularRouting : public VirtualRouting {
     map<int, int> intraCellRoutingTable;
     map<int, int> interCellRoutingTable;
     vector<CellMemberRecord> cellMembers;
+    int gatewayTowardsCH = -1;
+    int myNextHopId = -1;
 
     map<int, LinkRequestState> pendingLinkRequests;
     int nextTimerIndex;
@@ -123,6 +125,8 @@ class CellularRouting : public VirtualRouting {
     void handleLinkAck(CellularRoutingPacket* pkt);
     void handleLinkEstablishedConfirmation(CellularRoutingPacket* pkt);
     void calculateAndDistributeIntraCellTree();
+    double calculateDistance(double x1, double y1, double x2, double y2);
+    void announceRoutingTree(int from, int to);
     void handleRoutingTableUpdate(CellularRoutingPacket* pkt);
 };
 

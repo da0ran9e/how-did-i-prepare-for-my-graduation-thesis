@@ -16,6 +16,7 @@ enum CellularRoutingPacketType {
     INTRA_CELL_ROUTING_UPDATE = 7;
     CL_COMMAND_PACKET = 8;
     NCL_CONFIRM_PACKET = 9;
+    ROUTING_TREE_UPDATE_PACKET = 10;
 };
 
 struct HelloInfo {
@@ -69,6 +70,11 @@ struct NCLConfirmInfo{
     int ngw_id; 
 };
 
+struct RoutingUpdateInfo{
+    int from;
+    int to;
+}
+
 packet CellularRoutingPacket extends RoutingPacket {
     int packetType @enum(CellularRoutingPacketType);
 
@@ -79,5 +85,6 @@ packet CellularRoutingPacket extends RoutingPacket {
     LinkRequestInfo linkRequestData;
     CLCommandInfo clCommandData;
     NCLConfirmInfo nclCommandData;
+    RoutingUpdateInfo routingUpdateData;
     int nextHopId; 
 };

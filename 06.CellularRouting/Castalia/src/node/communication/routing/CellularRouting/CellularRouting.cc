@@ -763,7 +763,27 @@ void CellularRouting::handleLinkEstablishedConfirmation(CellularRoutingPacket* p
     if (amI_CL) {
         trace() << "Received LINK_ACK from CGW " << pkt->getSource()
                 << ". Save the link information and update routing table.";
-        // save ...
+        int cellDestination;
+        NCLConfirmInfo confInfo = pkt->getNclCommandData();
+        for (const auto& member : cellMembers) {
+            if (member.id == confInfo.cgw_id) {
+                for (const auto& neighbor : member.neighbors) {
+                    if (neighbor.id == confInfo.ngw_id) {
+                        cellDestination = neighbor.cellId;
+                    }
+                }
+            }
+        }
+        interCellRoutingTable[cellDestination] = confInfo.cgw_id;
+        gatewayTowardsCH = confInfo.cgw_id;
+        cancelTimer(LINK_REQUEST_TIMEOUT);
+        trace() << "Link established with CGW " << confInfo.cgw_id
+                << ". Routing table updated. Gateway towards CH is now "
+                << gatewayTowardsCH;
+        announceRoutingTree(gatewayTowardsCH, confInfo.ngw_id);
+
+        calculateAndDistributeIntraCellTree();
+
         return;
     } else {
         NCLConfirmInfo confInfo = pkt->getNclCommandData();
@@ -785,13 +805,69 @@ void CellularRouting::handleLinkEstablishedConfirmation(CellularRoutingPacket* p
             fwdPkt->setDestination(dest_addr.str().c_str());
             toMacLayer(fwdPkt, confInfo.cgw_id);
             trace() << "Forwarded LINK_ACK to CGW " << confInfo.cgw_id;
-        } 
+        }
         return;
     }
 }
 
 void CellularRouting::calculateAndDistributeIntraCellTree() {
-    trace() << "Function calculateAndDistributeIntraCellTree() called.";
+    if (!amI_CL) return;
+
+    if (gatewayTowardsCH == -1) return;
+    Point gatewayPos = allNodesPositions[gatewayTowardsCH];
+
+    for (const auto& member : cellMembers) {
+        if (member.id == gatewayTowardsCH) {
+            intraCellRoutingTable[member.id] = -1;
+            continue;
+        }
+
+        int bestHop = -1;
+        double minDistanceToGatewaySq = -1.0;
+        for (const auto& neighbor : member.neighbors) {
+            if (neighbor.cellId == myCellId) {
+                double distSq = pow(allNodesPositions[neighbor.id].x - gatewayPos.x, 2) +
+                                pow(allNodesPositions[neighbor.id].y - gatewayPos.y, 2);
+
+                if (bestHop == -1 || distSq < minDistanceToGatewaySq) {
+                    minDistanceToGatewaySq = distSq;
+                    bestHop = neighbor.id;
+                }
+            }
+        }
+
+        intraCellRoutingTable[member.id] = bestHop;
+
+        if (bestHop != -1) {
+            announceRoutingTree(member.id, bestHop);
+        } else {
+            trace() << "  WARNING: Node " << member.id << " has no neighbors in this cell to forward packets.";
+        }
+    }
+}
+
+double CellularRouting::calculateDistance(double x1, double y1, double x2, double y2) {
+    return sqrt(pow(x1 - x2, 2) + pow(y1 - y2, 2));
+}
+
+void CellularRouting::announceRoutingTree(int from, int to) {
+    CellularRoutingPacket* pkt = new CellularRoutingPacket("Routing Update", NETWORK_LAYER_PACKET);
+    pkt->setPacketType(ROUTING_TREE_UPDATE_PACKET);
+
+    RoutingUpdateInfo updateInfo;
+    updateInfo.from = from;
+    updateInfo.to = to;
+    pkt->setRoutingUpdateData(updateInfo);
+
+
+    pkt->setSource(SELF_NETWORK_ADDRESS);
+    std::stringstream dest_addr;
+    dest_addr << to;
+    pkt->setDestination(dest_addr.str().c_str());
+
+
+    toMacLayer(pkt, from);
+    trace() << "Announcing routing tree from " << from << " to " << to;
 }
 
 void CellularRouting::handleRoutingTableUpdate(CellularRoutingPacket* pkt) {
