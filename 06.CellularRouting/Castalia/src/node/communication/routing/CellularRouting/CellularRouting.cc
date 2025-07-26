@@ -582,7 +582,6 @@ void CellularRouting::voteCH() {
     }
 }
 
-// Giai đoạn 2: Tái cấu trúc
 void CellularRouting::startReconfiguration() {
     if (!amI_CL) return;
 
@@ -600,7 +599,7 @@ void CellularRouting::findAndEstablishInterCellLinks() {
     if (!amI_CL) {
         return;
     }
-    trace() << "I am CL, starting gateway selection process for CH " << myCH_id << "...";
+    trace() << "I am CL, discovering, evaluating, and ranking all potential gateway pairs...";
 
     if (myCH_id == -1) {
         trace() << "  ERROR: Target CH is not set. Cannot proceed.";
@@ -612,10 +611,11 @@ void CellularRouting::findAndEstablishInterCellLinks() {
         int cgw_id;
         int ngw_id;
         int target_cell_id;
-        double link_distance;       
-        double ngw_to_ch_distance;  
+        double link_distance;       // CGW <-> NGW
+        double ngw_to_ch_distance;  // NGW -> CH
     };
     vector<GatewayCandidate> candidates;
+
 
     for (const auto& member : cellMembers) {
         for (const auto& neighbor : member.neighbors) {
@@ -627,10 +627,10 @@ void CellularRouting::findAndEstablishInterCellLinks() {
 
                 Point cgw_pos = allNodesPositions[member.id];
                 Point ngw_pos = allNodesPositions[neighbor.id];
-                
+
                 candidate.link_distance = sqrt(pow(cgw_pos.x - ngw_pos.x, 2) + pow(cgw_pos.y - ngw_pos.y, 2));
                 candidate.ngw_to_ch_distance = sqrt(pow(ngw_pos.x - targetCH_pos.x, 2) + pow(ngw_pos.y - targetCH_pos.y, 2));
-                
+
                 candidates.push_back(candidate);
             }
         }
@@ -641,36 +641,35 @@ void CellularRouting::findAndEstablishInterCellLinks() {
         return;
     }
 
-    GatewayCandidate best_candidate;
-    bool first_candidate = true;
-
-    for (const auto& current_candidate : candidates) {
-        if (first_candidate) {
-            best_candidate = current_candidate;
-            first_candidate = false;
-            continue;
-        }
-
-        if (current_candidate.ngw_to_ch_distance < best_candidate.ngw_to_ch_distance) {
-            best_candidate = current_candidate;
-        } 
-        else if (current_candidate.ngw_to_ch_distance == best_candidate.ngw_to_ch_distance) {
-            if (current_candidate.link_distance < best_candidate.link_distance) {
-                best_candidate = current_candidate;
+    std::sort(candidates.begin(), candidates.end(),
+        [](const GatewayCandidate& a, const GatewayCandidate& b) {
+            if (a.ngw_to_ch_distance < b.ngw_to_ch_distance) {
+                return true;
             }
-        }
+            if (a.ngw_to_ch_distance > b.ngw_to_ch_distance) {
+                return false;
+            }
+            return a.link_distance < b.link_distance;
+        });
+
+    trace() << "--- Ranked Gateway Candidates (Best to Worst) ---";
+    for (const auto& cand : candidates) {
+        trace() << "  Pair: (CGW:" << cand.cgw_id << " -> NGW:" << cand.ngw_id
+                << ") | NGW to CH Dist: " << cand.ngw_to_ch_distance << "m"
+                << " | Link Dist: " << cand.link_distance << "m";
     }
-    
-    trace() << "--- Gateway Selection Complete ---";
-    trace() << "  Optimal Pair: (CGW:" << best_candidate.cgw_id << " -> NGW:" << best_candidate.ngw_id << ")";
-    trace() << "  Link Distance: " << best_candidate.link_distance << "m";
-    trace() << "  NGW to CH Distance: " << best_candidate.ngw_to_ch_distance << "m";
-    trace() << "---------------------------------";
+    trace() << "---------------------------------------------";
+
+    if (!candidates.empty()) {
+        GatewayCandidate best_candidate = candidates.front();
+        trace() << "Attempting to establish link with the best candidate: CGW "
+                << best_candidate.cgw_id << " -> NGW " << best_candidate.ngw_id;
+    }
 }
 
 void CellularRouting::handleLinkRequest(CellularRoutingPacket* pkt) {
     trace() << "Function handleLinkRequest() called for packet from " << pkt->getSource();
-    
+
 }
 
 void CellularRouting::handleLinkAck(CellularRoutingPacket* pkt) {

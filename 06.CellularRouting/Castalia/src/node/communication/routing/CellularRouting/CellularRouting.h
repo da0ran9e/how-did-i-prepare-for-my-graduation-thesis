@@ -6,6 +6,7 @@
 #include <vector>
 #include <map>
 #include <cmath>
+#include <algorithm>
 
 using namespace std;
 
@@ -30,7 +31,7 @@ enum CellularRoutingTimers {
     CONFIRMATION_SENDER_TIMER = 5,
     CL_VOTE_CH = 6,
     LINK_REQUEST_TIMEOUT = 7,
-    
+
 };
 
 struct NeighborRecord {
@@ -100,14 +101,13 @@ class CellularRouting : public VirtualRouting {
     void startCLElectionContention();
     void sendCLAnnouncement();
     void handleCLAnnouncementPacket(CellularRoutingPacket* pkt);
-    
+
     void sendCLConfirmationPacket();
     void handleCLConfirmationPacket(CellularRoutingPacket* pkt);
 
     void startReconfiguration();
     void voteCH();
     void findAndEstablishInterCellLinks();
-    pair<int, int> CellularRouting::findBestGatewayPair(int targetCellId)
     void handleLinkRequest(CellularRoutingPacket* pkt);
     void handleLinkAck(CellularRoutingPacket* pkt);
     void handleLinkEstablishedConfirmation(CellularRoutingPacket* pkt);
