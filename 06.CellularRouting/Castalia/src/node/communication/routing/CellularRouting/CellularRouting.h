@@ -31,7 +31,7 @@ enum CellularRoutingTimers {
     CONFIRMATION_SENDER_TIMER = 5,
     CL_VOTE_CH = 6,
     LINK_REQUEST_TIMEOUT = 7,
-
+    LINK_ESTABLISHED_CONFIRMATION = 8,
 };
 
 struct NeighborRecord {

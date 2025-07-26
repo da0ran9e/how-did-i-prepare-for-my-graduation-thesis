@@ -221,12 +221,12 @@ void CellularRouting::fromMacLayer(cPacket* pkt, int macAddress, double rssi, do
             break;
         }
         case LINK_REQUEST: {
-            //handleLinkRequest(netPacket);
+            handleLinkRequest(netPacket);
             trace() << "Received LINK_REQUEST from " << netPacket->getSource();
             break;
         }
-        case LINK_ACK: {
-            //handleLinkAck(netPacket);
+        case NCL_CONFIRM_PACKET: {
+            handleLinkEstablishedConfirmation(netPacket);
             trace() << "Received LINK_ACK from " << netPacket->getSource();
             break;
         }
@@ -670,6 +670,7 @@ void CellularRouting::sendLinkRequest() {
             cmdPkt->setPacketType(CL_COMMAND_PACKET);
 
             CLCommandInfo cmdInfo;
+            cmdInfo.source_cgw_id = best_cgw;
             cmdInfo.target_ngw_id = best_ngw;
             cmdInfo.target_cell_id = best_next_hop_cell;
             cmdInfo.final_ch_id = myCH_id;
@@ -689,28 +690,37 @@ void CellularRouting::sendLinkRequest() {
 
 void CellularRouting::handleCLCommandPacket(CellularRoutingPacket* pkt) {
     CLCommandInfo cmdData = pkt->getClCommandData();
-    int target_ngw_id = cmdData.target_ngw_id;
 
     CellularRoutingPacket* reqPkt = new CellularRoutingPacket("Link Request", NETWORK_LAYER_PACKET);
     reqPkt->setPacketType(LINK_REQUEST);
 
     LinkRequestInfo reqInfo;
-    reqInfo.sourceCellId = myCellId;
-    reqInfo.targetCH_id = cmdData.final_ch_id;
+    reqInfo.source_cell_id = myCellId;
+    reqInfo.final_ch_id = cmdData.final_ch_id;
+    reqInfo.target_cell_id = cmdData.target_cell_id;
+    reqInfo.source_cgw_id = cmdData.source_cgw_id;
+    reqInfo.target_ngw_id = cmdData.target_ngw_id;
     reqPkt->setLinkRequestData(reqInfo);
+
     reqPkt->setSource(SELF_NETWORK_ADDRESS);
     std::stringstream dest_addr;
-    dest_addr << target_ngw_id;
+    dest_addr << cmdData.target_ngw_id;
     reqPkt->setDestination(dest_addr.str().c_str());
-    trace() << "Sending LINK_REQUEST to NGW " << target_ngw_id << " cell " << cmdData.target_cell_id
+    trace() << "Sending LINK_REQUEST to NGW " << cmdData.target_ngw_id << " cell " << cmdData.target_cell_id
             << " with target CH " << cmdData.final_ch_id;
 
-    toMacLayer(reqPkt, target_ngw_id);
-    // set timer
+    toMacLayer(reqPkt, cmdData.target_ngw_id);
+
+    setTimer(LINK_ESTABLISHED_CONFIRMATION, 100);
 }
 
 void CellularRouting::handleLinkRequest(CellularRoutingPacket* pkt) {
     if (myCL_id == -1) {
+        return;
+    }
+
+    if (amI_CL) {
+        handleLinkAck(pkt);
         return;
     }
 
@@ -728,11 +738,56 @@ void CellularRouting::handleLinkRequest(CellularRoutingPacket* pkt) {
 }
 
 void CellularRouting::handleLinkAck(CellularRoutingPacket* pkt) {
-    trace() << "Function handleLinkAck() called for packet from " << pkt->getSource();
+    trace() << "I am an NCL. Received LINK_REQUEST from NGW " << pkt->getSource();
+
+    LinkRequestInfo linkRq = pkt->getLinkRequestData();
+
+    CellularRoutingPacket* confPkt = new CellularRoutingPacket("Link Request", NETWORK_LAYER_PACKET);
+    confPkt->setPacketType(NCL_CONFIRM_PACKET);
+
+    NCLConfirmInfo confInfo;
+    confInfo.cgw_id = linkRq.source_cgw_id;
+    confInfo.ngw_id = linkRq.target_ngw_id;
+    confPkt->setNclCommandData(confInfo);
+
+    confPkt->setSource(SELF_NETWORK_ADDRESS);
+    std::stringstream dest_addr;
+    dest_addr << linkRq.target_ngw_id;
+    confPkt->setDestination(dest_addr.str().c_str());
+
+    trace() << "Confirming LINK_REQUEST to NGW " << pkt->getSource();
+    toMacLayer(confPkt, linkRq.target_ngw_id);
 }
 
 void CellularRouting::handleLinkEstablishedConfirmation(CellularRoutingPacket* pkt) {
-    trace() << "Function handleLinkEstablishedConfirmation() called for packet from " << pkt->getSource();
+    if (amI_CL) {
+        trace() << "Received LINK_ACK from CGW " << pkt->getSource()
+                << ". Save the link information and update routing table.";
+        // save ...
+        return;
+    } else {
+        NCLConfirmInfo confInfo = pkt->getNclCommandData();
+        if (confInfo.cgw_id == self) {
+            trace() << "I am the CGW, forwarding to CL.";
+            CellularRoutingPacket* fwdPkt = pkt->dup();
+            fwdPkt->setSource(SELF_NETWORK_ADDRESS);
+            std::stringstream dest_addr;
+            dest_addr << myCL_id;
+            fwdPkt->setDestination(dest_addr.str().c_str());
+            toMacLayer(fwdPkt, myCL_id);
+            trace() << "Forwarded LINK_ACK to CL " << myCL_id;
+        } else {
+            trace() << "I am an NGW, received LINK_ACK from NCL. Forwarding to my CGW " << confInfo.cgw_id;
+            CellularRoutingPacket* fwdPkt = pkt->dup();
+            fwdPkt->setSource(SELF_NETWORK_ADDRESS);
+            std::stringstream dest_addr;
+            dest_addr << confInfo.cgw_id;
+            fwdPkt->setDestination(dest_addr.str().c_str());
+            toMacLayer(fwdPkt, confInfo.cgw_id);
+            trace() << "Forwarded LINK_ACK to CGW " << confInfo.cgw_id;
+        } 
+        return;
+    }
 }
 
 void CellularRouting::calculateAndDistributeIntraCellTree() {
