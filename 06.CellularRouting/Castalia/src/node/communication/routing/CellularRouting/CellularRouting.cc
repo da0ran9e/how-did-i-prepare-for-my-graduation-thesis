@@ -823,6 +823,14 @@ void CellularRouting::calculateAndDistributeIntraCellTree() {
     if (gatewayTowardsCH == -1) {
         gatewayTowardsCH = myCH_id;
     }
+
+    for (const auto& member : cellMembers) {
+        if (member.id == myCH_id) {
+            gatewayTowardsCH = myCH_id;
+            break;
+        }
+    }
+
     Point gatewayPos = allNodesPositions[gatewayTowardsCH];
 
     for (const auto& member : cellMembers) {
@@ -835,7 +843,10 @@ void CellularRouting::calculateAndDistributeIntraCellTree() {
         double minDistanceToGatewaySq = -1.0;
         for (const auto& neighbor : member.neighbors) {
             if (neighbor.cellId == myCellId) {
-                double distSq = pow(allNodesPositions[neighbor.id].x - gatewayPos.x, 2) +
+                double distSq;
+                if (neighbor.id == myCH_id) distSq = 0.0;
+                
+                distSq = pow(allNodesPositions[neighbor.id].x - gatewayPos.x, 2) +
                                 pow(allNodesPositions[neighbor.id].y - gatewayPos.y, 2);
 
                 if (bestHop == -1 || distSq < minDistanceToGatewaySq) {
