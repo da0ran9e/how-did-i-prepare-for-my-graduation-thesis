@@ -244,6 +244,11 @@ void CellularRouting::fromMacLayer(cPacket* pkt, int macAddress, double rssi, do
             handleCLCommandPacket(netPacket);
             break;
         }
+        case ROUTING_TREE_UPDATE_PACKET: {
+            handleRoutingTableUpdate(netPacket);
+            trace() << "Received ROUTING_TREE_UPDATE_PACKET from " << netPacket->getSource();
+            break;
+        }
         default: {
             trace() << "WARNING: Received unknown packet type.";
             break;
@@ -596,6 +601,7 @@ void CellularRouting::findAndEstablishInterCellLinks() {
     if (!amI_CL) {
         return;
     }
+    gatewayTowardsCH = -1;
     trace() << "I am CL, discovering, evaluating, and ranking all potential gateway pairs...";
 
     if (myCH_id == -1) {
@@ -866,7 +872,7 @@ void CellularRouting::calculateAndDistributeIntraCellTree() {
     myNextHopId = bestHopForCL;
     
     if (myNextHopId != -1) {
-         trace() << "  My (CL) own next-hop to gateway " << gatewayTowardsCH << " is " << self << " to "<< myNextHopId;
+         trace() << "[ROUTING] " << self << " to "<< myNextHopId;
     } else {
          trace() << "  WARNING: I (CL) have no intra-cell neighbors to forward packets.";
     }
@@ -897,5 +903,9 @@ void CellularRouting::announceRoutingTree(int from, int to) {
 }
 
 void CellularRouting::handleRoutingTableUpdate(CellularRoutingPacket* pkt) {
-    trace() << "Function handleRoutingTableUpdate() called for packet from " << pkt->getSource();
+    RoutingUpdateInfo updateInfo = pkt->getRoutingUpdateData();
+    int from = updateInfo.from;
+    int to = updateInfo.to;
+    trace() << "[ROUTING] " << from << " to " << to;
+    myNextHopId = to;
 }
