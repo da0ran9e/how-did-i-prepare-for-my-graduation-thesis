@@ -602,6 +602,8 @@ void CellularRouting::findAndEstablishInterCellLinks() {
         trace() << "  ERROR: Target CH is not set. Cannot proceed.";
         return;
     }
+    candidates.clear();
+
     Point targetCH_pos = allNodesPositions[myCH_id];
     for (const auto& member : cellMembers) {
         for (const auto& neighbor : member.neighbors) {
@@ -778,8 +780,7 @@ void CellularRouting::handleLinkEstablishedConfirmation(CellularRoutingPacket* p
         gatewayTowardsCH = confInfo.cgw_id;
         cancelTimer(LINK_REQUEST_TIMEOUT);
         trace() << "Link established with CGW " << confInfo.cgw_id
-                << ". Routing table updated. Gateway towards CH is now "
-                << gatewayTowardsCH;
+                << " to NGW " << confInfo.ngw_id;
         announceRoutingTree(gatewayTowardsCH, confInfo.ngw_id);
 
         calculateAndDistributeIntraCellTree();
@@ -813,7 +814,9 @@ void CellularRouting::handleLinkEstablishedConfirmation(CellularRoutingPacket* p
 void CellularRouting::calculateAndDistributeIntraCellTree() {
     if (!amI_CL) return;
 
-    if (gatewayTowardsCH == -1) return;
+    if (gatewayTowardsCH == -1) {
+        gatewayTowardsCH = myCH_id;
+    }
     Point gatewayPos = allNodesPositions[gatewayTowardsCH];
 
     for (const auto& member : cellMembers) {
@@ -843,6 +846,29 @@ void CellularRouting::calculateAndDistributeIntraCellTree() {
         } else {
             trace() << "  WARNING: Node " << member.id << " has no neighbors in this cell to forward packets.";
         }
+    }
+
+    int bestHopForCL = -1;
+    double minDistanceForCLSq = -1.0;
+
+    for (const auto& neighbor : neighborTable) {
+         if (neighbor.cellId == myCellId) {
+            double distSq = pow(neighbor.x - gatewayPos.x, 2) +
+                            pow(neighbor.y - gatewayPos.y, 2);
+
+            if (bestHopForCL == -1 || distSq < minDistanceForCLSq) {
+                minDistanceForCLSq = distSq;
+                bestHopForCL = neighbor.id;
+            }
+        }
+    }
+    
+    myNextHopId = bestHopForCL;
+    
+    if (myNextHopId != -1) {
+         trace() << "  My (CL) own next-hop to gateway " << gatewayTowardsCH << " is " << self << " to "<< myNextHopId;
+    } else {
+         trace() << "  WARNING: I (CL) have no intra-cell neighbors to forward packets.";
     }
 }
 
