@@ -249,6 +249,11 @@ void CellularRouting::fromMacLayer(cPacket* pkt, int macAddress, double rssi, do
             trace() << "Received ROUTING_TREE_UPDATE_PACKET from " << netPacket->getSource();
             break;
         }
+        case DATA_PACKET: {
+            handleDataPacket(netPacket);
+            trace() << "Received DATA_PACKET from " << netPacket->getSource();
+            break;
+        }
         default: {
             trace() << "WARNING: Received unknown packet type.";
             break;
@@ -919,4 +924,18 @@ void CellularRouting::handleRoutingTableUpdate(CellularRoutingPacket* pkt) {
     int to = updateInfo.to;
     trace() << "[ROUTING] " << from << " to " << to;
     myNextHopId = to;
+}
+
+void CellularRouting::handleDataPacket(CellularRoutingPacket* pkt) {
+    if (myRole == CELL_LEADER) {
+        trace() << "I am a CL, forwarding data packet to my next hop " << myNextHopId;
+        pkt->setSource(SELF_NETWORK_ADDRESS);
+        std::stringstream dest_addr;
+        dest_addr << myNextHopId;
+        pkt->setDestination(dest_addr.str().c_str());
+        toMacLayer(pkt, myNextHopId);
+    } else {
+        trace() << "I am a normal node, processing data packet.";
+        // Normal node processing logic here
+    }
 }

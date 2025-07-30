@@ -17,6 +17,7 @@ enum CellularRoutingPacketType {
     CL_COMMAND_PACKET = 8;
     NCL_CONFIRM_PACKET = 9;
     ROUTING_TREE_UPDATE_PACKET = 10;
+    DATA_PACKET = 11;
 };
 
 struct HelloInfo {
