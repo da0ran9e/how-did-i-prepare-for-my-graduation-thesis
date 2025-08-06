@@ -2,65 +2,7 @@
 
 Define_Module(CellularRouting);
 
-//hard-coded
-static std::map<int, Point> allNodesPositions;
 static std::vector<int> clusterHeadList;
-const std::string networkLayoutData = R"(
-SN.node[0].Communication.Routing.isSink = true
-SN.node[0].xCoor = 18
-SN.node[0].yCoor = 17
-SN.node[1].xCoor = 2
-SN.node[1].yCoor = 3
-SN.node[2].xCoor = 1
-SN.node[2].yCoor = 52
-SN.node[3].xCoor = 2
-SN.node[3].yCoor = 101
-SN.node[4].xCoor = 1
-SN.node[4].yCoor = 150
-SN.node[5].xCoor = 49
-SN.node[5].yCoor = 0
-SN.node[6].xCoor = 50
-SN.node[6].yCoor = 48
-SN.node[7].xCoor = 52
-SN.node[7].yCoor = 101
-SN.node[8].xCoor = 50
-SN.node[8].yCoor = 150
-SN.node[9].xCoor = 100
-SN.node[9].yCoor = 4
-SN.node[10].xCoor = 101
-SN.node[10].yCoor = 50
-SN.node[11].xCoor = 102
-SN.node[11].yCoor = 101
-SN.node[12].xCoor = 109
-SN.node[12].yCoor = 150
-SN.node[13].xCoor = 150
-SN.node[13].yCoor = 4
-SN.node[14].xCoor = 151
-SN.node[14].yCoor = 50
-SN.node[15].xCoor = 150
-SN.node[15].yCoor = 104
-SN.node[16].xCoor = 151
-SN.node[16].yCoor = 150
-SN.node[17].xCoor = 200
-SN.node[17].yCoor = 4
-SN.node[18].xCoor = 201
-SN.node[18].yCoor = 50
-SN.node[19].xCoor = 200
-SN.node[19].yCoor = 104
-SN.node[20].xCoor = 201 
-SN.node[20].yCoor = 150
-SN.node[21].xCoor = 2
-SN.node[21].yCoor = 200
-SN.node[22].xCoor = 53
-SN.node[22].yCoor = 200
-SN.node[23].xCoor = 98
-SN.node[23].yCoor = 201
-SN.node[24].xCoor = 144
-SN.node[24].yCoor = 200
-SN.node[25].xCoor = 200
-SN.node[25].yCoor = 199
-)";
-
 
 void CellularRouting::startup()
 {
@@ -68,43 +10,37 @@ void CellularRouting::startup()
     cellRadius = par("cellRadius");
     myCL_id = -1;
     amI_CL = false;
+    myX = par("xCoor");
+    myY = par("yCoor");
 
-// Read parameters from the network layout data
-    parseNetworkLayout();
-
-    // Pos
-    if (allNodesPositions.count(self)) {
-        myX = allNodesPositions[self].x;
-        myY = allNodesPositions[self].y;
-    } else {
-        throw cRuntimeError("Node %d not found in network layout!", self);
+    bool isSink = par("isSink");
+    if (isSink) {
+        amI_CH = true;
+        myCH_id = self; 
+        myRole = CLUSTER_HEAD;
+        clusterHeadList.push_back(self);
     }
-
-    // Role
-    amI_CH = false;
-    for (int ch_id : clusterHeadList) {
-        if (ch_id == self) {
-            amI_CH = true;
-            break;
-        }
-    }
-
     myRole = amI_CH ? CLUSTER_HEAD : NORMAL_NODE;
+    myCellId = -1; 
+    myColor = -1; 
+    myNextHopId = -1;
+    neighborTable.clear();
 
     calculateCellInfo();
-    trace() << "Node " << self << " initialized at (" << myX << ", " << myY
+    grid_offset = par("gridOffset");
+
+    trace() << "[EVENT] Node " << self << " initialized at (" << myX << ", " << myY
             << "). Cell ID: " << myCellId << ", Color: " << myColor
             << ", Is CH: " << (amI_CH ? "Yes" : "No");
 
-    setTimer(SEND_HELLO_TIMER, uniform(0, helloInterval));
-    setTimer(RECONFIGURATION_TIMER, 500);
+    setTimer(SEND_HELLO_TIMER, uniform(helloInterval, helloInterval + 1.0));
+    setTimer(RECONFIGURATION_TIMER, 500); //reconfiguration phrase after 500 seconds
 }
 
 void CellularRouting::timerFiredCallback(int index)
 {
     switch (index) {
         case SEND_HELLO_TIMER: {
-            trace() << "Timer SEND_HELLO_TIMER fired.";
             sendHelloPacket();
             setTimer(SEND_HELLO_TIMER, helloInterval);
             break;
@@ -112,21 +48,15 @@ void CellularRouting::timerFiredCallback(int index)
 
         case RECONFIGURATION_TIMER: {
             cancelTimer(SEND_HELLO_TIMER);
-            trace() << "Timer RECONFIGURATION_TIMER fired.";
             startCLElectionContention();
             break;
         }
 
         case CL_ANNOUNCEMENT_TIMER: {
-            trace() << "My CL announcement timer fired. I AM THE NEW CELL LEADER for cell " << myCellId;
-
             myRole = CELL_LEADER;
             amI_CL = true;
             myCL_id = self;
-
             sendCLAnnouncement();
-
-            //startReconfiguration();
             break;
         }
 
@@ -261,38 +191,6 @@ void CellularRouting::fromMacLayer(cPacket* pkt, int macAddress, double rssi, do
     }
 }
 
-void CellularRouting::parseNetworkLayout() {
-    if (!allNodesPositions.empty()) {
-        return;
-    }
-
-    std::stringstream stream(networkLayoutData);
-    std::string line;
-    int currentNodeId = -1;
-
-    while (std::getline(stream, line)) {
-        if (line.find("SN.node[") != std::string::npos) {
-            size_t start_pos = line.find("[");
-            size_t end_pos = line.find("]");
-            std::string id_str = line.substr(start_pos + 1, end_pos - start_pos - 1);
-            currentNodeId = std::stoi(id_str);
-        }
-
-        if (currentNodeId == -1) continue;
-
-        if (line.find("isSink = true") != std::string::npos || line.find("isCH = true") != std::string::npos) {
-            clusterHeadList.push_back(currentNodeId);
-        } else if (line.find("xCoor") != std::string::npos) {
-            size_t eq_pos = line.find("=");
-            allNodesPositions[currentNodeId].x = std::stod(line.substr(eq_pos + 1));
-        } else if (line.find("yCoor") != std::string::npos) {
-            size_t eq_pos = line.find("=");
-            allNodesPositions[currentNodeId].y = std::stod(line.substr(eq_pos + 1));
-        }
-    }
-    EV << "Parsed network layout. Found " << allNodesPositions.size() << " nodes and " << clusterHeadList.size() << " CHs.\n";
-}
-
 void CellularRouting::calculateCellInfo() {
     double frac_q = (sqrt(3.0)/3.0 * myX - 1.0/3.0 * myY) / cellRadius;
     double frac_r = (2.0/3.0 * myY) / cellRadius;
@@ -316,7 +214,7 @@ void CellularRouting::calculateCellInfo() {
 
     const int grid_offset = 100;
     myCellId = q + r * grid_offset;
-    myColor = ((q - r) % 3 + 3) % 3;
+    myColor = ((q - r) % 3 + 3) % 3; //TODO: check here ...
 }
 
 void CellularRouting::startCLElectionContention() {
@@ -327,18 +225,16 @@ void CellularRouting::startCLElectionContention() {
     Point cellCenter = calculateCellCenter(myCellId);
     double myDistanceToCenter = sqrt(pow(myX - cellCenter.x, 2) + pow(myY - cellCenter.y, 2));
 
-    double contentionScalingFactor = 0.005;
+    double contentionScalingFactor = 0.005; 
     simtime_t contentionDelay = (contentionScalingFactor * myDistanceToCenter) + uniform(0, 0.001);
 
-    trace() << "Starting CL election contention. My distance to center is " << myDistanceToCenter
+    trace() << "[EVENT] My distance to center is " << myDistanceToCenter
             << "m. Will announce myself as CL in " << contentionDelay << "s.";
 
-    setTimer(CL_ANNOUNCEMENT_TIMER, myDistanceToCenter+50);
+    setTimer(CL_ANNOUNCEMENT_TIMER, myDistanceToCenter + 50);
 }
 
 Point CellularRouting::calculateCellCenter(int cell_id) {
-    const int grid_offset = 100;
-
     int r = round((double)cell_id / grid_offset);
     int q = cell_id - r * grid_offset;
 
@@ -350,9 +246,14 @@ Point CellularRouting::calculateCellCenter(int cell_id) {
 }
 
 void CellularRouting::sendHelloPacket() {
-    trace() << "Function sendHelloPacket() called.";
+    trace() << "[EVENT]Function sendHelloPacket() called.";
         CellularRoutingPacket *netPacket = new CellularRoutingPacket("CellularRouting packet", NETWORK_LAYER_PACKET);
         netPacket->setPacketType(HELLO_PACKET);
+        HelloPacketData helloData;
+        helloData.x = myX;
+        helloData.y = myY;
+        helloData.cellId = myCellId;
+        netPacket->setHelloData(helloData);
         netPacket->setSource(SELF_NETWORK_ADDRESS);
         netPacket->setDestination(BROADCAST_NETWORK_ADDRESS);
         toMacLayer(netPacket, resolveNetworkAddress(BROADCAST_NETWORK_ADDRESS));
@@ -360,56 +261,24 @@ void CellularRouting::sendHelloPacket() {
 
 void CellularRouting::handleHelloPacket(CellularRoutingPacket* pkt) {
     int sourceId = atoi(pkt->getSource());
-    trace() << "Received HELLO from " << sourceId << ". Triggering neighbor table update.";
-
-    neighborTable.clear();
-
-    for (auto const& [node_id, position] : allNodesPositions) {
-        if (node_id == self) {
-            continue;
-        }
-
-        double distance = sqrt(pow(myX - position.x, 2) + pow(myY - position.y, 2));
-
-        if (distance <= cellRadius) {
-            NeighborRecord newNeighbor;
-            newNeighbor.id = node_id;
-            newNeighbor.x = position.x;
-            newNeighbor.y = position.y;
-
-            double frac_q = (sqrt(3.0)/3.0 * newNeighbor.x - 1.0/3.0 * newNeighbor.y) / cellRadius;
-            double frac_r = (2.0/3.0 * newNeighbor.y) / cellRadius;
-            double frac_s = -frac_q - frac_r;
-
-            int q = round(frac_q);
-            int r = round(frac_r);
-            int s = round(frac_s);
-
-            double q_diff = abs(q - frac_q);
-            double r_diff = abs(r - frac_r);
-            double s_diff = abs(s - frac_s);
-
-            if (q_diff > r_diff && q_diff > s_diff) {
-                q = -r - s;
-            } else if (r_diff > s_diff) {
-                r = -q - s;
-            } else {
-                s = -q - r;
-            }
-
-            const int grid_offset = 100;
-            newNeighbor.cellId = q + r * grid_offset;
-
-            newNeighbor.lastHeard = simTime();
-
-            neighborTable.push_back(newNeighbor);
-        }
-    }
-
-    trace() << "Neighbor table updated. Found " << neighborTable.size() << " neighbors: ";
+    
     for (const auto& neighbor : neighborTable) {
-        trace() << " - Neighbor ID: " << neighbor.id << ", Position: (" << neighbor.x << ", " << neighbor.y << ")";
+        if (neighbor.id == sourceId) {
+            return; // Already a neighbor
+        }
     }
+
+    HelloPacketData helloData = pkt->getHelloData();
+    NeighborRecord newNeighbor;
+    newNeighbor.id = sourceId;
+    newNeighbor.x = helloData.x;
+    newNeighbor.y = helloData.y;
+    newNeighbor.cellId = helloData.cellId;
+    neighborTable.push_back(newNeighbor);
+    trace() << "[EVENT]Received HELLO from " << sourceId << ". Neighbor table updated."
+            << " New neighbor: " << newNeighbor.id
+            << " at (" << newNeighbor.x << ", " << newNeighbor.y
+            << ") in cell " << newNeighbor.cellId;
 }
 
 void CellularRouting::sendCLAnnouncement() {
@@ -428,13 +297,9 @@ void CellularRouting::sendCLAnnouncement() {
            dest_addr << neighborId;
            pkt_for_neighbor->setDestination(dest_addr.str().c_str());
            toMacLayer(pkt_for_neighbor, neighborId);
-           trace() << "Sending CL announcement to neighbor " << neighborId
+           trace() << "[EVENT]Sending CL announcement to neighbor " << neighborId
                    << " at (" << neighbor.x << ", " << neighbor.y << ")";
        }
-}
-
-void CellularRouting::runCLElection() {
-    trace() << "Function runCLElection() called.";
 }
 
 void CellularRouting::handleCLAnnouncementPacket(CellularRoutingPacket* pkt) {

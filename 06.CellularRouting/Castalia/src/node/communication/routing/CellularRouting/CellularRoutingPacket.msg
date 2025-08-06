@@ -12,7 +12,6 @@ enum CellularRoutingPacketType {
     LINK_REQUEST = 4;        
     LINK_ACK = 5;             
     LINK_ESTABLISHED = 6;      
-
     INTRA_CELL_ROUTING_UPDATE = 7;
     CL_COMMAND_PACKET = 8;
     NCL_CONFIRM_PACKET = 9;

@@ -75,26 +75,24 @@ class CellularRouting : public VirtualRouting {
     double cellRadius;
     bool amI_CH;
     bool amI_CL;
-
-
-    int myCellId;
-    int myColor;
-    NodeRole myRole;
-    double myX, myY;
-
     int myCL_id;
     int myCH_id;
 
+    NodeRole myRole;
+    double myX, myY;
+    int myCellId;
+    int myColor;
+
     vector<NeighborRecord> neighborTable;
-    map<int, int> intraCellRoutingTable;
-    map<int, int> interCellRoutingTable;
     vector<CellMemberRecord> cellMembers;
-    int gatewayTowardsCH = -1;
+    int gatewayTowardsCH = -1; // for CL only
     int myNextHopId = -1;
 
     map<int, LinkRequestState> pendingLinkRequests;
     int nextTimerIndex;
-
+    
+    map<int, int> intraCellRoutingTable; 
+    map<int, int> interCellRoutingTable;
 
  protected:
     void startup() override;
@@ -102,14 +100,13 @@ class CellularRouting : public VirtualRouting {
     void fromApplicationLayer(cPacket *, const char *) override;
     void fromMacLayer(cPacket *, int, double, double) override;
 
-    void parseNetworkLayout();
+    //void parseNetworkLayout();
     void calculateCellInfo();
     Point calculateCellCenter(int cell_id);
 
     void sendHelloPacket();
     void handleHelloPacket(CellularRoutingPacket* pkt);
 
-    void runCLElection();
     void startCLElectionContention();
     void sendCLAnnouncement();
     void handleCLAnnouncementPacket(CellularRoutingPacket* pkt);
