@@ -24,15 +24,9 @@ enum NodeRole {
 
 // timer
 enum CellularRoutingTimers {
-    SEND_HELLO_TIMER = 1,
-    RECONFIGURATION_TIMER = 2,
-    CL_ANNOUNCEMENT_TIMER = 3,
-    CL_CONFIRMATION_TIMER = 4,
-    CONFIRMATION_SENDER_TIMER = 5,
-    CL_VOTE_CH = 6,
-    LINK_REQUEST_TIMEOUT = 7,
-    LINK_ESTABLISHED_CONFIRMATION = 8,
-    ROUTING_TABLE_UPDATE = 9,
+    STAGE_0 = 0,
+    STAGE_1 = 1,
+    SEND_HELLO_TIMER = 2,
 };
 
 struct NeighborRecord {
@@ -40,7 +34,6 @@ struct NeighborRecord {
     int cellId;
     double x;
     double y;
-    simtime_t lastHeard;
 };
 
 struct LinkRequestState {
@@ -48,7 +41,6 @@ struct LinkRequestState {
     int target_ngw_id;
     int target_cell_id;
     int to_final_ch_id;
-    cMessage* timeout_timer;
 };
 
 struct CellMemberRecord {
@@ -73,15 +65,17 @@ class CellularRouting : public VirtualRouting {
  private:
     double helloInterval;
     double cellRadius;
-    bool amI_CH;
-    bool amI_CL;
+    double communicationRange;
+    double energyThreshold;
+
     int myCL_id;
     int myCH_id;
-
     NodeRole myRole;
     double myX, myY;
     int myCellId;
     int myColor;
+
+    double fitnessScore = -1.0; // for CL election
 
     vector<NeighborRecord> neighborTable;
     vector<CellMemberRecord> cellMembers;
@@ -100,32 +94,6 @@ class CellularRouting : public VirtualRouting {
     void fromApplicationLayer(cPacket *, const char *) override;
     void fromMacLayer(cPacket *, int, double, double) override;
 
-    //void parseNetworkLayout();
-    void calculateCellInfo();
-    Point calculateCellCenter(int cell_id);
-
-    void sendHelloPacket();
-    void handleHelloPacket(CellularRoutingPacket* pkt);
-
-    void startCLElectionContention();
-    void sendCLAnnouncement();
-    void handleCLAnnouncementPacket(CellularRoutingPacket* pkt);
-
-    void sendCLConfirmationPacket();
-    void handleCLConfirmationPacket(CellularRoutingPacket* pkt);
-
-    void startReconfiguration();
-    void voteCH();
-    void findAndEstablishInterCellLinks();
-    void handleCLCommandPacket(CellularRoutingPacket* pkt);
-    void sendLinkRequest();
-    void handleLinkRequest(CellularRoutingPacket* pkt);
-    void handleLinkAck(CellularRoutingPacket* pkt);
-    void handleLinkEstablishedConfirmation(CellularRoutingPacket* pkt);
-    void calculateAndDistributeIntraCellTree();
-    double calculateDistance(double x1, double y1, double x2, double y2);
-    void announceRoutingTree(int from, int to);
-    void handleRoutingTableUpdate(CellularRoutingPacket* pkt);
 };
 
 #endif //_CELLULARROUTING_H_
