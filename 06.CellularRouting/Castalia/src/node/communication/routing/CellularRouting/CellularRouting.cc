@@ -2,6 +2,10 @@
 
 Define_Module(CellularRouting);
 
+static vector<NodeData> g_nodeDataList;
+static vector<CellData> g_cellDataList;
+static bool g_isPrecalculated = false;
+
 void CellularRouting::startup()
 {
     // Initialize parameters: coordinates, communication interval, routing table, etc.
@@ -10,18 +14,19 @@ void CellularRouting::startup()
 
     myCL_id = -1;
     myCH_id = -1;
+    myRole = NORMAL_NODE;
 
     cModule *parentNode = getParentModule();
     myX = parentNode->getParentModule()->par("xCoor");
     myY = parentNode->getParentModule()->par("yCoor");
-    bool isSink = par("isSink");
+    bool isCH = false;
+    isCH = par("isCH");
 
-    if (isSink) {
-        amI_CH = true;
+    if (isCH) {
         myCH_id = self;
         myRole = CLUSTER_HEAD;
     }
-    myRole = amI_CH ? CLUSTER_HEAD : NORMAL_NODE;
+
     myCellId = -1;
     myColor = -1;
     myNextHopId = -1;
@@ -30,9 +35,30 @@ void CellularRouting::startup()
     calculateCellInfo();
     grid_offset = par("gridOffset");
 
-    trace() << "[EVENT] Node " << self << " initialized at (" << myX << ", " << myY
-            << "). Cell ID: " << myCellId << ", Color: " << myColor
-            << ", Is CH: " << (amI_CH ? "Yes" : "No");
+    NodeData nodeData;
+    nodeData.id = self;
+    nodeData.x = myX;
+    nodeData.y = myY;
+    nodeData.role = myRole;
+    nodeData.cellId = myCellId;
+    nodeData.color = myColor;
+    nodeData.clId = myCL_id;
+    nodeData.chId = myCH_id;
+    nodeData.nextHopId = myNextHopId;
+	nodeData.neighbors.clear();
+
+    g_nodeDataList.push_back(nodeData);
+
+    trace() << nodeData.id << " (" << nodeData.x << ", " << nodeData.y
+            << ") - " << nodeData.role << " <" << nodeData.cellId << "> - {" << nodeData.color << "}"
+            << " - CL: " << nodeData.clId << " - CH: " << nodeData.chId << " - Next Hop: " << nodeData.nextHopId 
+			<< " - Neighbors: " << nodeData.neighbors.size();
+	
+			if (!g_isPrecalculated){
+		g_isPrecalculated = true;
+		setTimer(PRECALCULATE_TIMERS, 20);
+	}
+	
 
     // Set initial timer for STATE_0
     // Set timer for STATE_1
@@ -40,6 +66,12 @@ void CellularRouting::startup()
 
 void CellularRouting::timerFiredCallback(int index)
 {
+	switch (index) {
+		case PRECALCULATE_TIMERS:
+			// Precalculate the simulation results
+			PrecalculateSimulationResults();
+			break;
+	}		
     // case STATE_0:
         // Start the SEND_HELLO_TIMER
         // Start the CL_ELECTION_TIMER
@@ -83,6 +115,153 @@ void CellularRouting::timerFiredCallback(int index)
 
     // case CH_ELECTION_TIMER:
         // if CL: sellectClusterHead();
+}
+
+void CellularRouting::PrecalculateSimulationResults()
+{
+	// Calculate node neighbors
+	for (auto& nodeData : g_nodeDataList) {
+		for (auto& otherNodeData : g_nodeDataList) {
+			if (nodeData.id != otherNodeData.id) {
+				double distance = sqrt(pow(nodeData.x - otherNodeData.x, 2) + pow(nodeData.y - otherNodeData.y, 2));
+				if (distance <= cellRadius) {
+					NeighborRecord neighbor;
+					neighbor.id = otherNodeData.id;
+					neighbor.cellId = otherNodeData.cellId;
+					neighbor.x = otherNodeData.x;
+					neighbor.y = otherNodeData.y;
+					neighbor.lastHeard = simTime();
+					nodeData.neighbors.push_back(neighbor);
+				}
+			}
+		}
+	}
+	// Calculate cell members
+	for (auto& nodeData : g_nodeDataList) {
+		// check if the cell already exists, add the node to the cell members
+		bool cellExists = false;
+		for (auto& cellData : g_cellDataList) {
+			if (cellData.cellId == nodeData.cellId) {
+				cellExists = true;
+				CellMemberRecord member;
+				member.id = nodeData.id;
+				member.x = nodeData.x;
+				member.y = nodeData.y;
+				member.neighbors = nodeData.neighbors;
+				cellData.members.push_back(member);
+				break;
+			}
+		}
+		// else create a new cell and add the node as a member
+		if (!cellExists) {
+			CellData cellData;
+			cellData.cellId = nodeData.cellId;
+			cellData.color = nodeData.color;
+			cellData.clId = nodeData.clId;
+			CellMemberRecord member;
+			member.id = nodeData.id;
+			member.x = nodeData.x;
+			member.y = nodeData.y;
+			member.neighbors = nodeData.neighbors;
+			cellData.members.push_back(member);
+			g_cellDataList.push_back(cellData);
+		}
+	}
+
+    //calculate cell neighbors
+    for (auto& cellData : g_cellDataList) {
+        for (auto& nodeData : g_nodeDataList) {
+            if (nodeData.cellId == cellData.cellId) {
+                for (const auto& neighbor : nodeData.neighbors) {
+                    // Check if the neighbor is in a different cell
+                    if (neighbor.cellId != cellData.cellId) {
+                        // Check if the neighbor is already in the cell neighbors
+                        bool found = false;
+                        for (auto& cellNeighbor : cellData.neighbors) {
+                            if (cellNeighbor.cellId == neighbor.cellId) {
+                                found = true;
+                                break;
+                            }
+                        }
+                        // If not found, add it to the cell neighbors
+                        if (!found) {
+                            CellNeighborRecord cellNeighbor;
+                            cellNeighbor.cellId = neighbor.cellId;
+                            cellNeighbor.color = nodeData.color; // Assuming color is same as node's color
+                            cellNeighbor.ngw_id = -1; // Initialize NGW ID
+                            cellData.neighbors.push_back(cellNeighbor);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+	// Calculate cell leaders
+	for (auto& cellData : g_cellDataList) {
+		int bestFitness = -1;
+		int bestCLId = -1;
+		for (auto& member : cellData.members) {
+			int row = cellData.cellId / grid_offset;
+            int col = cellData.cellId % grid_offset;
+
+            double centerX = cellRadius * 1.5 * col;
+            double centerY = sqrt(3.0) * cellRadius * (row + 0.5 * (col % 2));
+
+			double distance = sqrt(pow(member.x - centerX, 2) + pow(member.y - centerY, 2));
+			
+			int fitnessScore = static_cast<int>(1000 / (1 + distance)); 
+			if (fitnessScore > bestFitness) {
+				bestFitness = fitnessScore;
+				bestCLId = member.id;
+			}
+		}
+		cellData.clId = bestCLId;
+	}
+
+    // calculate gateway candidates for each pair of cell
+    for (auto& cellData : g_cellDataList) {
+        for (auto& neighbor : cellData.neighbors) {
+            if (neighbor.ngw_id == -1) { // If NGW ID is not set
+                //choose the best pair of CGW and NGW
+                double bestDistance = 9999.0;
+                int bestCGWId = -1;
+                int bestNGWId = -1;
+
+                for (auto& nodeData : g_nodeDataList) {
+                    if (nodeData.cellId == cellData.cellId) {
+                        for (auto& neighborNode : nodeData.neighbors) {
+                            //if (cellData.cellId >= neighbor.cellId) continue; 
+                            if (neighborNode.cellId == neighbor.cellId) {
+                                double linkDistance = sqrt(pow(nodeData.x - neighborNode.x, 2) + pow(nodeData.y - neighborNode.y, 2));
+                                
+                                if (linkDistance < bestDistance) {
+                                    bestDistance = linkDistance;
+                                    bestCGWId = nodeData.id;
+                                    bestNGWId = neighborNode.id;
+                                } 
+                                else if (linkDistance == bestDistance) {
+                                    // If the distance is equal, prefer the one with lower ID
+                                    if (nodeData.id < bestCGWId) {
+                                        bestCGWId = nodeData.id;
+                                        bestNGWId = neighborNode.id;
+                                    }
+                                } 
+                            }
+                        }
+                    }
+                }
+
+                if (bestCGWId != -1 && bestNGWId != -1) {
+                    cellData.gateways[neighbor.cellId] = bestCGWId; 
+                    neighbor.ngw_id = bestNGWId;
+                }
+            }
+            trace() << "Cell " << cellData.cellId << " has NGW " << neighbor.ngw_id 
+                  << " with CGW " << cellData.gateways[neighbor.cellId] 
+                  << " for neighbor cell " << neighbor.cellId;
+        }
+    }
 }
 
 void CellularRouting::fromApplicationLayer(cPacket * pkt, const char *destination)

@@ -24,6 +24,7 @@ enum NodeRole {
 
 // timer
 enum CellularRoutingTimers {
+    PRECALCULATE_TIMERS = 0,
     SEND_HELLO_TIMER = 1,
     RECONFIGURATION_TIMER = 2,
     CL_ANNOUNCEMENT_TIMER = 3,
@@ -40,6 +41,12 @@ struct NeighborRecord {
     double x;
     double y;
     simtime_t lastHeard;
+};
+
+struct CellNeighborRecord {
+    int cellId;
+    int color;
+    int ngw_id;
 };
 
 struct LinkRequestState {
@@ -67,15 +74,36 @@ struct GatewayCandidate {
 };
 vector<GatewayCandidate> candidates;
 
+struct NodeData {
+    int id;
+    double x;
+    double y;
+    NodeRole role;
+    int cellId;
+    int color;
+    int clId;
+    int chId;
+    int nextHopId;
+    vector<NeighborRecord> neighbors;
+};
+
+struct CellData {
+    int cellId;
+    int color;
+    int clId;  // Cell Leader ID
+    int chId;  // Cluster Head ID
+    vector<CellMemberRecord> members;
+    vector<CellNeighborRecord> neighbors;
+    map<int, int> gateways;
+    map<int, int> intraCellRoutingTable;
+};
+
 
 class CellularRouting : public VirtualRouting {
  private:
     double helloInterval;
     double cellRadius;
     int grid_offset;
-
-    bool amI_CH;
-    bool amI_CL;
 
     int myCellId;
     int myColor;
@@ -102,6 +130,7 @@ class CellularRouting : public VirtualRouting {
     void fromApplicationLayer(cPacket *, const char *) override;
     void fromMacLayer(cPacket *, int, double, double) override;
 
+    void PrecalculateSimulationResults();
     void calculateCellInfo();
     void sendHelloPacket();
     void handleHelloPacket(CellularRoutingPacket* pkt);
