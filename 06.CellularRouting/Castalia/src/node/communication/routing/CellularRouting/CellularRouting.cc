@@ -5,6 +5,7 @@ Define_Module(CellularRouting);
 static vector<NodeData> g_nodeDataList;
 static vector<CellData> g_cellDataList;
 static bool g_isPrecalculated = false;
+static map<int, map<int, int>> g_routingTable; // <nodeId, <cellId, nextHopId>>
 
 void CellularRouting::startup()
 {
@@ -257,9 +258,82 @@ void CellularRouting::PrecalculateSimulationResults()
                     neighbor.ngw_id = bestNGWId;
                 }
             }
-            trace() << "Cell " << cellData.cellId << " has NGW " << neighbor.ngw_id 
-                  << " with CGW " << cellData.gateways[neighbor.cellId] 
-                  << " for neighbor cell " << neighbor.cellId;
+            // update next hop ID for the CGW
+            for (auto& nodeData : g_nodeDataList) {
+                if (nodeData.id == cellData.gateways[neighbor.cellId]) {
+                    nodeData.nextHopId = neighbor.ngw_id; // Set next hop to NGW
+                }
+            }
+        }
+    }
+    //trace next hop IDs
+    for (const auto& nodeData : g_nodeDataList) {
+        trace() << "Node ID: " << nodeData.id << ", Next Hop ID: " << nodeData.nextHopId;
+    }
+
+    // calculate intra-cell routing table for each cell gateways and CL
+    for (auto& cellData : g_cellDataList) {
+        for (auto& neighbor : cellData.neighbors) {
+            if (neighbor.ngw_id != -1) { // If NGW ID is set
+                int gatewayId = cellData.gateways[neighbor.cellId];
+                for (auto& member : cellData.members) {
+                    g_routingTable[member.id][neighbor.cellId] = -1;
+                    bool isGatewayInRange = false;
+                    if (member.id != gatewayId) {
+                        for (const auto& neighborNode : member.neighbors) {
+                            if (neighborNode.id == gatewayId) {
+                                isGatewayInRange = true;
+                                g_routingTable[member.id][neighbor.cellId] = gatewayId; 
+                            }
+                            
+                        }
+                        if (!isGatewayInRange) {
+                            // If the gateway is not in range, find the best next hop
+                            double minDistance = 9999.0;
+                            int bestNextHopId = -1;
+                            
+                            for (const auto& neighborNode : member.neighbors) {
+                                bool isNeighborInRange = false;
+                                // continue if the neighbor is not in range of the gateway
+                                for (const auto& neighborNodeData : g_nodeDataList) {
+                                    if (neighborNodeData.id == neighborNode.id) {
+                                        for (auto& neighborOfNeighbor : neighborNodeData.neighbors) {
+                                            if (neighborOfNeighbor.id == gatewayId) {
+                                                isNeighborInRange = true;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+                                if (isNeighborInRange) {
+
+                                    // save the distance and choose the best next hop based on total distance from this node to neighbor to gateway
+                                    auto it = std::find_if(cellData.members.begin(), cellData.members.end(), [gatewayId](const CellMemberRecord& m) { return m.id == gatewayId; });
+                                    double distanceNodeToNeighbor = sqrt(pow(member.x - neighborNode.x, 2) + pow(member.y - neighborNode.y, 2));
+                                    double distanceNeighborToGateway = sqrt(pow(neighborNode.x - it->x, 2) + pow(neighborNode.y - it->y, 2));
+                                    double totalDistance = distanceNodeToNeighbor + distanceNeighborToGateway;
+                                    if (totalDistance < minDistance) {
+                                        minDistance = totalDistance;
+                                        bestNextHopId = neighborNode.id;
+                                    } else if (totalDistance == minDistance) {
+                                        // If the distance is equal, prefer the one with lower ID
+                                        if (neighborNode.id < bestNextHopId) {
+                                            bestNextHopId = neighborNode.id;
+                                        }
+                                    }
+                                }
+                            }
+                            if (bestNextHopId != -1) {
+                                g_routingTable[member.id][neighbor.cellId] = bestNextHopId;
+                            }
+                        }
+                        trace() << "Intra-cell routing: member " << member.id
+                                << " → cell " << neighbor.cellId
+                                << " via next hop " << g_routingTable[member.id][neighbor.cellId]
+                                << " (gateway " << gatewayId << ")";
+                    }
+                }
+            }
         }
     }
 }
