@@ -62,6 +62,7 @@ void CellularRouting::startup()
 	
 
     // Set initial timer for STATE_0
+    setTimer(STATE_0, uniform(0, 10)); 
     // Set timer for STATE_1
 }
 
@@ -72,18 +73,22 @@ void CellularRouting::timerFiredCallback(int index)
 			// Precalculate the simulation results
 			PrecalculateSimulationResults();
 			break;
-	}		
-    // case STATE_0:
-        // Start the SEND_HELLO_TIMER
-        // Start the CL_ELECTION_TIMER
-        // Start the CL_CONFIRMATION_TIMER
-        // Start the GATEWAY_SELECTION_TIMER
-        // Start the ROUTING_TREE_CALCULATION_TIMER
-        // Start the ROUTING_TABLE_ANNOUNCEMENT_TIMER
-        // Start the FINALIZE_ROUTING_TIMER
 
-    // case SEND_HELLO_TIMER:
-        // sendHelloPacket();
+        case STATE_0:
+            setTimer(SEND_HELLO_TIMER, helloInterval);
+            // setTimer(CL_ELECTION_TIMER, uniform(0, 10));
+            // setTimer(CL_CONFIRMATION_TIMER, uniform(0, 10));
+            // setTimer(GATEWAY_SELECTION_TIMER, uniform(0, 10));
+            // setTimer(ROUTING_TREE_CALCULATION_TIMER, uniform(0, 10));
+            // setTimer(ROUTING_TABLE_ANNOUNCEMENT_TIMER, uniform(0, 10));
+            // setTimer(FINALIZE_ROUTING_TIMER, uniform(0, 10));
+            break;
+
+	    case SEND_HELLO_TIMER:
+            sendHelloPacket();
+            setTimer(SEND_HELLO_TIMER, helloInterval);
+            break;
+    }
 
     // case CL_ELECTION_TIMER:
         // calculateFitnessScore();
@@ -395,6 +400,17 @@ void CellularRouting::PrecalculateSimulationResults()
     }
 }
 
+Point CellularRouting::calculateCellCenter(int cell_id) {
+    int r = round((double)cell_id / grid_offset);
+    int q = cell_id - r * grid_offset;
+
+    Point center;
+    center.x = cellRadius * (sqrt(3.0) * q + sqrt(3.0) / 2.0 * r);
+    center.y = cellRadius * (3.0 / 2.0 * r);
+
+    return center;
+}
+
 void CellularRouting::fromApplicationLayer(cPacket * pkt, const char *destination)
 {
 
@@ -424,7 +440,61 @@ void CellularRouting::fromMacLayer(cPacket * pkt, int srcMacAddress, double rssi
         // handleRoutingTableAnnouncementPacket();
 
     // case FINALIZE_ROUTING:
-        //
+    trace() << "Packet received";
+    CellularRoutingPacket* netPacket = dynamic_cast<CellularRoutingPacket*>(pkt);
+    if (!netPacket) {
+        return;
+    }
+    switch (netPacket->getPacketType()) {
+        case HELLO_PACKET: {
+            handleHelloPacket(netPacket);
+            break;
+        }
+        case CL_ANNOUNCEMENT: {
+            handleCLAnnouncementPacket(netPacket);
+            break;
+        }
+        case CL_CONFIRMATION: {
+            handleCLConfirmationPacket(netPacket);
+            break;
+        }
+        case BS_UPDATE_PACKET: {
+            // TODO
+            break;
+        }
+        case LINK_REQUEST: {
+            handleLinkRequest(netPacket);
+            break;
+        }
+        case NCL_CONFIRM_PACKET: {
+            handleLinkEstablishedConfirmation(netPacket);
+            break;
+        }
+        case LINK_ESTABLISHED: {
+            //handleLinkEstablishedConfirmation(netPacket);
+            break;
+        }
+        case INTRA_CELL_ROUTING_UPDATE: {
+            //handleRoutingTableUpdate(netPacket);
+            break;
+        }
+        case CL_COMMAND_PACKET: {
+            handleCLCommandPacket(netPacket);
+            break;
+        }
+        case ROUTING_TREE_UPDATE_PACKET: {
+            handleRoutingTableUpdate(netPacket);
+            break;
+        }
+        case DATA_PACKET: {
+            handleDataPacket(netPacket);
+            break;
+        }
+        default: {
+            trace() << "WARNING: Received unknown packet type.";
+            break;
+        }
+    }
 }
 
 void CellularRouting::calculateCellInfo()
@@ -456,12 +526,61 @@ void CellularRouting::calculateCellInfo()
 
 void CellularRouting::sendHelloPacket()
 {
-    // Broadcast hello packet with my coordinates and cell ID
+        CellularRoutingPacket *netPacket = new CellularRoutingPacket("CellularRouting packet", NETWORK_LAYER_PACKET);
+        netPacket->setPacketType(HELLO_PACKET);
+        HelloPacketData helloData;
+        helloData.x = myX;
+        helloData.y = myY;
+        helloData.cellId = myCellId;
+        netPacket->setHelloData(helloData);
+        netPacket->setSource(SELF_NETWORK_ADDRESS);
+        netPacket->setDestination(BROADCAST_NETWORK_ADDRESS);
+        toMacLayer(netPacket, resolveNetworkAddress(BROADCAST_NETWORK_ADDRESS));
 }
 
 void CellularRouting::handleHelloPacket(CellularRoutingPacket* pkt)
 {
-    // Save the information from the hello packet to neighbor table
+    int sourceId = atoi(pkt->getSource());
+    
+    for (const auto& neighbor : neighborTable) {
+        if (neighbor.id == sourceId) {
+            return; // Already a neighbor
+        }
+    }
+
+    HelloPacketData helloData = pkt->getHelloData();
+    NeighborRecord newNeighbor;
+    newNeighbor.id = sourceId;
+    newNeighbor.x = helloData.x;
+    newNeighbor.y = helloData.y;
+    // if neighbor is far away, consider it for removal
+    if (calculateDistance(myX, myY, newNeighbor.x, newNeighbor.y) > cellRadius) {
+        return;
+    }
+    newNeighbor.cellId = helloData.cellId;
+    neighborTable.push_back(newNeighbor);
+
+    // rate the neighborTable to the pre-calculated neighbors in g_nodeDataList
+    int rightCount = 0;
+    int errorCount = 0;
+    for (const auto& nodeData : g_nodeDataList) {
+        if (nodeData.id == self) {
+            for (const auto& neighbor : nodeData.neighbors) {
+                bool found = false;
+                for (const auto& neighborRecord : neighborTable) {
+                    if (neighborRecord.id == neighbor.id) {
+                        found = true;
+                        rightCount++;
+                        break;
+                    }
+                }
+                if (!found) {
+                    errorCount++;
+                }
+            }
+            trace() << "Neighbor Table Rating: " << rightCount << "/" << nodeData.neighbors.size() << " right, " << errorCount << " errors";
+        }
+    } 
 }
 
 void CellularRouting::calculateFitnessScore()

@@ -131,6 +131,8 @@ class CellularRouting : public VirtualRouting {
     void fromMacLayer(cPacket *, int, double, double) override;
 
     void PrecalculateSimulationResults();
+
+    Point calculateCellCenter(int cell_id);
     void calculateCellInfo();
     void sendHelloPacket();
     void handleHelloPacket(CellularRoutingPacket* pkt);
