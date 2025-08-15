@@ -25,14 +25,19 @@ enum NodeRole {
 // timer
 enum CellularRoutingTimers {
     PRECALCULATE_TIMERS = 0,
-    SEND_HELLO_TIMER = 1,
-    RECONFIGURATION_TIMER = 2,
-    CL_ANNOUNCEMENT_TIMER = 3,
-    CL_CONFIRMATION_TIMER = 4,
-    CONFIRMATION_SENDER_TIMER = 5,
-    CL_VOTE_CH = 6,
-    LINK_REQUEST_TIMEOUT = 7,
-    LINK_ESTABLISHED_CONFIRMATION = 8,
+    STATE_0,
+    SEND_HELLO_TIMER,
+    CL_ELECTION_TIMER,
+    CL_CONFIRMATION_TIMER,
+    GATEWAY_SELECTION_TIMER,
+
+    RECONFIGURATION_TIMER,
+    CL_ANNOUNCEMENT_TIMER,
+    CL_CONFIRMATION_TIMER,
+    CONFIRMATION_SENDER_TIMER,
+    CL_VOTE_CH,
+    LINK_REQUEST_TIMEOUT,
+    LINK_ESTABLISHED_CONFIRMATION,
 };
 
 struct NeighborRecord {
@@ -70,7 +75,6 @@ struct GatewayCandidate {
     int ngw_id;
     int target_cell_id;
     double link_distance;       // CGW <-> NGW
-    double ngw_to_ch_distance;  // NGW -> CH
 };
 vector<GatewayCandidate> candidates;
 
@@ -102,6 +106,7 @@ struct CellData {
 class CellularRouting : public VirtualRouting {
  private:
     double helloInterval;
+    double clElectionDelayInterval;
     double cellRadius;
     int grid_offset;
 
@@ -112,6 +117,9 @@ class CellularRouting : public VirtualRouting {
 
     int myCL_id;
     int myCH_id;
+
+    double fitnessScore = -1;
+    double clFitnessScore = -1;
 
     vector<NeighborRecord> neighborTable;
     map<int, int> intraCellRoutingTable;
@@ -144,7 +152,7 @@ class CellularRouting : public VirtualRouting {
     void gatewaySelection();
     void sendGatewaySelectionPacket();
     void handleGatewaySelectionPacket(CellularRoutingPacket* pkt);
-    void sendLinkRequestPacket();
+    void sendLinkRequestPacket(CellularRoutingPacket* pkt);
     void handleLinkRequestPacket(CellularRoutingPacket* pkt);
     void sendLinkConfirmationPacket(CellularRoutingPacket* pkt);
     void handleLinkConfirmationPacket(CellularRoutingPacket* pkt);

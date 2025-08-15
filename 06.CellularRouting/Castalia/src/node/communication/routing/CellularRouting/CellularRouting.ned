@@ -9,7 +9,8 @@ simple CellularRouting like node.communication.routing.iRouting {
         int netBufferSize = default(32);          
 
         int gridOffset = default(100);
-        double helloInterval = default(100);      
+        double helloInterval = default(10);   
+        double clElectionDelayInterval = default(100);  
         double cellRadius = default(80);       
         bool isCH = default(false);   
         bool isSink = default(false);           

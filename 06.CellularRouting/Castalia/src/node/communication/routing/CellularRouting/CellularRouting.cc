@@ -12,6 +12,7 @@ void CellularRouting::startup()
     // Initialize parameters: coordinates, communication interval, routing table, etc.
     helloInterval = par("helloInterval");
     cellRadius = par("cellRadius");
+    clElectionDelayInterval = par("clElectionDelayInterval");
 
     myCL_id = -1;
     myCH_id = -1;
@@ -76,7 +77,8 @@ void CellularRouting::timerFiredCallback(int index)
 
         case STATE_0:
             setTimer(SEND_HELLO_TIMER, helloInterval);
-            // setTimer(CL_ELECTION_TIMER, uniform(0, 10));
+            calculateFitnessScore();
+            setTimer(CL_ELECTION_TIMER, clElectionDelayInterval + fitnessScore*10);
             // setTimer(CL_CONFIRMATION_TIMER, uniform(0, 10));
             // setTimer(GATEWAY_SELECTION_TIMER, uniform(0, 10));
             // setTimer(ROUTING_TREE_CALCULATION_TIMER, uniform(0, 10));
@@ -88,6 +90,22 @@ void CellularRouting::timerFiredCallback(int index)
             sendHelloPacket();
             setTimer(SEND_HELLO_TIMER, helloInterval);
             break;
+
+        case CL_ELECTION_TIMER:
+            calculateFitnessScore();
+            break;
+
+        case CL_CONFIRMATION_TIMER:
+            sendCLConfirmationPacket();
+            break;
+
+        case GATEWAY_SELECTION_TIMER:
+            if (myRole == CLUSTER_HEAD) {
+                gatewaySelection();
+            }
+            break;
+
+        
     }
 
     // case CL_ELECTION_TIMER:
@@ -440,11 +458,11 @@ void CellularRouting::fromMacLayer(cPacket * pkt, int srcMacAddress, double rssi
         // handleRoutingTableAnnouncementPacket();
 
     // case FINALIZE_ROUTING:
-    trace() << "Packet received";
     CellularRoutingPacket* netPacket = dynamic_cast<CellularRoutingPacket*>(pkt);
     if (!netPacket) {
         return;
     }
+    netPacket->setTtl(netPacket->getTtl() - 1);
     switch (netPacket->getPacketType()) {
         case HELLO_PACKET: {
             handleHelloPacket(netPacket);
@@ -587,17 +605,20 @@ void CellularRouting::calculateFitnessScore()
 {
     // Calculate fitness score based on id, energy, distance, etc.
     // Or just let the application layer handle it
+    Point cellCenter = calculateCellCenter(myCellId);
+    double distanceToCenter = sqrt(pow(myX - cellCenter.x, 2) + pow(myY - cellCenter.y, 2));
+    fitnessScore = 1.0 / (1.0 + distanceToCenter);
 }
 
 void CellularRouting::sendCLAnnouncement()
 {
-    // send CL announcement packet to neighbors with my fitness score
     CellularRoutingPacket* pkt = new CellularRoutingPacket("CL Announcement", NETWORK_LAYER_PACKET);
     pkt->setPacketType(CL_ANNOUNCEMENT);
     CLAnnouncementInfo newCLAnnouncementInfo;
     newCLAnnouncementInfo.x = myX;
     newCLAnnouncementInfo.y = myY;
     newCLAnnouncementInfo.cellId = myCellId;
+    newCLAnnouncementInfo.fitnessScore = fitnessScore;
     pkt->setClAnnouncementData(newCLAnnouncementInfo);
     for (const auto& neighbor : neighborTable) {
            int neighborId = neighbor.id;
@@ -607,49 +628,44 @@ void CellularRouting::sendCLAnnouncement()
            dest_addr << neighborId;
            pkt_for_neighbor->setDestination(dest_addr.str().c_str());
            toMacLayer(pkt_for_neighbor, neighborId);
-           trace() << "Sending CL announcement to neighbor " << neighborId
-                   << " at (" << neighbor.x << ", " << neighbor.y << ")";
-       }
+    }
 }
 
 void CellularRouting::handleCLAnnouncementPacket(CellularRoutingPacket* pkt)
 {
-    // make comparisons with my best fitness score
-    // If I have a worse score, cancel my CL_ADVERTISING_TIMER if running
-    // Forward the packet to other cell members
+    
     if (myCellId != pkt->getClAnnouncementData().cellId) {
         return;
     }
     int announcerId = atoi(pkt->getSource());
-    double announcerX = pkt->getClAnnouncementData().x;
-    double announcerY = pkt->getClAnnouncementData().y;
-    Point cellCenter = calculateCellCenter(pkt->getClAnnouncementData().cellId);
-    double announcerDistance = sqrt(pow(announcerX - cellCenter.x, 2) + pow(announcerY - cellCenter.y, 2));
-    trace() << "Received CL announcement from " << announcerId
-              << " at (" << announcerX << ", " << announcerY << ") with distance to center: "
-              << announcerDistance;
-    if (myCL_id != -1) {
-           return;
-    }
-
-    double myDistanceToCenter = sqrt(pow(myX - cellCenter.x, 2) + pow(myY - cellCenter.y, 2));
-
-    if (myDistanceToCenter < announcerDistance) {
-        trace() << "Ignoring CL announcement from " << announcerId << " as I am closer to the center.";
-        //TODO
-    } else {
-        trace() << "Accepting node " << announcerId << " as my new CL.";
-        myCL_id = announcerId;
+    // make comparisons with my best fitness score
+    // If I have a worse score, cancel my CL_ADVERTISING_TIMER if running
+    if (fitnessScore < pkt->getClAnnouncementData().fitnessScore && clFitnessScore < pkt->getClAnnouncementData().fitnessScore) {
         cancelTimer(CL_ANNOUNCEMENT_TIMER);
+        myCL_id = announcerId;
+        clFitnessScore = pkt->getClAnnouncementData().fitnessScore;
     }
-    setTimer(CONFIRMATION_SENDER_TIMER, myDistanceToCenter+50);
+    
+    // Forward the packet to other cell members
+    if (pkt->getTtl() > 0) {
+        CellularRoutingPacket* fwdPkt = pkt->dup();
+        fwdPkt->setTtl(1);
+        fwdPkt->setSource(SELF_NETWORK_ADDRESS);
+        for (const auto& neighbor : neighborTable) {
+            std::stringstream dest_addr;
+            dest_addr << neighbor.id;
+            fwdPkt->setDestination(dest_addr.str().c_str());
+            toMacLayer(fwdPkt, neighbor.id);
+        }
+    }
+
+    setTimer(CL_CONFIRMATION_TIMER, 50);
 }
 
 void CellularRouting::sendCLConfirmationPacket()
 {
     // Send confirmation packet to the best candidate CL with my information
     if (myCL_id != -1) {
-        trace() << "Sending confirmation to " << myCL_id;
 
         CellularRoutingPacket* confirmPkt = new CellularRoutingPacket("CL Confirmation", NETWORK_LAYER_PACKET);
         confirmPkt->setPacketType(CL_CONFIRMATION);
@@ -671,11 +687,28 @@ void CellularRouting::sendCLConfirmationPacket()
         }
 
         confirmPkt->setNodeInfoData(myInfo);
-
-        confirmPkt->setSource(SELF_NETWORK_ADDRESS);
-        std::stringstream dest_addr;
-        dest_addr << myCL_id;
-        confirmPkt->setDestination(dest_addr.str().c_str());
+        // if CL is in range
+        bool isCLInRange = false;
+        for (const auto& neighbor : neighborTable) {
+            if (neighbor.id == myCL_id) {
+                confirmPkt->setSource(SELF_NETWORK_ADDRESS);
+                std::stringstream dest_addr;
+                dest_addr << myCL_id;
+                confirmPkt->setDestination(dest_addr.str().c_str());
+                isCLInRange = true;
+                toMacLayer(confirmPkt, myCL_id);
+            }
+        }
+        if (!isCLInRange) {
+            for (const auto& neighbor : neighborTable) {
+                confirmPkt->setSource(SELF_NETWORK_ADDRESS);
+                std::stringstream dest_addr;
+                dest_addr << neighbor.id;
+                confirmPkt->setDestination(dest_addr.str().c_str());
+                confirmPkt->setTtl(1);
+                toMacLayer(confirmPkt, neighbor.id);
+            }
+        }
 
         toMacLayer(confirmPkt, myCL_id);
     }
@@ -685,52 +718,59 @@ void CellularRouting::handleCLConfirmationPacket(CellularRoutingPacket* pkt)
 {
     // If I am the CL, save the confirmation and update my cell members
     // If I am not the CL, forward the confirmation to my CL
-    if (!amI_CL) return;
+    if (myRole == CELL_LEADER) {
+        NodeInfo senderInfo = pkt->getNodeInfoData();
+        int senderId = senderInfo.nodeId;
 
-    NodeInfo senderInfo = pkt->getNodeInfoData();
-    int senderId = senderInfo.nodeId;
+        if (cellMembers.empty()) {
+            trace() << "Received first confirmation, starting CL confirmation timer.";
+            setTimer(CL_CONFIRMATION_TIMER, 200);
+        }
 
-    if (cellMembers.empty()) {
-        trace() << "Received first confirmation, starting CL confirmation timer.";
-        setTimer(CL_CONFIRMATION_TIMER, 200);
-    }
+        for (const auto& member : cellMembers) {
+            if (member.id == senderId) {
+                return;
+            }
+        }
 
-    for (const auto& member : cellMembers) {
-        if (member.id == senderId) {
-            return;
+        CellMemberRecord newMember;
+        newMember.id = senderId;
+        newMember.x = senderInfo.x;
+        newMember.y = senderInfo.y;
+        newMember.energy = senderInfo.energyLevel;
+        trace() << "Received confirmation from node " << senderId
+                << " at (" << newMember.x << ", " << newMember.y << ") with energy: "
+                << newMember.energy;
+
+        for (size_t i = 0; i < 20; ++i) {
+            NeighborInfo neighbor_of_sender = pkt->getNodeInfoData().neighbors[i];
+            if (neighbor_of_sender.nodeId == -1) {
+                continue; // Skip empty neighbors
+            }
+            NeighborRecord neighbor_of_sender_record;
+            neighbor_of_sender_record.id = neighbor_of_sender.nodeId;
+            neighbor_of_sender_record.x = neighbor_of_sender.x;
+            neighbor_of_sender_record.y = neighbor_of_sender.y;
+            neighbor_of_sender_record.cellId = neighbor_of_sender.cellId;
+            newMember.neighbors.push_back(neighbor_of_sender_record);
+            trace() << "  -> Neighbor: " << neighbor_of_sender_record.id
+                    << " at (" << neighbor_of_sender_record.x << ", "
+                    << neighbor_of_sender_record.y << ") with cell ID: "
+                    << neighbor_of_sender_record.cellId;
+        }
+
+        cellMembers.push_back(newMember);
+    } else {
+        if (pkt->getTtl() > 0) {
+            CellularRoutingPacket* fwdPkt = pkt->dup();
+            fwdPkt->setTtl(1);
+            fwdPkt->setSource(SELF_NETWORK_ADDRESS);
+            std::stringstream dest_addr;
+            dest_addr << myCL_id;
+            fwdPkt->setDestination(dest_addr.str().c_str());
+            toMacLayer(fwdPkt, myCL_id);
         }
     }
-
-    CellMemberRecord newMember;
-    newMember.id = senderId;
-    newMember.x = senderInfo.x;
-    newMember.y = senderInfo.y;
-    newMember.energy = senderInfo.energyLevel;
-    trace() << "Received confirmation from node " << senderId
-            << " at (" << newMember.x << ", " << newMember.y << ") with energy: "
-            << newMember.energy;
-
-    for (size_t i = 0; i < 20; ++i) {
-        NeighborInfo neighbor_of_sender = pkt->getNodeInfoData().neighbors[i];
-        if (neighbor_of_sender.nodeId == -1) {
-            continue; // Skip empty neighbors
-        }
-        NeighborRecord neighbor_of_sender_record;
-        neighbor_of_sender_record.id = neighbor_of_sender.nodeId;
-        neighbor_of_sender_record.x = neighbor_of_sender.x;
-        neighbor_of_sender_record.y = neighbor_of_sender.y;
-        neighbor_of_sender_record.cellId = neighbor_of_sender.cellId;
-        newMember.neighbors.push_back(neighbor_of_sender_record);
-        trace() << "  -> Neighbor: " << neighbor_of_sender_record.id
-                << " at (" << neighbor_of_sender_record.x << ", "
-                << neighbor_of_sender_record.y << ") with cell ID: "
-                << neighbor_of_sender_record.cellId;
-    }
-
-    cellMembers.push_back(newMember);
-
-    trace() << "Received confirmation from node " << senderId
-            << ". Total confirmed members: " << cellMembers.size();
 }
 
 void CellularRouting::gatewaySelection()
@@ -738,77 +778,66 @@ void CellularRouting::gatewaySelection()
     // Calculate the best gateway candidates based on distance
     // Or just let the application layer handle it
     // sendGatewaySelectionPacket(); after a random delay
+    sendGatewaySelectionPacket();
 }
 
 void CellularRouting::sendGatewaySelectionPacket()
 {
-    // Send gateway selection packet to the CGW
-    if (!amI_CL) {
-        return;
-    }
-
     if (!candidates.empty()) {
-        GatewayCandidate best_candidate = candidates.front();
-        trace() << "Attempting to establish link with the best candidate: CGW "
-                << best_candidate.cgw_id << " -> NGW " << best_candidate.ngw_id;
-        int best_cgw = best_candidate.cgw_id;
-        int best_ngw = best_candidate.ngw_id;
-        int best_next_hop_cell = best_candidate.target_cell_id;
-        int best_final_ch_id = myCH_id;
-
-        if (best_cgw != -1 && best_ngw != -1) {
-            trace() << "  BEST GATEWAY PAIR FOUND: CGW " << best_cgw << " -> NGW " << best_ngw;
-
+        for (const auto& candidate : candidates) {
             CellularRoutingPacket* cmdPkt = new CellularRoutingPacket("CL Command to CGW", NETWORK_LAYER_PACKET);
             cmdPkt->setPacketType(CL_COMMAND_PACKET);
 
             CLCommandInfo cmdInfo;
-            cmdInfo.source_cgw_id = best_cgw;
-            cmdInfo.target_ngw_id = best_ngw;
-            cmdInfo.target_cell_id = best_next_hop_cell;
-            cmdInfo.final_ch_id = myCH_id;
+            cmdInfo.source_cgw_id = candidate.cgw_id;
+            cmdInfo.target_ngw_id = candidate.ngw_id;
+            cmdInfo.target_cell_id = candidate.target_cell_id;
             cmdPkt->setClCommandData(cmdInfo);
             cmdPkt->setSource(SELF_NETWORK_ADDRESS);
             std::stringstream dest_addr;
-            dest_addr << best_cgw;
+            dest_addr << candidate.cgw_id;
             cmdPkt->setDestination(dest_addr.str().c_str());
-
-            trace() << "  Sending command to my CGW " << best_cgw << " to link with NGW " << best_ngw;
-            toMacLayer(cmdPkt, best_cgw);
-
-            setTimer(LINK_REQUEST_TIMEOUT, 100);
+            bool inRange = false;
+            for (const auto& neighbor : neighborTable) {
+                if (neighbor.id == candidate.cgw_id) {
+                    inRange = true;
+                    toMacLayer(cmdPkt, neighbor.id);
+                    break; 
+                }
+            }
+            if (!inRange) {
+                for (const auto& neighbor : neighborTable) {
+                    if (neighbor.id == candidate.cgw_id) {
+                        cmdPkt->setTtl(1);
+                        toMacLayer(cmdPkt, neighbor.id);
+                        break; 
+                    }
+                }
+            }
         }
     }
 }
 
 void CellularRouting::handleGatewaySelectionPacket(CellularRoutingPacket* pkt)
 {
-    // sendLinkRequestPacket()
-     if (myCL_id == -1) {
-        return;
+    int destination = pkt->getDestination();
+    // check destination
+    if (destination == SELF_NETWORK_ADDRESS) {
+        sendLinkRequestPacket(CellularRoutingPacket* pkt);
+    } else {
+        CellularRoutingPacket* fwdPkt = pkt->dup();
+        toMacLayer(fwdPkt, destination);
     }
-
-    if (amI_CL) {
-        handleLinkAck(pkt);
-        return;
-    }
-
-    int source_cgw_id = atoi(pkt->getSource());
-    trace() << "I am an NGW. Received LINK_REQUEST from CGW " << source_cgw_id
-            << ". Forwarding to my CL " << myCL_id;
-
-    CellularRoutingPacket* fwdPkt = pkt->dup();
-    fwdPkt->setSource(SELF_NETWORK_ADDRESS);
-    std::stringstream dest_addr;
-    dest_addr << myCL_id;
-    fwdPkt->setDestination(dest_addr.str().c_str());
-
-    toMacLayer(fwdPkt, myCL_id);
 }
 
-void CellularRouting::sendLinkRequestPacket()
+void CellularRouting::sendLinkRequestPacket(CellularRoutingPacket* pkt)
 {
-    // Send link request packet to the best candidate NGW
+    
+}
+
+void CellularRouting::handleLinkRequestPacket(CellularRoutingPacket* pkt)
+{
+    // If I am the NGW, forward the request to my CL
     trace() << "I am an NCL. Received LINK_REQUEST from NGW " << pkt->getSource();
 
     LinkRequestInfo linkRq = pkt->getLinkRequestData();
@@ -828,11 +857,6 @@ void CellularRouting::sendLinkRequestPacket()
 
     trace() << "Confirming LINK_REQUEST to NGW " << pkt->getSource();
     toMacLayer(confPkt, linkRq.target_ngw_id);
-}
-
-void CellularRouting::handleLinkRequestPacket(CellularRoutingPacket* pkt)
-{
-    // If I am the NGW, forward the request to my CL
     // If I am the CL, sendLinkConfirmationPacket()
      if (amI_CL) {
         trace() << "Received LINK_ACK from CGW " << pkt->getSource()
@@ -886,6 +910,9 @@ void CellularRouting::handleLinkRequestPacket(CellularRoutingPacket* pkt)
 void CellularRouting::sendLinkConfirmationPacket(CellularRoutingPacket* pkt)
 {
     // Send link confirmation packet to the NGW
+    if (myRole != CELL_LEADER){
+        
+    }
 }
 
 void CellularRouting::handleLinkConfirmationPacket(CellularRoutingPacket* pkt)

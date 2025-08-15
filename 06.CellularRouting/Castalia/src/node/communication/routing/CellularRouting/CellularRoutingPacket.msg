@@ -30,7 +30,7 @@ struct HelloInfo {
 struct CLAnnouncementInfo {
     int cellId;
     int color;
-    double energyLevel;
+    double fitnessScore;
     double x;
     double y;
 };
@@ -78,6 +78,7 @@ struct RoutingUpdateInfo{
 packet CellularRoutingPacket extends RoutingPacket {
     int packetType @enum(CellularRoutingPacketType);
 
+    int ttl;
     HelloInfo helloData;
     CLAnnouncementInfo clAnnouncementData;
     NodeInfo nodeInfoData;
