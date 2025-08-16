@@ -33,7 +33,6 @@ enum CellularRoutingTimers {
 
     RECONFIGURATION_TIMER,
     CL_ANNOUNCEMENT_TIMER,
-    CL_CONFIRMATION_TIMER,
     CONFIRMATION_SENDER_TIMER,
     CL_VOTE_CH,
     LINK_REQUEST_TIMEOUT,
@@ -137,6 +136,7 @@ class CellularRouting : public VirtualRouting {
     void timerFiredCallback(int) override;
     void fromApplicationLayer(cPacket *, const char *) override;
     void fromMacLayer(cPacket *, int, double, double) override;
+    double calculateDistance(double x1, double y1, double x2, double y2);
 
     void PrecalculateSimulationResults();
 
@@ -152,7 +152,7 @@ class CellularRouting : public VirtualRouting {
     void gatewaySelection();
     void sendGatewaySelectionPacket();
     void handleGatewaySelectionPacket(CellularRoutingPacket* pkt);
-    void sendLinkRequestPacket(CellularRoutingPacket* pkt);
+    void sendLinkRequestPacket();
     void handleLinkRequestPacket(CellularRoutingPacket* pkt);
     void sendLinkConfirmationPacket(CellularRoutingPacket* pkt);
     void handleLinkConfirmationPacket(CellularRoutingPacket* pkt);

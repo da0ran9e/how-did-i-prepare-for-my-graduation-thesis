@@ -47,38 +47,38 @@ void CellularRouting::startup()
     nodeData.clId = myCL_id;
     nodeData.chId = myCH_id;
     nodeData.nextHopId = myNextHopId;
-	nodeData.neighbors.clear();
+    nodeData.neighbors.clear();
 
     g_nodeDataList.push_back(nodeData);
 
     trace() << nodeData.id << " (" << nodeData.x << ", " << nodeData.y
             << ") - " << nodeData.role << " <" << nodeData.cellId << "> - {" << nodeData.color << "}"
-            << " - CL: " << nodeData.clId << " - CH: " << nodeData.chId << " - Next Hop: " << nodeData.nextHopId 
-			<< " - Neighbors: " << nodeData.neighbors.size();
-	
-			if (!g_isPrecalculated){
-		g_isPrecalculated = true;
-		setTimer(PRECALCULATE_TIMERS, 20);
-	}
-	
+            << " - CL: " << nodeData.clId << " - CH: " << nodeData.chId << " - Next Hop: " << nodeData.nextHopId
+            << " - Neighbors: " << nodeData.neighbors.size();
+
+            if (!g_isPrecalculated){
+        g_isPrecalculated = true;
+        setTimer(PRECALCULATE_TIMERS, 20);
+    }
+
 
     // Set initial timer for STATE_0
-    setTimer(STATE_0, uniform(0, 10)); 
+    setTimer(STATE_0, uniform(0, 10));
     // Set timer for STATE_1
 }
 
 void CellularRouting::timerFiredCallback(int index)
 {
-	switch (index) {
-		case PRECALCULATE_TIMERS:
-			// Precalculate the simulation results
-			PrecalculateSimulationResults();
-			break;
+    switch (index) {
+        case PRECALCULATE_TIMERS:
+            // Precalculate the simulation results
+            PrecalculateSimulationResults();
+            break;
 
         case STATE_0:
             setTimer(SEND_HELLO_TIMER, helloInterval);
             calculateFitnessScore();
-            setTimer(CL_ELECTION_TIMER, clElectionDelayInterval + fitnessScore*10);
+            //setTimer(CL_ELECTION_TIMER, clElectionDelayInterval + fitnessScore*10);
             // setTimer(CL_CONFIRMATION_TIMER, uniform(0, 10));
             // setTimer(GATEWAY_SELECTION_TIMER, uniform(0, 10));
             // setTimer(ROUTING_TREE_CALCULATION_TIMER, uniform(0, 10));
@@ -86,7 +86,7 @@ void CellularRouting::timerFiredCallback(int index)
             // setTimer(FINALIZE_ROUTING_TIMER, uniform(0, 10));
             break;
 
-	    case SEND_HELLO_TIMER:
+        case SEND_HELLO_TIMER:
             sendHelloPacket();
             setTimer(SEND_HELLO_TIMER, helloInterval);
             break;
@@ -105,7 +105,7 @@ void CellularRouting::timerFiredCallback(int index)
             }
             break;
 
-        
+
     }
 
     // case CL_ELECTION_TIMER:
@@ -141,56 +141,60 @@ void CellularRouting::timerFiredCallback(int index)
         // if CL: sellectClusterHead();
 }
 
+double CellularRouting::calculateDistance(double x1, double y1, double x2, double y2) {
+    return sqrt(pow(x1 - x2, 2) + pow(y1 - y2, 2));
+}
+
 void CellularRouting::PrecalculateSimulationResults()
 {
-	// Calculate node neighbors
-	for (auto& nodeData : g_nodeDataList) {
-		for (auto& otherNodeData : g_nodeDataList) {
-			if (nodeData.id != otherNodeData.id) {
-				double distance = sqrt(pow(nodeData.x - otherNodeData.x, 2) + pow(nodeData.y - otherNodeData.y, 2));
-				if (distance <= cellRadius) {
-					NeighborRecord neighbor;
-					neighbor.id = otherNodeData.id;
-					neighbor.cellId = otherNodeData.cellId;
-					neighbor.x = otherNodeData.x;
-					neighbor.y = otherNodeData.y;
-					neighbor.lastHeard = simTime();
-					nodeData.neighbors.push_back(neighbor);
-				}
-			}
-		}
-	}
-	// Calculate cell members
-	for (auto& nodeData : g_nodeDataList) {
-		// check if the cell already exists, add the node to the cell members
-		bool cellExists = false;
-		for (auto& cellData : g_cellDataList) {
-			if (cellData.cellId == nodeData.cellId) {
-				cellExists = true;
-				CellMemberRecord member;
-				member.id = nodeData.id;
-				member.x = nodeData.x;
-				member.y = nodeData.y;
-				member.neighbors = nodeData.neighbors;
-				cellData.members.push_back(member);
-				break;
-			}
-		}
-		// else create a new cell and add the node as a member
-		if (!cellExists) {
-			CellData cellData;
-			cellData.cellId = nodeData.cellId;
-			cellData.color = nodeData.color;
-			cellData.clId = nodeData.clId;
-			CellMemberRecord member;
-			member.id = nodeData.id;
-			member.x = nodeData.x;
-			member.y = nodeData.y;
-			member.neighbors = nodeData.neighbors;
-			cellData.members.push_back(member);
-			g_cellDataList.push_back(cellData);
-		}
-	}
+    // Calculate node neighbors
+    for (auto& nodeData : g_nodeDataList) {
+        for (auto& otherNodeData : g_nodeDataList) {
+            if (nodeData.id != otherNodeData.id) {
+                double distance = sqrt(pow(nodeData.x - otherNodeData.x, 2) + pow(nodeData.y - otherNodeData.y, 2));
+                if (distance <= cellRadius) {
+                    NeighborRecord neighbor;
+                    neighbor.id = otherNodeData.id;
+                    neighbor.cellId = otherNodeData.cellId;
+                    neighbor.x = otherNodeData.x;
+                    neighbor.y = otherNodeData.y;
+                    neighbor.lastHeard = simTime();
+                    nodeData.neighbors.push_back(neighbor);
+                }
+            }
+        }
+    }
+    // Calculate cell members
+    for (auto& nodeData : g_nodeDataList) {
+        // check if the cell already exists, add the node to the cell members
+        bool cellExists = false;
+        for (auto& cellData : g_cellDataList) {
+            if (cellData.cellId == nodeData.cellId) {
+                cellExists = true;
+                CellMemberRecord member;
+                member.id = nodeData.id;
+                member.x = nodeData.x;
+                member.y = nodeData.y;
+                member.neighbors = nodeData.neighbors;
+                cellData.members.push_back(member);
+                break;
+            }
+        }
+        // else create a new cell and add the node as a member
+        if (!cellExists) {
+            CellData cellData;
+            cellData.cellId = nodeData.cellId;
+            cellData.color = nodeData.color;
+            cellData.clId = nodeData.clId;
+            CellMemberRecord member;
+            member.id = nodeData.id;
+            member.x = nodeData.x;
+            member.y = nodeData.y;
+            member.neighbors = nodeData.neighbors;
+            cellData.members.push_back(member);
+            g_cellDataList.push_back(cellData);
+        }
+    }
 
     //calculate cell neighbors
     for (auto& cellData : g_cellDataList) {
@@ -221,27 +225,27 @@ void CellularRouting::PrecalculateSimulationResults()
         }
     }
 
-	// Calculate cell leaders
-	for (auto& cellData : g_cellDataList) {
-		int bestFitness = -1;
-		int bestCLId = -1;
-		for (auto& member : cellData.members) {
-			int r = round((double)cellData.cellId / grid_offset);
+    // Calculate cell leaders
+    for (auto& cellData : g_cellDataList) {
+        int bestFitness = -1;
+        int bestCLId = -1;
+        for (auto& member : cellData.members) {
+            int r = round((double)cellData.cellId / grid_offset);
             int q = cellData.cellId - r * grid_offset;
 
             double centerX = cellRadius * (sqrt(3.0) * q + sqrt(3.0) / 2.0 * r);
             double centerY = cellRadius * (3.0 / 2.0 * r);
 
-			double distance = sqrt(pow(member.x - centerX, 2) + pow(member.y - centerY, 2));
-			
-			int fitnessScore = static_cast<int>(1000 / (1 + distance)); 
-			if (fitnessScore > bestFitness) {
-				bestFitness = fitnessScore;
-				bestCLId = member.id;
-			}
-		}
-		cellData.clId = bestCLId;
-	}
+            double distance = sqrt(pow(member.x - centerX, 2) + pow(member.y - centerY, 2));
+
+            int fitnessScore = static_cast<int>(1000 / (1 + distance));
+            if (fitnessScore > bestFitness) {
+                bestFitness = fitnessScore;
+                bestCLId = member.id;
+            }
+        }
+        cellData.clId = bestCLId;
+    }
 
     // calculate gateway candidates for each pair of cell
     for (auto& cellData : g_cellDataList) {
@@ -255,29 +259,29 @@ void CellularRouting::PrecalculateSimulationResults()
                 for (auto& nodeData : g_nodeDataList) {
                     if (nodeData.cellId == cellData.cellId) {
                         for (auto& neighborNode : nodeData.neighbors) {
-                            //if (cellData.cellId >= neighbor.cellId) continue; 
+                            //if (cellData.cellId >= neighbor.cellId) continue;
                             if (neighborNode.cellId == neighbor.cellId) {
                                 double linkDistance = sqrt(pow(nodeData.x - neighborNode.x, 2) + pow(nodeData.y - neighborNode.y, 2));
-                                
+
                                 if (linkDistance < bestDistance) {
                                     bestDistance = linkDistance;
                                     bestCGWId = nodeData.id;
                                     bestNGWId = neighborNode.id;
-                                } 
+                                }
                                 else if (linkDistance == bestDistance) {
                                     // If the distance is equal, prefer the one with lower ID
                                     if (nodeData.id < bestCGWId) {
                                         bestCGWId = nodeData.id;
                                         bestNGWId = neighborNode.id;
                                     }
-                                } 
+                                }
                             }
                         }
                     }
                 }
 
                 if (bestCGWId != -1 && bestNGWId != -1) {
-                    cellData.gateways[neighbor.cellId] = bestCGWId; 
+                    cellData.gateways[neighbor.cellId] = bestCGWId;
                     neighbor.ngw_id = bestNGWId;
                 }
             }
@@ -306,15 +310,15 @@ void CellularRouting::PrecalculateSimulationResults()
                         for (const auto& neighborNode : member.neighbors) {
                             if (neighborNode.id == gatewayId) {
                                 isGatewayInRange = true;
-                                g_routingTable[member.id][neighbor.cellId] = gatewayId; 
+                                g_routingTable[member.id][neighbor.cellId] = gatewayId;
                             }
-                            
+
                         }
                         if (!isGatewayInRange) {
                             // If the gateway is not in range, find the best next hop
                             double minDistance = 9999.0;
                             int bestNextHopId = -1;
-                            
+
                             for (const auto& neighborNode : member.neighbors) {
                                 bool isNeighborInRange = false;
                                 // continue if the neighbor is not in range of the gateway
@@ -436,28 +440,6 @@ void CellularRouting::fromApplicationLayer(cPacket * pkt, const char *destinatio
 
 void CellularRouting::fromMacLayer(cPacket * pkt, int srcMacAddress, double rssi, double lqi)
 {
-    // case HELLO_PACKET:
-        // handleHelloPacket();
-
-    // case CL_ANNOUNCEMENT:
-        // handleCLAnnouncementPacket();
-
-    // case CL_CONFIRMATION:
-        // handleCLConfirmationPacket();
-
-    // case GATEWAY_SELECTION:
-        // handleGatewaySelectionPacket();
-
-    // case LINK_REQUEST:
-        // handleLinkRequestPacket();
-
-    // case LINK_CONFIRMATION:
-        // handleLinkConfirmationPacket();
-
-    // case ROUTING_TABLE_ANNOUNCEMENT:
-        // handleRoutingTableAnnouncementPacket();
-
-    // case FINALIZE_ROUTING:
     CellularRoutingPacket* netPacket = dynamic_cast<CellularRoutingPacket*>(pkt);
     if (!netPacket) {
         return;
@@ -468,46 +450,17 @@ void CellularRouting::fromMacLayer(cPacket * pkt, int srcMacAddress, double rssi
             handleHelloPacket(netPacket);
             break;
         }
+
         case CL_ANNOUNCEMENT: {
             handleCLAnnouncementPacket(netPacket);
             break;
         }
+
         case CL_CONFIRMATION: {
             handleCLConfirmationPacket(netPacket);
             break;
         }
-        case BS_UPDATE_PACKET: {
-            // TODO
-            break;
-        }
-        case LINK_REQUEST: {
-            handleLinkRequest(netPacket);
-            break;
-        }
-        case NCL_CONFIRM_PACKET: {
-            handleLinkEstablishedConfirmation(netPacket);
-            break;
-        }
-        case LINK_ESTABLISHED: {
-            //handleLinkEstablishedConfirmation(netPacket);
-            break;
-        }
-        case INTRA_CELL_ROUTING_UPDATE: {
-            //handleRoutingTableUpdate(netPacket);
-            break;
-        }
-        case CL_COMMAND_PACKET: {
-            handleCLCommandPacket(netPacket);
-            break;
-        }
-        case ROUTING_TREE_UPDATE_PACKET: {
-            handleRoutingTableUpdate(netPacket);
-            break;
-        }
-        case DATA_PACKET: {
-            handleDataPacket(netPacket);
-            break;
-        }
+        
         default: {
             trace() << "WARNING: Received unknown packet type.";
             break;
@@ -546,7 +499,7 @@ void CellularRouting::sendHelloPacket()
 {
         CellularRoutingPacket *netPacket = new CellularRoutingPacket("CellularRouting packet", NETWORK_LAYER_PACKET);
         netPacket->setPacketType(HELLO_PACKET);
-        HelloPacketData helloData;
+        HelloInfo helloData;
         helloData.x = myX;
         helloData.y = myY;
         helloData.cellId = myCellId;
@@ -559,14 +512,14 @@ void CellularRouting::sendHelloPacket()
 void CellularRouting::handleHelloPacket(CellularRoutingPacket* pkt)
 {
     int sourceId = atoi(pkt->getSource());
-    
+
     for (const auto& neighbor : neighborTable) {
         if (neighbor.id == sourceId) {
             return; // Already a neighbor
         }
     }
 
-    HelloPacketData helloData = pkt->getHelloData();
+    HelloInfo helloData = pkt->getHelloData();
     NeighborRecord newNeighbor;
     newNeighbor.id = sourceId;
     newNeighbor.x = helloData.x;
@@ -598,7 +551,7 @@ void CellularRouting::handleHelloPacket(CellularRoutingPacket* pkt)
             }
             trace() << "Neighbor Table Rating: " << rightCount << "/" << nodeData.neighbors.size() << " right, " << errorCount << " errors";
         }
-    } 
+    }
 }
 
 void CellularRouting::calculateFitnessScore()
@@ -633,7 +586,7 @@ void CellularRouting::sendCLAnnouncement()
 
 void CellularRouting::handleCLAnnouncementPacket(CellularRoutingPacket* pkt)
 {
-    
+
     if (myCellId != pkt->getClAnnouncementData().cellId) {
         return;
     }
@@ -645,7 +598,7 @@ void CellularRouting::handleCLAnnouncementPacket(CellularRoutingPacket* pkt)
         myCL_id = announcerId;
         clFitnessScore = pkt->getClAnnouncementData().fitnessScore;
     }
-    
+
     // Forward the packet to other cell members
     if (pkt->getTtl() > 0) {
         CellularRoutingPacket* fwdPkt = pkt->dup();
@@ -723,7 +676,6 @@ void CellularRouting::handleCLConfirmationPacket(CellularRoutingPacket* pkt)
         int senderId = senderInfo.nodeId;
 
         if (cellMembers.empty()) {
-            trace() << "Received first confirmation, starting CL confirmation timer.";
             setTimer(CL_CONFIRMATION_TIMER, 200);
         }
 
@@ -738,9 +690,6 @@ void CellularRouting::handleCLConfirmationPacket(CellularRoutingPacket* pkt)
         newMember.x = senderInfo.x;
         newMember.y = senderInfo.y;
         newMember.energy = senderInfo.energyLevel;
-        trace() << "Received confirmation from node " << senderId
-                << " at (" << newMember.x << ", " << newMember.y << ") with energy: "
-                << newMember.energy;
 
         for (size_t i = 0; i < 20; ++i) {
             NeighborInfo neighbor_of_sender = pkt->getNodeInfoData().neighbors[i];
@@ -753,10 +702,6 @@ void CellularRouting::handleCLConfirmationPacket(CellularRoutingPacket* pkt)
             neighbor_of_sender_record.y = neighbor_of_sender.y;
             neighbor_of_sender_record.cellId = neighbor_of_sender.cellId;
             newMember.neighbors.push_back(neighbor_of_sender_record);
-            trace() << "  -> Neighbor: " << neighbor_of_sender_record.id
-                    << " at (" << neighbor_of_sender_record.x << ", "
-                    << neighbor_of_sender_record.y << ") with cell ID: "
-                    << neighbor_of_sender_record.cellId;
         }
 
         cellMembers.push_back(newMember);
@@ -778,141 +723,32 @@ void CellularRouting::gatewaySelection()
     // Calculate the best gateway candidates based on distance
     // Or just let the application layer handle it
     // sendGatewaySelectionPacket(); after a random delay
-    sendGatewaySelectionPacket();
 }
 
 void CellularRouting::sendGatewaySelectionPacket()
 {
-    if (!candidates.empty()) {
-        for (const auto& candidate : candidates) {
-            CellularRoutingPacket* cmdPkt = new CellularRoutingPacket("CL Command to CGW", NETWORK_LAYER_PACKET);
-            cmdPkt->setPacketType(CL_COMMAND_PACKET);
 
-            CLCommandInfo cmdInfo;
-            cmdInfo.source_cgw_id = candidate.cgw_id;
-            cmdInfo.target_ngw_id = candidate.ngw_id;
-            cmdInfo.target_cell_id = candidate.target_cell_id;
-            cmdPkt->setClCommandData(cmdInfo);
-            cmdPkt->setSource(SELF_NETWORK_ADDRESS);
-            std::stringstream dest_addr;
-            dest_addr << candidate.cgw_id;
-            cmdPkt->setDestination(dest_addr.str().c_str());
-            bool inRange = false;
-            for (const auto& neighbor : neighborTable) {
-                if (neighbor.id == candidate.cgw_id) {
-                    inRange = true;
-                    toMacLayer(cmdPkt, neighbor.id);
-                    break; 
-                }
-            }
-            if (!inRange) {
-                for (const auto& neighbor : neighborTable) {
-                    if (neighbor.id == candidate.cgw_id) {
-                        cmdPkt->setTtl(1);
-                        toMacLayer(cmdPkt, neighbor.id);
-                        break; 
-                    }
-                }
-            }
-        }
-    }
 }
 
 void CellularRouting::handleGatewaySelectionPacket(CellularRoutingPacket* pkt)
 {
-    int destination = pkt->getDestination();
-    // check destination
-    if (destination == SELF_NETWORK_ADDRESS) {
-        sendLinkRequestPacket(CellularRoutingPacket* pkt);
-    } else {
-        CellularRoutingPacket* fwdPkt = pkt->dup();
-        toMacLayer(fwdPkt, destination);
-    }
+
 }
 
-void CellularRouting::sendLinkRequestPacket(CellularRoutingPacket* pkt)
+void CellularRouting::sendLinkRequestPacket()
 {
-    
+
 }
 
 void CellularRouting::handleLinkRequestPacket(CellularRoutingPacket* pkt)
 {
     // If I am the NGW, forward the request to my CL
-    trace() << "I am an NCL. Received LINK_REQUEST from NGW " << pkt->getSource();
-
-    LinkRequestInfo linkRq = pkt->getLinkRequestData();
-
-    CellularRoutingPacket* confPkt = new CellularRoutingPacket("Link Request", NETWORK_LAYER_PACKET);
-    confPkt->setPacketType(NCL_CONFIRM_PACKET);
-
-    NCLConfirmInfo confInfo;
-    confInfo.cgw_id = linkRq.source_cgw_id;
-    confInfo.ngw_id = linkRq.target_ngw_id;
-    confPkt->setNclCommandData(confInfo);
-
-    confPkt->setSource(SELF_NETWORK_ADDRESS);
-    std::stringstream dest_addr;
-    dest_addr << linkRq.target_ngw_id;
-    confPkt->setDestination(dest_addr.str().c_str());
-
-    trace() << "Confirming LINK_REQUEST to NGW " << pkt->getSource();
-    toMacLayer(confPkt, linkRq.target_ngw_id);
     // If I am the CL, sendLinkConfirmationPacket()
-     if (amI_CL) {
-        trace() << "Received LINK_ACK from CGW " << pkt->getSource()
-                << ". Save the link information and update routing table.";
-        int cellDestination;
-        NCLConfirmInfo confInfo = pkt->getNclCommandData();
-        for (const auto& member : cellMembers) {
-            if (member.id == confInfo.cgw_id) {
-                for (const auto& neighbor : member.neighbors) {
-                    if (neighbor.id == confInfo.ngw_id) {
-                        cellDestination = neighbor.cellId;
-                    }
-                }
-            }
-        }
-        interCellRoutingTable[cellDestination] = confInfo.cgw_id;
-        gatewayTowardsCH = confInfo.cgw_id;
-        cancelTimer(LINK_REQUEST_TIMEOUT);
-        trace() << "Link established with CGW " << confInfo.cgw_id
-                << " to NGW " << confInfo.ngw_id;
-        announceRoutingTree(gatewayTowardsCH, confInfo.ngw_id);
-
-        calculateAndDistributeIntraCellTree();
-
-        return;
-    } else {
-        NCLConfirmInfo confInfo = pkt->getNclCommandData();
-        if (confInfo.cgw_id == self) {
-            trace() << "I am the CGW, forwarding to CL.";
-            CellularRoutingPacket* fwdPkt = pkt->dup();
-            fwdPkt->setSource(SELF_NETWORK_ADDRESS);
-            std::stringstream dest_addr;
-            dest_addr << myCL_id;
-            fwdPkt->setDestination(dest_addr.str().c_str());
-            toMacLayer(fwdPkt, myCL_id);
-            trace() << "Forwarded LINK_ACK to CL " << myCL_id;
-        } else {
-            trace() << "I am an NGW, received LINK_ACK from NCL. Forwarding to my CGW " << confInfo.cgw_id;
-            CellularRoutingPacket* fwdPkt = pkt->dup();
-            fwdPkt->setSource(SELF_NETWORK_ADDRESS);
-            std::stringstream dest_addr;
-            dest_addr << confInfo.cgw_id;
-            fwdPkt->setDestination(dest_addr.str().c_str());
-            toMacLayer(fwdPkt, confInfo.cgw_id);
-            trace() << "Forwarded LINK_ACK to CGW " << confInfo.cgw_id;
-        }
-        return;
-    }
 }
 
 void CellularRouting::sendLinkConfirmationPacket(CellularRoutingPacket* pkt)
 {
     // Send link confirmation packet to the NGW
-    if (myRole != CELL_LEADER){
-        
-    }
 }
 
 void CellularRouting::handleLinkConfirmationPacket(CellularRoutingPacket* pkt)
@@ -927,75 +763,75 @@ void CellularRouting::calculateRoutingTree()
     // Calculate the intra-cell routing trees with CGWs and CL are roots
     // all members should have a routing table entry to every CGW and CL
     // Or just let the application layer handle it
-    if (!amI_CL) return;
-
-    if (gatewayTowardsCH == -1) {
-        gatewayTowardsCH = myCH_id;
-    }
-
-    for (const auto& member : cellMembers) {
-        if (member.id == myCH_id) {
-            gatewayTowardsCH = myCH_id;
-            break;
-        }
-    }
-
-    Point gatewayPos = allNodesPositions[gatewayTowardsCH];
-
-    for (const auto& member : cellMembers) {
-        if (member.id == gatewayTowardsCH) {
-            intraCellRoutingTable[member.id] = -1;
-            continue;
-        }
-
-        int bestHop = -1;
-        double minDistanceToGatewaySq = -1.0;
-        for (const auto& neighbor : member.neighbors) {
-            if (neighbor.cellId == myCellId) {
-                double distSq;
-                if (neighbor.id == myCH_id) distSq = 0.0;
-                
-                distSq = pow(allNodesPositions[neighbor.id].x - gatewayPos.x, 2) +
-                                pow(allNodesPositions[neighbor.id].y - gatewayPos.y, 2);
-
-                if (bestHop == -1 || distSq < minDistanceToGatewaySq) {
-                    minDistanceToGatewaySq = distSq;
-                    bestHop = neighbor.id;
-                }
-            }
-        }
-
-        intraCellRoutingTable[member.id] = bestHop;
-
-        if (bestHop != -1) {
-            announceRoutingTree(member.id, bestHop);
-        } else {
-            trace() << "  WARNING: Node " << member.id << " has no neighbors in this cell to forward packets.";
-        }
-    }
-
-    int bestHopForCL = -1;
-    double minDistanceForCLSq = -1.0;
-
-    for (const auto& neighbor : neighborTable) {
-         if (neighbor.cellId == myCellId) {
-            double distSq = pow(neighbor.x - gatewayPos.x, 2) +
-                            pow(neighbor.y - gatewayPos.y, 2);
-
-            if (bestHopForCL == -1 || distSq < minDistanceForCLSq) {
-                minDistanceForCLSq = distSq;
-                bestHopForCL = neighbor.id;
-            }
-        }
-    }
-    
-    myNextHopId = bestHopForCL;
-    
-    if (myNextHopId != -1) {
-         trace() << "[ROUTING] " << self << " to "<< myNextHopId;
-    } else {
-         trace() << "  WARNING: I (CL) have no intra-cell neighbors to forward packets.";
-    }
+//    if (!amI_CL) return;
+//
+//    if (gatewayTowardsCH == -1) {
+//        gatewayTowardsCH = myCH_id;
+//    }
+//
+//    for (const auto& member : cellMembers) {
+//        if (member.id == myCH_id) {
+//            gatewayTowardsCH = myCH_id;
+//            break;
+//        }
+//    }
+//
+//    Point gatewayPos = allNodesPositions[gatewayTowardsCH];
+//
+//    for (const auto& member : cellMembers) {
+//        if (member.id == gatewayTowardsCH) {
+//            intraCellRoutingTable[member.id] = -1;
+//            continue;
+//        }
+//
+//        int bestHop = -1;
+//        double minDistanceToGatewaySq = -1.0;
+//        for (const auto& neighbor : member.neighbors) {
+//            if (neighbor.cellId == myCellId) {
+//                double distSq;
+//                if (neighbor.id == myCH_id) distSq = 0.0;
+//
+//                distSq = pow(allNodesPositions[neighbor.id].x - gatewayPos.x, 2) +
+//                                pow(allNodesPositions[neighbor.id].y - gatewayPos.y, 2);
+//
+//                if (bestHop == -1 || distSq < minDistanceToGatewaySq) {
+//                    minDistanceToGatewaySq = distSq;
+//                    bestHop = neighbor.id;
+//                }
+//            }
+//        }
+//
+//        intraCellRoutingTable[member.id] = bestHop;
+//
+//        if (bestHop != -1) {
+//            announceRoutingTree(member.id, bestHop);
+//        } else {
+//            trace() << "  WARNING: Node " << member.id << " has no neighbors in this cell to forward packets.";
+//        }
+//    }
+//
+//    int bestHopForCL = -1;
+//    double minDistanceForCLSq = -1.0;
+//
+//    for (const auto& neighbor : neighborTable) {
+//         if (neighbor.cellId == myCellId) {
+//            double distSq = pow(neighbor.x - gatewayPos.x, 2) +
+//                            pow(neighbor.y - gatewayPos.y, 2);
+//
+//            if (bestHopForCL == -1 || distSq < minDistanceForCLSq) {
+//                minDistanceForCLSq = distSq;
+//                bestHopForCL = neighbor.id;
+//            }
+//        }
+//    }
+//
+//    myNextHopId = bestHopForCL;
+//
+//    if (myNextHopId != -1) {
+//         trace() << "[ROUTING] " << self << " to "<< myNextHopId;
+//    } else {
+//         trace() << "  WARNING: I (CL) have no intra-cell neighbors to forward packets.";
+//    }
 }
 
 void CellularRouting::announceRoutingTable()
