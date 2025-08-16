@@ -71,8 +71,10 @@ struct NCLConfirmInfo{
 };
 
 struct RoutingUpdateInfo{
-    int from;
-    int to;
+    int nodeId;
+    int fromCell;
+    int toCell;
+    int nextHop;
 }
 
 packet CellularRoutingPacket extends RoutingPacket {
@@ -86,6 +88,6 @@ packet CellularRoutingPacket extends RoutingPacket {
     LinkRequestInfo linkRequestData;
     CLCommandInfo clCommandData;
     NCLConfirmInfo nclCommandData;
-    RoutingUpdateInfo routingUpdateData;
+    RoutingUpdateInfo routingUpdateData[7];
     int nextHopId; 
 };

@@ -102,6 +102,9 @@ struct CellData {
     map<int, int> intraCellRoutingTable;
 };
 
+struct NodeRoutingUpdateInfo {
+    RoutingUpdateInfo routingInfo[7];
+};
 
 class CellularRouting : public VirtualRouting {
  private:
@@ -127,6 +130,12 @@ class CellularRouting : public VirtualRouting {
     vector<CellMemberRecord> cellMembers;
     int gatewayTowardsCH = -1;
     int myNextHopId = -1;
+
+    int neighborCells[6] = {-1, -1, -1, -1, -1, -1}; 
+    int cellGateways[6] = {-1, -1, -1, -1, -1, -1};
+    int neighborCellGateways[6] = {-1, -1, -1, -1, -1, -1};
+
+    vector<NodeRoutingUpdateInfo> routingUpdates;
 
     map<int, LinkRequestState> pendingLinkRequests;
     int nextTimerIndex;
