@@ -27,10 +27,11 @@ enum CellularRoutingTimers {
     PRECALCULATE_TIMERS = 0,
     STATE_0,
     SEND_HELLO_TIMER,
+    HELLO_TIMEOUT,
     CL_ELECTION_TIMER,
     CL_CONFIRMATION_TIMER,
     GATEWAY_SELECTION_TIMER,
-
+    CL_CALCULATION_TIMER,
     RECONFIGURATION_TIMER,
     CL_ANNOUNCEMENT_TIMER,
     CONFIRMATION_SENDER_TIMER,
@@ -121,7 +122,7 @@ class CellularRouting : public VirtualRouting {
     double clFitnessScore = -1;
 
     vector<NeighborRecord> neighborTable;
-    map<int, int> intraCellRoutingTable;
+    map <int, map<int, int>> intraCellRoutingTable; // <node, <next-cell, next-hop>>
     map<int, int> interCellRoutingTable;
     vector<CellMemberRecord> cellMembers;
     int gatewayTowardsCH = -1;
@@ -142,6 +143,7 @@ class CellularRouting : public VirtualRouting {
 
     Point calculateCellCenter(int cell_id);
     void calculateCellInfo();
+    void forwardPacket(CellularRoutingPacket* pkt, int nextHopId);
     void sendHelloPacket();
     void handleHelloPacket(CellularRoutingPacket* pkt);
     void calculateFitnessScore();

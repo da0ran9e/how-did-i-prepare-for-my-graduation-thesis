@@ -51,15 +51,15 @@ void CellularRouting::startup()
 
     g_nodeDataList.push_back(nodeData);
 
-    trace() << nodeData.id << " (" << nodeData.x << ", " << nodeData.y
-            << ") - " << nodeData.role << " <" << nodeData.cellId << "> - {" << nodeData.color << "}"
-            << " - CL: " << nodeData.clId << " - CH: " << nodeData.chId << " - Next Hop: " << nodeData.nextHopId
-            << " - Neighbors: " << nodeData.neighbors.size();
-
-            if (!g_isPrecalculated){
-        g_isPrecalculated = true;
-        setTimer(PRECALCULATE_TIMERS, 20);
-    }
+    // trace() << nodeData.id << " (" << nodeData.x << ", " << nodeData.y
+    //         << ") - " << nodeData.role << " <" << nodeData.cellId << "> - {" << nodeData.color << "}"
+    //         << " - CL: " << nodeData.clId << " - CH: " << nodeData.chId << " - Next Hop: " << nodeData.nextHopId
+    //         << " - Neighbors: " << nodeData.neighbors.size();
+    trace() << nodeData.id << " (" << nodeData.x << ", " << nodeData.y << ")";
+        if (!g_isPrecalculated){
+            g_isPrecalculated = true;
+            setTimer(PRECALCULATE_TIMERS, 20);
+        }
 
 
     // Set initial timer for STATE_0
@@ -77,13 +77,7 @@ void CellularRouting::timerFiredCallback(int index)
 
         case STATE_0:
             setTimer(SEND_HELLO_TIMER, helloInterval);
-            calculateFitnessScore();
-            //setTimer(CL_ELECTION_TIMER, clElectionDelayInterval + fitnessScore*10);
-            // setTimer(CL_CONFIRMATION_TIMER, uniform(0, 10));
-            // setTimer(GATEWAY_SELECTION_TIMER, uniform(0, 10));
-            // setTimer(ROUTING_TREE_CALCULATION_TIMER, uniform(0, 10));
-            // setTimer(ROUTING_TABLE_ANNOUNCEMENT_TIMER, uniform(0, 10));
-            // setTimer(FINALIZE_ROUTING_TIMER, uniform(0, 10));
+            setTimer(HELLO_TIMEOUT, helloInterval * 6); 
             break;
 
         case SEND_HELLO_TIMER:
@@ -91,11 +85,20 @@ void CellularRouting::timerFiredCallback(int index)
             setTimer(SEND_HELLO_TIMER, helloInterval);
             break;
 
-        case CL_ELECTION_TIMER:
+        case HELLO_TIMEOUT:
+            cancelTimer(SEND_HELLO_TIMER);
             calculateFitnessScore();
+            
+            break;
+
+        case CL_ELECTION_TIMER:
+            myRole = CELL_LEADER;
+            setTimer(CL_CALCULATION_TIMER, uniform(300, 400));
+            sendCLAnnouncement();
             break;
 
         case CL_CONFIRMATION_TIMER:
+            trace() << "Sending CL Confirmation to " << myCL_id;
             sendCLConfirmationPacket();
             break;
 
@@ -104,41 +107,13 @@ void CellularRouting::timerFiredCallback(int index)
                 gatewaySelection();
             }
             break;
-
+        case CL_CALCULATION_TIMER:
+            if (myRole == CELL_LEADER) {
+                calculateRoutingTree();
+            }
+            break;
 
     }
-
-    // case CL_ELECTION_TIMER:
-        // calculateFitnessScore();
-        // start CL_ADVERTISING_TIMER base on fitness score
-
-    // case CL_ADVERTISING_TIMER:
-        // sendCLAnnouncement();
-
-    // case CL_CONFIRMATION_TIMER:
-        // if not CL: sendCLConfirmationPacket();
-
-    // case GATEWAY_SELECTION_TIMER:
-        // if CL: gatewaySelection();
-
-    // case ROUTING_TREE_CALCULATION_TIMER:
-        // if CL: calculateRoutingTree();
-
-    // case ROUTING_TABLE_ANNOUNCEMENT_TIMER:
-        // if CL: announceRoutingTable();
-
-    // case FINALIZE_ROUTING_TIMER:
-        // if CL: finalizeRouting();
-
-    // case STAGE_1:
-        // start the CH_ADVERTISING_TIMER
-        // start the CH_ELECTION_TIMER
-
-    // case CH_ADVERTISING_TIMER:
-        // sendCHAnnouncement();
-
-    // case CH_ELECTION_TIMER:
-        // if CL: sellectClusterHead();
 }
 
 double CellularRouting::calculateDistance(double x1, double y1, double x2, double y2) {
@@ -294,9 +269,9 @@ void CellularRouting::PrecalculateSimulationResults()
         }
     }
     //trace next hop IDs
-    for (const auto& nodeData : g_nodeDataList) {
-        trace() << "Node ID: " << nodeData.id << ", Next Hop ID: " << nodeData.nextHopId;
-    }
+    // for (const auto& nodeData : g_nodeDataList) {
+    //     trace() << "Node ID: " << nodeData.id << ", Next Hop ID: " << nodeData.nextHopId;
+    // }
 
     // calculate intra-cell routing table for each cell gateways and CL
     for (auto& cellData : g_cellDataList) {
@@ -354,10 +329,10 @@ void CellularRouting::PrecalculateSimulationResults()
                                 g_routingTable[member.id][neighbor.cellId] = bestNextHopId;
                             }
                         }
-                        trace() << "Intra-cell routing: member " << member.id
-                                << " → cell " << neighbor.cellId
-                                << " via next hop " << g_routingTable[member.id][neighbor.cellId]
-                                << " (gateway " << gatewayId << ")";
+                        // trace() << "Intra-cell routing: member " << member.id
+                        //         << " → cell " << neighbor.cellId
+                        //         << " via next hop " << g_routingTable[member.id][neighbor.cellId]
+                        //         << " (gateway " << gatewayId << ")";
                     }
                 }
             }
@@ -415,9 +390,9 @@ void CellularRouting::PrecalculateSimulationResults()
                     g_routingTable[member.id][cellData.cellId] = bestNextHopId;
                 }
             }
-            trace() << "Intra-cell routing: member " << member.id
-                    << " → cell " << cellData.cellId
-                    << " via next hop " << g_routingTable[member.id][cellData.cellId];
+            // trace() << "Intra-cell routing: member " << member.id
+            //         << " → cell " << cellData.cellId
+            //         << " via next hop " << g_routingTable[member.id][cellData.cellId];
         }
     }
 }
@@ -428,7 +403,7 @@ Point CellularRouting::calculateCellCenter(int cell_id) {
 
     Point center;
     center.x = cellRadius * (sqrt(3.0) * q + sqrt(3.0) / 2.0 * r);
-    center.y = cellRadius * (3.0 / 2.0 * r);
+    center.y = cellRadius * (3.0 / 2.0 * r); 
 
     return center;
 }
@@ -452,11 +427,13 @@ void CellularRouting::fromMacLayer(cPacket * pkt, int srcMacAddress, double rssi
         }
 
         case CL_ANNOUNCEMENT: {
+            //trace() << "Received CL Announcement from " << netPacket->getSource();
             handleCLAnnouncementPacket(netPacket);
             break;
         }
 
         case CL_CONFIRMATION: {
+            //trace() << "Received CL Confirmation from " << netPacket->getSource();
             handleCLConfirmationPacket(netPacket);
             break;
         }
@@ -531,6 +508,13 @@ void CellularRouting::handleHelloPacket(CellularRoutingPacket* pkt)
     newNeighbor.cellId = helloData.cellId;
     neighborTable.push_back(newNeighbor);
 
+    // trace() << "New neighbor discovered: " << newNeighbor.id
+    //         << " at (" << newNeighbor.x << ", " << newNeighbor.y
+    //         << ") with cell ID: " << newNeighbor.cellId;
+}
+
+void CellularRouting::calculateFitnessScore()
+{
     // rate the neighborTable to the pre-calculated neighbors in g_nodeDataList
     int rightCount = 0;
     int errorCount = 0;
@@ -552,19 +536,36 @@ void CellularRouting::handleHelloPacket(CellularRoutingPacket* pkt)
             trace() << "Neighbor Table Rating: " << rightCount << "/" << nodeData.neighbors.size() << " right, " << errorCount << " errors";
         }
     }
-}
-
-void CellularRouting::calculateFitnessScore()
-{
     // Calculate fitness score based on id, energy, distance, etc.
     // Or just let the application layer handle it
     Point cellCenter = calculateCellCenter(myCellId);
-    double distanceToCenter = sqrt(pow(myX - cellCenter.x, 2) + pow(myY - cellCenter.y, 2));
+    double distanceToCenter = calculateDistance(myX, myY, cellCenter.x, cellCenter.y);
     fitnessScore = 1.0 / (1.0 + distanceToCenter);
+
+    int bestNeighborId = -1;
+    double bestNeighborScore = -1;
+    for (const auto& neighbor : neighborTable) {
+        if (neighbor.cellId != myCellId) {
+            continue; 
+        }
+        double neighborDistance = calculateDistance(cellCenter.x, cellCenter.y, neighbor.x, neighbor.y);
+        double neighborFitness = 1.0 / (1.0 + neighborDistance);
+        if (neighborFitness > bestNeighborScore) {
+            bestNeighborScore = neighborFitness;
+            bestNeighborId = neighbor.id;
+        }
+    }
+    if (bestNeighborScore < fitnessScore) {
+        // If the best neighbor's score is better than mine, I should consider it
+        setTimer(CL_ELECTION_TIMER, clElectionDelayInterval + fitnessScore*100);
+    
+    }
 }
 
 void CellularRouting::sendCLAnnouncement()
 {
+    // trace() << "Node " << self
+    //        << " sending CL Announcement: " << fitnessScore;
     CellularRoutingPacket* pkt = new CellularRoutingPacket("CL Announcement", NETWORK_LAYER_PACKET);
     pkt->setPacketType(CL_ANNOUNCEMENT);
     CLAnnouncementInfo newCLAnnouncementInfo;
@@ -576,20 +577,26 @@ void CellularRouting::sendCLAnnouncement()
     for (const auto& neighbor : neighborTable) {
            int neighborId = neighbor.id;
            CellularRoutingPacket* pkt_for_neighbor = pkt->dup();
+            pkt_for_neighbor->setTtl(1);
            pkt_for_neighbor->setSource(SELF_NETWORK_ADDRESS);
            std::stringstream dest_addr;
            dest_addr << neighborId;
            pkt_for_neighbor->setDestination(dest_addr.str().c_str());
            toMacLayer(pkt_for_neighbor, neighborId);
+        //    trace() << "Sent CL Announcement to neighbor " << neighborId
+        //             << " with fitness score: " << fitnessScore;
     }
 }
 
 void CellularRouting::handleCLAnnouncementPacket(CellularRoutingPacket* pkt)
 {
-
     if (myCellId != pkt->getClAnnouncementData().cellId) {
         return;
     }
+    // trace() << "Node " << self
+    //        << " received CL Announcement from " << pkt->getSource()
+    //        << " with fitness score: " << pkt->getClAnnouncementData().fitnessScore;
+
     int announcerId = atoi(pkt->getSource());
     // make comparisons with my best fitness score
     // If I have a worse score, cancel my CL_ADVERTISING_TIMER if running
@@ -600,19 +607,22 @@ void CellularRouting::handleCLAnnouncementPacket(CellularRoutingPacket* pkt)
     }
 
     // Forward the packet to other cell members
-    if (pkt->getTtl() > 0) {
-        CellularRoutingPacket* fwdPkt = pkt->dup();
-        fwdPkt->setTtl(1);
-        fwdPkt->setSource(SELF_NETWORK_ADDRESS);
-        for (const auto& neighbor : neighborTable) {
-            std::stringstream dest_addr;
-            dest_addr << neighbor.id;
-            fwdPkt->setDestination(dest_addr.str().c_str());
-            toMacLayer(fwdPkt, neighbor.id);
-        }
-    }
+    // if (pkt->getTtl() >= 0) {
 
-    setTimer(CL_CONFIRMATION_TIMER, 50);
+    //     for (const auto& neighbor : neighborTable) {
+    //         if (neighbor.id == announcerId) {
+    //             continue; 
+    //         }
+    //         CellularRoutingPacket* fwdPkt = pkt->dup();
+    //         fwdPkt->setSource(SELF_NETWORK_ADDRESS);
+    //         std::stringstream dest_addr;
+    //         dest_addr << neighbor.id;
+    //         fwdPkt->setDestination(dest_addr.str().c_str());
+    //         toMacLayer(fwdPkt, neighbor.id);
+    //     }
+    // }
+
+    setTimer(CL_CONFIRMATION_TIMER, uniform(100, 200));
 }
 
 void CellularRouting::sendCLConfirmationPacket()
@@ -654,16 +664,15 @@ void CellularRouting::sendCLConfirmationPacket()
         }
         if (!isCLInRange) {
             for (const auto& neighbor : neighborTable) {
-                confirmPkt->setSource(SELF_NETWORK_ADDRESS);
+                CellularRoutingPacket* fwdPkt = confirmPkt->dup();
+                fwdPkt->setSource(SELF_NETWORK_ADDRESS);
                 std::stringstream dest_addr;
                 dest_addr << neighbor.id;
-                confirmPkt->setDestination(dest_addr.str().c_str());
-                confirmPkt->setTtl(1);
-                toMacLayer(confirmPkt, neighbor.id);
+                fwdPkt->setDestination(dest_addr.str().c_str());
+                fwdPkt->setTtl(1);
+                toMacLayer(fwdPkt, neighbor.id);
             }
         }
-
-        toMacLayer(confirmPkt, myCL_id);
     }
 }
 
@@ -676,6 +685,12 @@ void CellularRouting::handleCLConfirmationPacket(CellularRoutingPacket* pkt)
         int senderId = senderInfo.nodeId;
 
         if (cellMembers.empty()) {
+            CellMemberRecord myself;
+            myself.id = self;
+            myself.x = myX;
+            myself.y = myY;
+            myself.neighbors = neighborTable;
+            cellMembers.push_back(myself);
             setTimer(CL_CONFIRMATION_TIMER, 200);
         }
 
@@ -716,6 +731,7 @@ void CellularRouting::handleCLConfirmationPacket(CellularRoutingPacket* pkt)
             toMacLayer(fwdPkt, myCL_id);
         }
     }
+    trace() << "Received CL Confirmation from " << pkt->getSource();
 }
 
 void CellularRouting::gatewaySelection()
@@ -760,79 +776,244 @@ void CellularRouting::handleLinkConfirmationPacket(CellularRoutingPacket* pkt)
 
 void CellularRouting::calculateRoutingTree()
 {
+    // rate cell members
+    int rightCount = 0;
+    int errorCount = 0;
+    for (const auto& gCell : g_cellDataList){
+        if (gCell.cellId == myCellId) {
+            for (const auto& member : cellMembers) {
+                bool found = false;
+                for (const auto& gmember : gCell.members) {
+                    if (gmember.id == member.id) {
+                        found = true;
+                        rightCount++;
+                    }
+                }
+                if (!found) {
+                    errorCount++;
+                }
+            }
+            trace() << "Neighbor Table Rating for cell " << myCellId << ": " << rightCount << "/" << gCell.members.size() << " right, " << errorCount << " errors";
+        }
+    }
+
     // Calculate the intra-cell routing trees with CGWs and CL are roots
     // all members should have a routing table entry to every CGW and CL
     // Or just let the application layer handle it
-//    if (!amI_CL) return;
-//
-//    if (gatewayTowardsCH == -1) {
-//        gatewayTowardsCH = myCH_id;
-//    }
-//
-//    for (const auto& member : cellMembers) {
-//        if (member.id == myCH_id) {
-//            gatewayTowardsCH = myCH_id;
-//            break;
-//        }
-//    }
-//
-//    Point gatewayPos = allNodesPositions[gatewayTowardsCH];
-//
-//    for (const auto& member : cellMembers) {
-//        if (member.id == gatewayTowardsCH) {
-//            intraCellRoutingTable[member.id] = -1;
-//            continue;
-//        }
-//
-//        int bestHop = -1;
-//        double minDistanceToGatewaySq = -1.0;
-//        for (const auto& neighbor : member.neighbors) {
-//            if (neighbor.cellId == myCellId) {
-//                double distSq;
-//                if (neighbor.id == myCH_id) distSq = 0.0;
-//
-//                distSq = pow(allNodesPositions[neighbor.id].x - gatewayPos.x, 2) +
-//                                pow(allNodesPositions[neighbor.id].y - gatewayPos.y, 2);
-//
-//                if (bestHop == -1 || distSq < minDistanceToGatewaySq) {
-//                    minDistanceToGatewaySq = distSq;
-//                    bestHop = neighbor.id;
-//                }
-//            }
-//        }
-//
-//        intraCellRoutingTable[member.id] = bestHop;
-//
-//        if (bestHop != -1) {
-//            announceRoutingTree(member.id, bestHop);
-//        } else {
-//            trace() << "  WARNING: Node " << member.id << " has no neighbors in this cell to forward packets.";
-//        }
-//    }
-//
-//    int bestHopForCL = -1;
-//    double minDistanceForCLSq = -1.0;
-//
-//    for (const auto& neighbor : neighborTable) {
-//         if (neighbor.cellId == myCellId) {
-//            double distSq = pow(neighbor.x - gatewayPos.x, 2) +
-//                            pow(neighbor.y - gatewayPos.y, 2);
-//
-//            if (bestHopForCL == -1 || distSq < minDistanceForCLSq) {
-//                minDistanceForCLSq = distSq;
-//                bestHopForCL = neighbor.id;
-//            }
-//        }
-//    }
-//
-//    myNextHopId = bestHopForCL;
-//
-//    if (myNextHopId != -1) {
-//         trace() << "[ROUTING] " << self << " to "<< myNextHopId;
-//    } else {
-//         trace() << "  WARNING: I (CL) have no intra-cell neighbors to forward packets.";
-//    }
+
+    // calculate gateway candidates for each pair of cell
+    int neighborCell[6] = {-1, -1, -1, -1, -1, -1};
+    double bestDistance[6] = {9999.0, 9999.0, 9999.0, 9999.0, 9999.0, 9999.0};
+    int bestCGWId[6] = {-1, -1, -1, -1, -1, -1};
+    int bestNGWId[6] = {-1, -1, -1, -1, -1, -1};
+    
+
+    for (auto& member : cellMembers) {
+        for (auto& memberNeighbor : member.neighbors) {
+            if (memberNeighbor.cellId != myCellId){
+                int i=0;
+                for (i = 0; i < 6; ++i) {
+                    if (neighborCell[i] == -1 || neighborCell[i] == memberNeighbor.cellId) {
+                        neighborCell[i] = memberNeighbor.cellId;
+                        break;
+                    }
+                }
+                double distance = calculateDistance(member.x, member.y, memberNeighbor.x, memberNeighbor.y);
+                if (distance < bestDistance[i]) {
+                    bestDistance[i] = distance;
+                    bestCGWId[i] = member.id; 
+                    bestNGWId[i] = memberNeighbor.id; 
+                } else if (distance == bestDistance[i]) {
+                    if (member.id < bestCGWId[i]) {
+                        bestCGWId[i] = member.id;
+                        bestNGWId[i] = memberNeighbor.id;
+                    }
+                }
+            }
+        }
+    }
+    // rate gateway pair 
+    
+    // calculate intra-cell routing table for each cell gateways and CL
+    for (int i = 0; i < 6; ++i) {
+        if (neighborCell[i] != -1 && bestCGWId[i] != -1 && bestNGWId[i] != -1) {
+            int gatewayId = bestCGWId[i];
+            for (auto& member : cellMembers) {
+                intraCellRoutingTable[member.id][neighborCell[i]] = -1;
+                bool isGatewayInRange = false;
+                if (member.id != gatewayId) {
+                    for (const auto& neighborNode : member.neighbors) {
+                        if (neighborNode.id == gatewayId) {
+                            isGatewayInRange = true;
+                            intraCellRoutingTable[member.id][neighborCell[i]] = gatewayId;
+                        }
+                    }
+                    if (!isGatewayInRange) { // member -> neighborNode -> neighborOfNeighbor = gateway
+                        double minDistance = 9999.0;
+                        int bestNextHopId = -1;
+
+                        for (const auto& neighborNode : member.neighbors) {
+                            bool isNeighborInRange = false;
+                            for (const auto& neighborInCell : cellMembers) {
+                                if (neighborInCell.id == neighborNode.id) {
+                                    for (const auto& neighborOfNeighbor : neighborInCell.neighbors) {
+                                        if (neighborOfNeighbor.id == gatewayId) {
+                                            isNeighborInRange = true;
+                                            break; 
+                                        }
+                                    }
+                                }
+                            }
+                            
+                            if (isNeighborInRange) {
+                                // save the distance and choose the best next hop based on total distance from this node to neighbor to gateway
+                                auto it = std::find_if(cellMembers.begin(), cellMembers.end(), [gatewayId](const CellMemberRecord& m) { return m.id == gatewayId; });
+                                if (it != cellMembers.end()) {
+                                    double totalDistance = calculateDistance(member.x, member.y, neighborNode.x, neighborNode.y) + calculateDistance(neighborNode.x, neighborNode.y, it->x, it->y);
+                                    if (totalDistance < minDistance) {
+                                        minDistance = totalDistance;
+                                        bestNextHopId = neighborNode.id;
+                                    } 
+                                    else if (totalDistance == minDistance) {
+                                        if (neighborNode.id < bestNextHopId) {
+                                            bestNextHopId = neighborNode.id;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        if (bestNextHopId != -1) {
+                            intraCellRoutingTable[member.id][neighborCell[i]] = bestNextHopId;
+                        }
+                    }
+                    trace() << "Intra-cell routing: member " << member.id
+                        << " → cell " << neighborCell[i]
+                        << " via next hop " << intraCellRoutingTable[member.id][neighborCell[i]]
+                        << " (gateway " << gatewayId << ")";
+                }
+            }
+        }
+    }
+    // routing table for CL
+    for (const auto& member : cellMembers){
+        int currentCellId = myCellId;
+        if (member.id == self) {
+            continue;
+        }
+        intraCellRoutingTable[member.id][myCellId] = -1;
+        bool isCLInRange = false;
+        for (const auto& neighbor : member.neighbors) {
+            if (neighbor.id == self) {
+                isCLInRange = true;
+                break;
+            }
+        }
+        if (isCLInRange) {
+            intraCellRoutingTable[member.id][myCellId] = self;
+        } else {
+            double minDistance = 9999.0;
+            int bestNextHopId = -1;
+
+            for (const auto& neighbor : member.neighbors) {
+                // Check if the neighbor is in range of the CL
+                bool isNeighborInRange = false;
+                for (const auto& neighborNodeData : cellMembers) {
+                    if (neighborNodeData.id == neighbor.id) {
+                        for (const auto& neighborOfNeighbor : neighborNodeData.neighbors) {
+                            if (neighborOfNeighbor.id == self) {
+                                isNeighborInRange = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (isNeighborInRange) {
+                    // save the distance and choose the best next hop based on total distance from this node to neighbor to CL
+                    
+                    auto it = std::find_if(cellMembers.begin(), cellMembers.end(), [currentCellId](const CellMemberRecord& m) { return m.id == currentCellId; });
+                    double distanceNodeToNeighbor = sqrt(pow(member.x - neighbor.x, 2) + pow(member.y - neighbor.y, 2));
+                    double distanceNeighborToCL = sqrt(pow(neighbor.x - it->x, 2) + pow(neighbor.y - it->y, 2));
+                    double totalDistance = distanceNodeToNeighbor + distanceNeighborToCL;
+                    if (totalDistance < minDistance) {
+                        minDistance = totalDistance;
+                        bestNextHopId = neighbor.id;
+                    } else if (totalDistance == minDistance) {
+                        // If the distance is equal, prefer the one with lower ID
+                        if (neighbor.id < bestNextHopId) {
+                            bestNextHopId = neighbor.id;
+                        }
+                    }
+                }
+            }
+            if (bestNextHopId != -1) {
+                intraCellRoutingTable[member.id][myCellId] = bestNextHopId;
+            }
+        }
+        trace() << "Intra-cell routing: member " << member.id
+                << " → cell " << myCellId
+                << " via next hop " << intraCellRoutingTable[member.id][myCellId];
+    }
 }
+    
+    //     // routing table for CL
+    //     for (const auto& member : cellData.members) {
+    //         if (member.id == cellData.clId) {
+    //             continue;
+    //         }
+    //         g_routingTable[member.id][cellData.cellId] = -1;
+    //         bool isCLInRange = false;
+    //         for (const auto& neighbor : member.neighbors) {
+    //             if (neighbor.id == cellData.clId) {
+    //                 isCLInRange = true;
+    //                 break;
+    //             }
+    //         }
+    //         if (isCLInRange) {
+    //             g_routingTable[member.id][cellData.cellId] = cellData.clId;
+    //         } else {
+    //             double minDistance = 9999.0;
+    //             int bestNextHopId = -1;
+
+    //             for (const auto& neighbor : member.neighbors) {
+    //                 // Check if the neighbor is in range of the CL
+    //                 bool isNeighborInRange = false;
+    //                 for (const auto& neighborNodeData : g_nodeDataList) {
+    //                     if (neighborNodeData.id == neighbor.id) {
+    //                         for (const auto& neighborOfNeighbor : neighborNodeData.neighbors) {
+    //                             if (neighborOfNeighbor.id == cellData.clId) {
+    //                                 isNeighborInRange = true;
+    //                                 break;
+    //                             }
+    //                         }
+    //                     }
+    //                 }
+    //                 if (isNeighborInRange) {
+    //                     // save the distance and choose the best next hop based on total distance from this node to neighbor to CL
+    //                     auto it = std::find_if(cellData.members.begin(), cellData.members.end(), [cellData](const CellMemberRecord& m) { return m.id == cellData.clId; });
+    //                     double distanceNodeToNeighbor = sqrt(pow(member.x - neighbor.x, 2) + pow(member.y - neighbor.y, 2));
+    //                     double distanceNeighborToCL = sqrt(pow(neighbor.x - it->x, 2) + pow(neighbor.y - it->y, 2));
+    //                     double totalDistance = distanceNodeToNeighbor + distanceNeighborToCL;
+    //                     if (totalDistance < minDistance) {
+    //                         minDistance = totalDistance;
+    //                         bestNextHopId = neighbor.id;
+    //                     } else if (totalDistance == minDistance) {
+    //                         // If the distance is equal, prefer the one with lower ID
+    //                         if (neighbor.id < bestNextHopId) {
+    //                             bestNextHopId = neighbor.id;
+    //                         }
+    //                     }
+    //                 }
+    //             }
+    //             if (bestNextHopId != -1) {
+    //                 g_routingTable[member.id][cellData.cellId] = bestNextHopId;
+    //             }
+    //         }
+    //         // trace() << "Intra-cell routing: member " << member.id
+    //         //         << " → cell " << cellData.cellId
+    //         //         << " via next hop " << g_routingTable[member.id][cellData.cellId];
+    //     }
+    // }
+
 
 void CellularRouting::announceRoutingTable()
 {
