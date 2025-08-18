@@ -5,6 +5,8 @@
 #include "CellularRoutingPacket_m.h"
 #include <vector>
 #include <map>
+#include <queue>
+#include <utility>
 #include <cmath>
 #include <algorithm>
 
@@ -35,7 +37,10 @@ enum CellularRoutingTimers {
     RECONFIGURATION_TIMER,
     CL_ANNOUNCEMENT_TIMER,
     ROUTING_TABLE_UPDATE_TIMER,
+    FINALIZE_TIMER,
+    STATE_1,
     CONFIRMATION_SENDER_TIMER,
+    SEND_CELL_PACKET,
     CL_VOTE_CH,
     LINK_REQUEST_TIMEOUT,
     LINK_ESTABLISHED_CONFIRMATION,
@@ -138,6 +143,8 @@ class CellularRouting : public VirtualRouting {
 
     vector<NodeRoutingUpdateInfo> routingUpdates;
 
+    queue<pair<CellularRoutingPacket*, int>> cellPacketQueue;
+    int myCellPathToCH[100] = {-1};
     map<int, LinkRequestState> pendingLinkRequests;
     int nextTimerIndex;
 
@@ -174,6 +181,7 @@ class CellularRouting : public VirtualRouting {
     void handleRoutingTableAnnouncementPacket(CellularRoutingPacket* pkt);
     void finalizeRouting();
     void sendCHAnnouncement();
+    void sendCellPacket();
     void handleCHAnnouncementPacket(CellularRoutingPacket* pkt);
     void selectClusterHead();
 };

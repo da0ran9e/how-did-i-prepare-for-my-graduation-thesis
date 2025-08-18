@@ -65,6 +65,7 @@ void CellularRouting::startup()
     // Set initial timer for STATE_0
     setTimer(STATE_0, uniform(0, 10));
     // Set timer for STATE_1
+    setTimer(STATE_1, 1000);
 }
 
 void CellularRouting::timerFiredCallback(int index)
@@ -118,6 +119,20 @@ void CellularRouting::timerFiredCallback(int index)
             }
             break;
 
+        case FINALIZE_TIMER:
+            finalizeRouting();
+            break;
+
+        case STATE_1:
+            if (myCH_id == self) {
+                sendCHAnnouncement();
+            }
+            break;
+
+        case SEND_CELL_PACKET:
+            sendCellPacket();
+            setTimer(SEND_CELL_PACKET, uniform(1, 10));
+            break;
     }
 }
 
@@ -448,6 +463,12 @@ void CellularRouting::fromMacLayer(cPacket * pkt, int srcMacAddress, double rssi
             break;
         }
 
+        case CH_ANNOUNCEMENT_PACKET: {
+            //trace() << "Received CH Announcement from " << netPacket->getSource();
+            handleCHAnnouncementPacket(netPacket);
+            break;
+        }
+
         default: {
             trace() << "WARNING: Received unknown packet type.";
             break;
@@ -741,7 +762,7 @@ void CellularRouting::handleCLConfirmationPacket(CellularRoutingPacket* pkt)
             toMacLayer(fwdPkt, myCL_id);
         }
     }
-    trace() << "Received CL Confirmation from " << pkt->getSource();
+    //trace() << "Received CL Confirmation from " << pkt->getSource();
 }
 
 void CellularRouting::gatewaySelection()
@@ -803,7 +824,7 @@ void CellularRouting::calculateRoutingTree()
                     errorCount++;
                 }
             }
-            trace() << "Neighbor Table Rating for cell " << myCellId << ": " << rightCount << "/" << gCell.members.size() << " right, " << errorCount << " errors";
+            trace() << "Cell member Rating for cell " << myCellId << ": " << rightCount << "/" << gCell.members.size() << " right, " << errorCount << " errors";
         }
     }
 
@@ -1056,7 +1077,7 @@ void CellularRouting::sendRoutingTableAnnouncementPacket()
         routingUpdates.erase(routingUpdates.begin());
         toMacLayer(pkt, routingUpdateInfo[0].nodeId);
         setTimer(ROUTING_TABLE_UPDATE_TIMER, uniform(1, 10));
-        trace() << "Sent routing table announcement to " << routingUpdateInfo[0].nodeId;
+        //trace() << "Sent routing table announcement to " << routingUpdateInfo[0].nodeId;
     }
 }
 
@@ -1064,19 +1085,20 @@ void CellularRouting::handleRoutingTableAnnouncementPacket(CellularRoutingPacket
 {
     // If for me: Update my routing table based on the received announcement
     // If not for me: Forward the packet to the destination if in range
-    trace() << "Received routing table announcement from " << pkt->getSource();
+    // trace() << "Received routing table announcement from " << pkt->getSource();
     RoutingUpdateInfo routingUpdateInfo[7];
     for (int i=0; i<7; i++) {
         routingUpdateInfo[i] = pkt->getRoutingUpdateData(i);
-        trace() << "NEW update for node " << routingUpdateInfo[i].nodeId
-                 << ": from cell " << routingUpdateInfo[i].fromCell
-                 << " to cell " << routingUpdateInfo[i].toCell
-                 << " via next hop " << routingUpdateInfo[i].nextHop;
+        // trace() << "NEW update for node " << routingUpdateInfo[i].nodeId
+        //          << ": from cell " << routingUpdateInfo[i].fromCell
+        //          << " to cell " << routingUpdateInfo[i].toCell
+        //          << " via next hop " << routingUpdateInfo[i].nextHop;
 
         if (routingUpdateInfo[i].fromCell == myCellId) {
             intraCellRoutingTable[routingUpdateInfo[i].nodeId][routingUpdateInfo[i].toCell] = routingUpdateInfo[i].nextHop;
         }
     }
+    setTimer(FINALIZE_TIMER, uniform(1, 10));
 }
 
 void CellularRouting::finalizeRouting()
@@ -1087,13 +1109,91 @@ void CellularRouting::finalizeRouting()
 
 void CellularRouting::sendCHAnnouncement()
 {
+    trace() << "Sending CH Announcement from " << myCellId;
     // If I am the CH, send a CH announcement packet CL
+    CellularRoutingPacket* pkt = new CellularRoutingPacket("CH Announcement", NETWORK_LAYER_PACKET);
+    pkt->setPacketType(CH_ANNOUNCEMENT_PACKET);
+    pkt->setCellSource(myCellId);
+    pkt->setCellHopCount(1);
+    pkt->setCellDestination(-1);
+    pkt->setCellPath(0, myCellId);
+    pkt->setTtl(100);
+    pkt->setCellSent(myCellId);
+    CHAnnouncementInfo chInfo;
+    chInfo.chId = self;
+    pkt->setChAnnouncementData(chInfo);
+
+    for (int i=0; i<6; i++){
+        if (neighborCells[i] == -1) {
+            continue; 
+        }
+        CellularRoutingPacket* dupPkt = pkt->dup();
+        dupPkt->setCellNext(neighborCells[i]);
+        cellPacketQueue.push({dupPkt, neighborCells[i]});
+        trace() << "Queued CH Announcement for cell " << neighborCells[i]
+                 << " with CH ID " << chInfo.chId;
+    }
+    setTimer(SEND_CELL_PACKET, uniform(1, 10));
+}
+
+void CellularRouting::sendCellPacket()
+{
+    if (!cellPacketQueue.empty()) {
+        auto [pkt, nextCellId] = cellPacketQueue.front();
+        trace() << "Sending cell packet to " << nextCellId;
+        cellPacketQueue.pop();
+
+        pkt->setTtl(pkt->getTtl() - 1);
+        if (pkt->getTtl() <= 0) {
+            delete pkt;
+            return;
+        }
+
+        toMacLayer(pkt, intraCellRoutingTable[self][nextCellId]);
+    }
 }
 
 void CellularRouting::handleCHAnnouncementPacket(CellularRoutingPacket* pkt)
 {
     // If I am the CL, save my cell information to packet metadata
         // and forward the CH announcement to my cell members with destination as all neighbor cells
+
+    if (myRole == CELL_LEADER) {
+        int cellSource = pkt->getCellSource();
+        if (cellSource == myCellPathToCH[0]) return;
+        CHAnnouncementInfo chInfo = pkt->getChAnnouncementData();
+        int chId = chInfo.chId;
+        myCH_id = chId;
+        int hopCount = pkt->getCellHopCount();
+        for (int i = 0; i < hopCount; ++i) {
+            myCellPathToCH[i] = pkt->getCellPath(i);
+        }
+        int cellDestination = pkt->getCellDestination();
+        pkt->setCellHopCount(hopCount + 1);
+        pkt->setCellPath(hopCount, myCellId);
+        int cellSent = pkt->getCellSent();
+        pkt->setCellSent(myCellId);
+
+        if (cellDestination == -1) {
+            for (int i=0; i<6; i++) {
+                if (neighborCells[i] == -1 || neighborCells[i] == cellSent) {
+                    continue;
+                }
+                CellularRoutingPacket* dupPkt = pkt->dup();
+                dupPkt->setCellNext(neighborCells[i]);
+                cellPacketQueue.push({dupPkt, neighborCells[i]});
+            }
+        }
+        setTimer(SEND_CELL_PACKET, uniform(1, 10));
+    }
+
+    if (myRole != CELL_LEADER) {
+        int cellDestination = pkt->getCellDestination();
+        int cellNext = pkt->getCellNext();
+        CellularRoutingPacket* dupPkt = pkt->dup();
+        cellPacketQueue.push({dupPkt, cellNext});
+        setTimer(SEND_CELL_PACKET, uniform(1, 10));
+    }
 
     // If I am a cell member,
         // if the destination is our cell, forward the packet to my CL
