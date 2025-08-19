@@ -1093,7 +1093,7 @@ void CellularRouting::handleRoutingTableAnnouncementPacket(CellularRoutingPacket
         //          << ": from cell " << routingUpdateInfo[i].fromCell
         //          << " to cell " << routingUpdateInfo[i].toCell
         //          << " via next hop " << routingUpdateInfo[i].nextHop;
-
+        neighborCells[i] = routingUpdateInfo[i].toCell;
         if (routingUpdateInfo[i].fromCell == myCellId) {
             intraCellRoutingTable[routingUpdateInfo[i].nodeId][routingUpdateInfo[i].toCell] = routingUpdateInfo[i].nextHop;
         }
@@ -1103,8 +1103,24 @@ void CellularRouting::handleRoutingTableAnnouncementPacket(CellularRoutingPacket
 
 void CellularRouting::finalizeRouting()
 {
-    // Node has completed routing setup
-    // Send a final confirmation to CL
+    // Rate routing table 
+    int count = 0;
+    int rightCount = 0;
+    int wrongCount = 0;
+
+    for (int i=0; i<7; i++) {
+        if (neighborCells[i] == -1 || (neighborCells[i] == 0 &&  self == 0 && intraCellRoutingTable[self][neighborCells[i]] == 0)) {
+            continue;
+        }
+        count++;
+        if (intraCellRoutingTable[self][neighborCells[i]] == g_routingTable[self][neighborCells[i]]) {
+            rightCount++;
+        } else {
+            wrongCount++;
+        }
+    }
+
+    trace() << "Routing table finalized: correct" << rightCount << "/" << count << " wrong " << wrongCount;
 }
 
 void CellularRouting::sendCHAnnouncement()

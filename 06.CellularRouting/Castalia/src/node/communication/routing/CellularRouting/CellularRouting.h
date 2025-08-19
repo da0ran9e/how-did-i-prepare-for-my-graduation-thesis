@@ -137,7 +137,7 @@ class CellularRouting : public VirtualRouting {
     int gatewayTowardsCH = -1;
     int myNextHopId = -1;
 
-    int neighborCells[6] = {-1, -1, -1, -1, -1, -1}; 
+    int neighborCells[7] = {-1, -1, -1, -1, -1, -1}; 
     int cellGateways[6] = {-1, -1, -1, -1, -1, -1};
     int neighborCellGateways[6] = {-1, -1, -1, -1, -1, -1};
 
