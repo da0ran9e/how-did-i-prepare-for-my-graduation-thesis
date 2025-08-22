@@ -65,7 +65,7 @@ void CellularRouting::startup()
 
     // Set initial timer for STATE_0
     setTimer(STATE_0, uniform(0, 10));
-    // Set timer for STATE_1
+    // Set timer for STATE_1y
     setTimer(STATE_1, 1000);
 }
 
@@ -134,6 +134,10 @@ void CellularRouting::timerFiredCallback(int index)
         case SEND_CELL_PACKET:
             sendCellPacket();
             setTimer(SEND_CELL_PACKET, uniform(1, 10));
+            break;
+        
+        case ANNOUNCE_CELL_HOP_TIMER:
+            sendCellHopAnnouncementPacket();
             break;
     }
 }
@@ -468,6 +472,11 @@ void CellularRouting::fromMacLayer(cPacket * pkt, int srcMacAddress, double rssi
         case CH_ANNOUNCEMENT_PACKET: {
             //trace() << "Received CH Announcement from " << netPacket->getSource();
             handleCHAnnouncementPacket(netPacket);
+            break;
+        }
+
+        case ANNOUNCE_CELL_HOP: {
+            handleCellHopAnnouncementPacket(netPacket);
             break;
         }
 
@@ -1191,7 +1200,7 @@ void CellularRouting::handleCHAnnouncementPacket(CellularRoutingPacket* pkt)
         CHAnnouncementInfo chInfo = pkt->getChAnnouncementData();
         int chId = chInfo.chId;
         myCH_id = chId;
-        
+        selectClusterHead();
         int hopCount = pkt->getCellHopCount();
         for (int i = 0; i < hopCount; ++i) {
             myCellPathToCH[i] = pkt->getCellPath(i);
@@ -1200,6 +1209,7 @@ void CellularRouting::handleCHAnnouncementPacket(CellularRoutingPacket* pkt)
         pkt->setCellHopCount(hopCount + 1);
         pkt->setCellPath(hopCount, myCellId);
         int cellSent = pkt->getCellSent();
+        myNextCellHop = myCellPathToCH[hopCount - 1];
         pkt->setCellSent(myCellId);
         
         if (cellDestination == -1) {
@@ -1236,4 +1246,41 @@ void CellularRouting::selectClusterHead()
 {
     // select the closest CH
     // Or just let the application layer handle it
+
+    // Announce members about next cell hop
+    setTimer(ANNOUNCE_CELL_HOP_TIMER, uniform(1000, 1500));
 }
+
+void CellularRouting::sendCellHopAnnouncementPacket()
+{
+    if (myRole == CELL_LEADER) {
+        CellularRoutingPacket* pkt = new CellularRoutingPacket("CH Announcement", NETWORK_LAYER_PACKET);
+        pkt->setPacketType(ANNOUNCE_CELL_HOP);
+        pkt->setCellSource(myCellId);
+        pkt->setCellDestination(myCellId);
+        CellHopAnnouncementInfo pktInfo;
+        pktInfo.nextCell = myNextCellHop;
+        pkt->setCellHopAnnouncementData(pktInfo);
+        pkt->setSource(SELF_NETWORK_ADDRESS);
+        for (auto& member : cellMembers) {
+            if (member.id == self) {
+                continue; // Skip myself
+            }
+            CellularRoutingPacket* dupPkt = pkt->dup();
+            dupPkt->setDestination(std::to_string(member.id).c_str());
+            toMacLayer(dupPkt, member.id);
+            // trace() << "Sent cell hop announcement to member " << member.id
+            //          << " with next cell hop " << myNextCellHop;
+        }
+    }
+}
+
+void CellularRouting::handleCellHopAnnouncementPacket(CellularRoutingPacket* pkt)
+{
+    int nextCell = pkt->getCellHopAnnouncementData().nextCell;
+    if (nextCell != -1) {
+        myNextCellHop = nextCell;
+        //trace() << "Updated next cell hop to " << myNextCellHop;
+    }
+}
+

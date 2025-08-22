@@ -44,6 +44,7 @@ enum CellularRoutingTimers {
     CL_VOTE_CH,
     LINK_REQUEST_TIMEOUT,
     LINK_ESTABLISHED_CONFIRMATION,
+    ANNOUNCE_CELL_HOP_TIMER,
 };
 
 struct NeighborRecord {
@@ -145,6 +146,8 @@ class CellularRouting : public VirtualRouting {
 
     queue<pair<CellularRoutingPacket*, int>> cellPacketQueue;
     int myCellPathToCH[100] = {-1};
+    int myNextCellHop = -1;
+
     map<int, LinkRequestState> pendingLinkRequests;
     int nextTimerIndex;
 
@@ -184,6 +187,8 @@ class CellularRouting : public VirtualRouting {
     void sendCellPacket();
     void handleCHAnnouncementPacket(CellularRoutingPacket* pkt);
     void selectClusterHead();
+    void sendCellHopAnnouncementPacket();
+    void handleCellHopAnnouncementPacket(CellularRoutingPacket* pkt);
 };
 
 #endif //_CELLULARROUTING_H_

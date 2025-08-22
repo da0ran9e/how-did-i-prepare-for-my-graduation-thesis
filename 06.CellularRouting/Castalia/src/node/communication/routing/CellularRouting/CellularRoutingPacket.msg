@@ -18,6 +18,7 @@ enum CellularRoutingPacketType {
     ROUTING_TREE_UPDATE_PACKET = 10;
     CH_ANNOUNCEMENT_PACKET = 11;
     DATA_PACKET = 12;
+    ANNOUNCE_CELL_HOP = 13;
 };
 
 struct HelloInfo {
@@ -78,9 +79,13 @@ struct RoutingUpdateInfo{
     int nextHop;
 };
 
-struct CHAnnouncementInfo(){
+struct CHAnnouncementInfo{
     int chId;
 };
+
+struct CellHopAnnouncementInfo{
+    int nextCell;
+}
 
 packet CellularRoutingPacket extends RoutingPacket {
     int packetType @enum(CellularRoutingPacketType);
@@ -103,4 +108,5 @@ packet CellularRoutingPacket extends RoutingPacket {
     RoutingUpdateInfo routingUpdateData[7];
     CHAnnouncementInfo chAnnouncementData;
     int nextHopId; 
+    CellHopAnnouncementInfo cellHopAnnouncementData;
 };
