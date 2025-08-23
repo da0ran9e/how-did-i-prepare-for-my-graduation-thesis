@@ -19,6 +19,7 @@ enum CellularRoutingPacketType {
     CH_ANNOUNCEMENT_PACKET = 11;
     DATA_PACKET = 12;
     ANNOUNCE_CELL_HOP = 13;
+    SENSOR_DATA = 14;
 };
 
 struct HelloInfo {
@@ -85,7 +86,14 @@ struct CHAnnouncementInfo{
 
 struct CellHopAnnouncementInfo{
     int nextCell;
-}
+    int cellPath[100];
+};
+
+struct SensorData{
+    int dataId;
+    int sensorId;
+    int hopCount;
+};
 
 packet CellularRoutingPacket extends RoutingPacket {
     int packetType @enum(CellularRoutingPacketType);
@@ -96,6 +104,7 @@ packet CellularRoutingPacket extends RoutingPacket {
     int cellDestination;
     int cellHopCount;
     int cellPath[100];
+    int cellPathToDestination[100];
 
     int ttl;
     HelloInfo helloData;
@@ -109,4 +118,5 @@ packet CellularRoutingPacket extends RoutingPacket {
     CHAnnouncementInfo chAnnouncementData;
     int nextHopId; 
     CellHopAnnouncementInfo cellHopAnnouncementData;
+    SensorData sensorData;
 };

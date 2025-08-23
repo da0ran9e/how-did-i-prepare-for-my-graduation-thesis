@@ -45,6 +45,8 @@ enum CellularRoutingTimers {
     LINK_REQUEST_TIMEOUT,
     LINK_ESTABLISHED_CONFIRMATION,
     ANNOUNCE_CELL_HOP_TIMER,
+    SENSING_STATE,
+    COLOR_SCHEDULING_TIMER,
 };
 
 struct NeighborRecord {
@@ -122,6 +124,7 @@ class CellularRouting : public VirtualRouting {
 
     int myCellId;
     int myColor;
+    bool isInScheduling = false;
     NodeRole myRole;
     double myX, myY;
 
@@ -189,6 +192,8 @@ class CellularRouting : public VirtualRouting {
     void selectClusterHead();
     void sendCellHopAnnouncementPacket();
     void handleCellHopAnnouncementPacket(CellularRoutingPacket* pkt);
+    void sendSensorDataPacket();
+    void handleSensorDataPacket(CellularRoutingPacket* pkt);
 };
 
 #endif //_CELLULARROUTING_H_
