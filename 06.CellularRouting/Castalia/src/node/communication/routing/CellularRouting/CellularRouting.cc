@@ -62,9 +62,7 @@ void CellularRouting::startup()
             setTimer(PRECALCULATE_TIMERS, 20);
         }
 
-    setTimer(STATE_0, uniform(0, 10));
-    setTimer(STATE_1, 1000);
-    setTimer(SENSING_STATE, 3000);
+    setTimer(RECONFIGURATION_TIMER, 15000);
 }
 
 void CellularRouting::timerFiredCallback(int index)
@@ -150,6 +148,13 @@ void CellularRouting::timerFiredCallback(int index)
         case SENSING_STATE:
             sendSensorDataPacket();
             setTimer(SENSING_STATE, uniform(40, 150));
+            break;
+
+        case RECONFIGURATION_TIMER:
+            setTimer(STATE_0, uniform(0, 10));
+            setTimer(STATE_1, 1000);
+            setTimer(SENSING_STATE, 3000);
+            setTimer(RECONFIGURATION_TIMER, 15000);
             break;
     }
 }
@@ -493,6 +498,7 @@ void CellularRouting::fromMacLayer(cPacket * pkt, int srcMacAddress, double rssi
         }
 
         case SENSOR_DATA: {
+            //trace() << "Received sensor data from " << netPacket->getSource();
             handleSensorDataPacket(netPacket);
             break;
         }
@@ -1201,7 +1207,6 @@ void CellularRouting::sendCellPacket()
             bool isInTimeSlot = (phase >= myColor * timeSlot) && (phase < (myColor+1) * timeSlot);
 
             if (!isInTimeSlot) {
-                // Tính delay tới slot kế tiếp của màu mình
                 double nextStart = myColor * timeSlot;
                 if (phase >= nextStart) {
                     nextStart += cycle;
@@ -1209,13 +1214,12 @@ void CellularRouting::sendCellPacket()
                 double delay = nextStart - phase;
 
                 setTimer(SEND_CELL_PACKET, delay);
-                return; // không pop, giữ nguyên gói
+                return; 
             }
 
-            // Nếu đúng slot thì gửi
-            trace() << "Sending sensor data from " << self << " Color: " << myColor;
+            // trace() << "Sending sensor data from " << self << " Color: " << myColor;
 
-            cellPacketQueue.pop(); // chỉ pop khi gửi thành công
+            cellPacketQueue.pop(); 
 
             pkt->setTtl(pkt->getTtl() - 1);
             pkt->setSource(SELF_NETWORK_ADDRESS);
@@ -1350,6 +1354,7 @@ void CellularRouting::sendSensorDataPacket(){
     sensorData.dataId = simTime().dbl();
     sensorData.sensorId = self;
     sensorData.hopCount = 0;
+    pkt->setTtl(100);
     pkt->setSensorData(sensorData);
     pkt->setSource(SELF_NETWORK_ADDRESS);
     cellPacketQueue.push({pkt, myNextCellHop});
