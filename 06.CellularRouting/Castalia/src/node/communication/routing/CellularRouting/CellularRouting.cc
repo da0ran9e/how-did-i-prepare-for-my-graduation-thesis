@@ -6,6 +6,8 @@ static vector<NodeData> g_nodeDataList;
 static vector<CellData> g_cellDataList;
 static bool g_isPrecalculated = false;
 static map<int, map<int, int>> g_routingTable; // <nodeId, <cellId, nextHopId>>
+static int g_newCH[3] = {-1, -1, -1};
+static int g_lifetime = 0;
 
 void CellularRouting::startup()
 {
@@ -62,7 +64,7 @@ void CellularRouting::startup()
             setTimer(PRECALCULATE_TIMERS, 20);
         }
 
-    setTimer(RECONFIGURATION_TIMER, 15000);
+    setTimer(RECONFIGURATION_TIMER, 0);
 }
 
 void CellularRouting::timerFiredCallback(int index)
@@ -132,6 +134,11 @@ void CellularRouting::timerFiredCallback(int index)
             setTimer(SEND_CELL_PACKET, uniform(1, 10));
             break;
 
+        case SEND_ANNOUNCEMENT_QUEUE:
+            sendAnnouncementQueue();
+            setTimer(SEND_ANNOUNCEMENT_QUEUE, uniform(1, 10));
+            break;
+
         case ANNOUNCE_CELL_HOP_TIMER:
             sendCellHopAnnouncementPacket();
             break;
@@ -151,6 +158,18 @@ void CellularRouting::timerFiredCallback(int index)
             break;
 
         case RECONFIGURATION_TIMER:
+            if (g_lifetime > 0) {
+                if (myCH_id == self) {
+                    myCH_id = -1;
+                    myRole = NORMAL_NODE;
+                }
+                if (self == g_newCH[0] || self == g_newCH[1] || self == g_newCH[2]) {
+                    myCH_id = self;
+                    myRole = CLUSTER_HEAD;
+                    trace() << "#CH " << self;
+                }
+            }
+            
             setTimer(STATE_0, uniform(0, 10));
             setTimer(STATE_1, 1000);
             setTimer(SENSING_STATE, 3000);
@@ -165,6 +184,10 @@ double CellularRouting::calculateDistance(double x1, double y1, double x2, doubl
 
 void CellularRouting::PrecalculateSimulationResults()
 {
+    g_newCH[0] = uniform(0, 100);
+    g_newCH[1] = uniform(0, 100);
+    g_newCH[2] = uniform(0, 100);
+
     // Calculate node neighbors
     for (auto& nodeData : g_nodeDataList) {
         for (auto& otherNodeData : g_nodeDataList) {
@@ -1186,17 +1209,40 @@ void CellularRouting::sendCHAnnouncement()
         }
         CellularRoutingPacket* dupPkt = pkt->dup();
         dupPkt->setCellNext(neighborCells[i]);
-        cellPacketQueue.push({dupPkt, neighborCells[i]});
+        announcementQueue.push({dupPkt, neighborCells[i]});
         // trace() << "Queued CH Announcement for cell " << neighborCells[i]
         //          << " with CH ID " << chInfo.chId;
     }
-    setTimer(SEND_CELL_PACKET, uniform(1, 10));
+    setTimer(SEND_ANNOUNCEMENT_QUEUE, uniform(1, 10));
+}
+
+void CellularRouting::sendAnnouncementQueue()
+{
+    if (!announcementQueue.empty()) {
+        auto [pkt, nextCellId] = announcementQueue.front();
+        trace() << "Sending cell packet to " << nextCellId;
+        announcementQueue.pop();
+
+        pkt->setTtl(pkt->getTtl() - 1);
+        if (pkt->getTtl() <= 0) {
+            delete pkt;
+            return;
+        }
+
+        toMacLayer(pkt, intraCellRoutingTable[self][nextCellId]);
+    }
 }
 
 void CellularRouting::sendCellPacket()
 {
     if (!cellPacketQueue.empty()) {
         auto [pkt, nextCellId] = cellPacketQueue.front();
+        if (nextCellId == -1) {
+            cellPacketQueue.pop();
+            delete pkt;
+            setTimer(SEND_CELL_PACKET, uniform(1, 10));
+            return;
+        }
 
         if (pkt->getPacketType() == SENSOR_DATA) {
             double timeNow = simTime().dbl();
@@ -1214,12 +1260,12 @@ void CellularRouting::sendCellPacket()
                 double delay = nextStart - phase;
 
                 setTimer(SEND_CELL_PACKET, delay);
-                return; 
+                return;
             }
 
             // trace() << "Sending sensor data from " << self << " Color: " << myColor;
 
-            cellPacketQueue.pop(); 
+            cellPacketQueue.pop();
 
             pkt->setTtl(pkt->getTtl() - 1);
             pkt->setSource(SELF_NETWORK_ADDRESS);
@@ -1227,8 +1273,9 @@ void CellularRouting::sendCellPacket()
                 delete pkt;
                 return;
             }
-
-            toMacLayer(pkt, intraCellRoutingTable[self][nextCellId]);
+            int nextHopId = intraCellRoutingTable[self][nextCellId];
+            // trace() << "Forwarding packet to " << nextHopId;
+            toMacLayer(pkt, nextHopId);
         }
     }
 }
@@ -1268,18 +1315,18 @@ void CellularRouting::handleCHAnnouncementPacket(CellularRoutingPacket* pkt)
                 }
                 CellularRoutingPacket* dupPkt = pkt->dup();
                 dupPkt->setCellNext(neighborCells[i]);
-                cellPacketQueue.push({dupPkt, neighborCells[i]});
+                announcementQueue.push({dupPkt, neighborCells[i]});
             }
         }
-        setTimer(SEND_CELL_PACKET, uniform(1, 10));
+        setTimer(SEND_ANNOUNCEMENT_QUEUE, uniform(1, 10));
     }
 
     if (myRole != CELL_LEADER) {
         int cellDestination = pkt->getCellDestination();
         int cellNext = pkt->getCellNext();
         CellularRoutingPacket* dupPkt = pkt->dup();
-        cellPacketQueue.push({dupPkt, cellNext});
-        setTimer(SEND_CELL_PACKET, uniform(1, 10));
+        announcementQueue.push({dupPkt, cellNext});
+        setTimer(SEND_ANNOUNCEMENT_QUEUE, uniform(1, 10));
     }
 
     // If I am a cell member,
@@ -1347,9 +1394,9 @@ void CellularRouting::sendSensorDataPacket(){
     pkt->setPacketType(SENSOR_DATA);
     pkt->setCellSource(myCellId);
     pkt->setCellDestination(myCellPathToCH[0]);
-    for (int i = 0; myCellPathToCH[i] != -1 && i < 99; ++i) {
-        pkt->setCellPathToDestination(i, myCellPathToCH[i]);
-    }
+//    for (int i = 0; myCellPathToCH[i] != -1 && i < 99; ++i) {
+//        pkt->setCellPathToDestination(i, myCellPathToCH[i]);
+//    }
     SensorData sensorData;
     sensorData.dataId = simTime().dbl();
     sensorData.sensorId = self;
@@ -1389,6 +1436,6 @@ void CellularRouting::handleSensorDataPacket(CellularRoutingPacket* pkt){
         }
     }
     if (myCH_id == self) {
-        trace() << "Processing sensor data from  " << sensorData.sensorId;
+        trace() << "Processing sensor data from  " << sensorData.sensorId << " hop count " << sensorData.hopCount;
     }
 }

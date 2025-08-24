@@ -41,6 +41,7 @@ enum CellularRoutingTimers {
     STATE_1,
     CONFIRMATION_SENDER_TIMER,
     SEND_CELL_PACKET,
+    SEND_ANNOUNCEMENT_QUEUE,
     CL_VOTE_CH,
     LINK_REQUEST_TIMEOUT,
     LINK_ESTABLISHED_CONFIRMATION,
@@ -147,6 +148,7 @@ class CellularRouting : public VirtualRouting {
 
     vector<NodeRoutingUpdateInfo> routingUpdates;
 
+    queue<pair<CellularRoutingPacket*, int>> announcementQueue;
     queue<pair<CellularRoutingPacket*, int>> cellPacketQueue;
     int myCellPathToCH[100] = {-1};
     int myNextCellHop = -1;
@@ -187,6 +189,7 @@ class CellularRouting : public VirtualRouting {
     void handleRoutingTableAnnouncementPacket(CellularRoutingPacket* pkt);
     void finalizeRouting();
     void sendCHAnnouncement();
+    void sendAnnouncementQueue();
     void sendCellPacket();
     void handleCHAnnouncementPacket(CellularRoutingPacket* pkt);
     void selectClusterHead();
