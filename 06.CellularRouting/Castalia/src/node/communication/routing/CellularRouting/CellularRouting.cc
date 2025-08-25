@@ -1274,7 +1274,7 @@ void CellularRouting::sendCellPacket()
                 return;
             }
             int nextHopId = intraCellRoutingTable[self][nextCellId];
-            // trace() << "Forwarding packet to " << nextHopId;
+            trace() << "#SENSOR_DATA :" << self << " -> " << nextHopId;
             toMacLayer(pkt, nextHopId);
         }
     }
@@ -1426,6 +1426,7 @@ void CellularRouting::handleSensorDataPacket(CellularRoutingPacket* pkt){
             }
         }
         if (isCHInRange) {
+            trace() << "#SENSOR_DATA :" << self << " -> " << myCH_id;
             toMacLayer(pkt, myCH_id);
         } else {
             CellularRoutingPacket* dupPkt = pkt->dup();
