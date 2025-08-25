@@ -100,6 +100,7 @@ packet CellularRoutingPacket extends RoutingPacket {
 
     int cellSent;
     int cellNext;
+    int cellNextNext;
     int cellSource;
     int cellDestination;
     int cellHopCount;

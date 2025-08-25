@@ -1229,6 +1229,7 @@ void CellularRouting::sendAnnouncementQueue()
             return;
         }
 
+        trace() << "sending for cell " << nextCellId << " via " << intraCellRoutingTable[self][nextCellId];
         toMacLayer(pkt, intraCellRoutingTable[self][nextCellId]);
     }
 }
@@ -1274,7 +1275,7 @@ void CellularRouting::sendCellPacket()
                 return;
             }
             int nextHopId = intraCellRoutingTable[self][nextCellId];
-            trace() << "#SENSOR_DATA :" << self << " -> " << nextHopId;
+            trace() << "#SENSOR_DATA: " << self << " -> " << nextHopId;
             toMacLayer(pkt, nextHopId);
         }
     }
@@ -1394,9 +1395,13 @@ void CellularRouting::sendSensorDataPacket(){
     pkt->setPacketType(SENSOR_DATA);
     pkt->setCellSource(myCellId);
     pkt->setCellDestination(myCellPathToCH[0]);
-//    for (int i = 0; myCellPathToCH[i] != -1 && i < 99; ++i) {
-//        pkt->setCellPathToDestination(i, myCellPathToCH[i]);
-//    }
+    for (int i = 0; i < 99; ++i) {
+        if (myCellPathToCH[i] == myCellId) {
+            pkt->setCellNextNext(myCellPathToCH[i-2]);
+            break;
+        }
+    }
+    
     SensorData sensorData;
     sensorData.dataId = simTime().dbl();
     sensorData.sensorId = self;
@@ -1413,9 +1418,10 @@ void CellularRouting::handleSensorDataPacket(CellularRoutingPacket* pkt){
     sensorData.hopCount++;
     if (myCellId != pkt->getCellPathToDestination(0)) {
         CellularRoutingPacket* dupPkt = pkt->dup();
-        dupPkt->setCellDestination(myNextCellHop);
+        int nextNextCell = pkt->getCellNextNext();
+        dupPkt->setCellDestination(nextNextCell);
         dupPkt->setSensorData(sensorData);
-        cellPacketQueue.push({dupPkt, myNextCellHop});
+        cellPacketQueue.push({dupPkt, nextNextCell});
         setTimer(SEND_CELL_PACKET, uniform(1, 10));
     } else {
         bool isCHInRange = false;
@@ -1426,7 +1432,7 @@ void CellularRouting::handleSensorDataPacket(CellularRoutingPacket* pkt){
             }
         }
         if (isCHInRange) {
-            trace() << "#SENSOR_DATA :" << self << " -> " << myCH_id;
+            trace() << "#SENSOR_DATA: " << self << " -> " << myCH_id;
             toMacLayer(pkt, myCH_id);
         } else {
             CellularRoutingPacket* dupPkt = pkt->dup();
