@@ -152,6 +152,7 @@ class CellularRouting : public VirtualRouting {
     queue<pair<CellularRoutingPacket*, int>> cellPacketQueue;
     int myCellPathToCH[100] = {-1};
     int myNextCellHop = -1;
+    int myNextNextCellHop = -1;
 
     map<int, LinkRequestState> pendingLinkRequests;
     int nextTimerIndex;
