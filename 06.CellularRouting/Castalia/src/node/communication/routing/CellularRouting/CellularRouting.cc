@@ -154,7 +154,7 @@ void CellularRouting::timerFiredCallback(int index)
 
         case SENSING_STATE:
             sendSensorDataPacket();
-            setTimer(SENSING_STATE, uniform(200, 350));
+            setTimer(SENSING_STATE, 15000); //uniform(9000,10000));
             break;
 
         case RECONFIGURATION_TIMER:
@@ -172,8 +172,8 @@ void CellularRouting::timerFiredCallback(int index)
 
             setTimer(STATE_0, uniform(0, 10));
             setTimer(STATE_1, 1000);
-            setTimer(SENSING_STATE, 3000);
-            setTimer(RECONFIGURATION_TIMER, 4500);
+            setTimer(SENSING_STATE, uniform(3000, 3100));
+            setTimer(RECONFIGURATION_TIMER, 15000);
             break;
     }
 }
@@ -1239,14 +1239,12 @@ void CellularRouting::sendCellPacket()
 {
     if (!cellPacketQueue.empty()) {
         auto [pkt, nextCellId] = cellPacketQueue.front();
-        if (nextCellId == -1) {
-            cellPacketQueue.pop();
-            delete pkt;
-            setTimer(SEND_CELL_PACKET, uniform(1, 10));
-            return;
-        }
+        
 
         if (pkt->getPacketType() == SENSOR_DATA) {
+            CellularRoutingPacket* dupPkt = pkt->dup();
+            
+        
             double timeNow = simTime().dbl();
             double timeSlot = 600.0;
             double cycle = timeSlot * 3;
@@ -1266,6 +1264,33 @@ void CellularRouting::sendCellPacket()
             }
 
             // trace() << "Sending sensor data from " << self << " Color: " << myColor;
+            if (nextCellId == -1) {
+                cellPacketQueue.pop();
+                // send to CH if in range or send to a random neighbor in other cell
+                if (myCH_id != -1) {
+                    bool chInRange = false;
+                    for (auto &neighborNode : neighborTable) {
+                        if (neighborNode.id == myCH_id) {
+                            chInRange = true;
+                            break;
+                        }
+                    }
+                    if (chInRange) {
+                        toMacLayer(dupPkt, myCH_id);
+                        trace() << "#SENSOR_DATA: " << self << " -> " << myCH_id;
+                    }
+                } else {
+                    // Select a random neighbor in a different cell
+                    // for (auto &neighborNode : neighborTable) {
+                    //     if (neighborNode.cellId != myCellId) {
+                    //         CellularRoutingPacket* dupPkt1 = pkt->dup();
+                    //         cellPacketQueue.push({dupPkt1, neighborNode.cellId});
+                    //         setTimer(SEND_CELL_PACKET, uniform(1, 10));
+                    //     }
+                    // }
+                }
+                return;
+            }
 
             cellPacketQueue.pop();
 
@@ -1278,13 +1303,18 @@ void CellularRouting::sendCellPacket()
             int nextHopId = intraCellRoutingTable[self][nextCellId];
             // check if node in range
             bool isInRange = false;
+            bool isInMyCell = true;
             for (auto &neighborNode : neighborTable) {
                 if (neighborNode.id == nextHopId) {
                     isInRange = true;
+                    isInMyCell = (neighborNode.cellId == myCellId);
                     break;
                 }
             }
             if (isInRange) {
+                if (!isInMyCell){
+
+                }
                 trace() << "#SENSOR_DATA: " << self << " -> " << nextHopId;
                 toMacLayer(pkt, nextHopId);
             }
@@ -1307,8 +1337,11 @@ void CellularRouting::handleCHAnnouncementPacket(CellularRoutingPacket* pkt)
         myCH_id = chId;
         selectClusterHead();
         int hopCount = pkt->getCellHopCount();
-        for (int i = 0; i < hopCount && i < 100; ++i) {
+        for (int i = 0; i < 100; ++i) {
             myCellPathToCH[i] = pkt->getCellPath(i);
+            if (i >= hopCount) {
+                myCellPathToCH[i] = -1;
+            }
         }
         myCellPathToCH[hopCount] = -1;
         if (myCellPathToCH[hopCount-1] != myCellId) {
@@ -1362,7 +1395,7 @@ void CellularRouting::selectClusterHead()
 {
     // select the closest CH
     // Or just let the application layer handle it
-    
+
     // Announce members about next cell hop
     setTimer(ANNOUNCE_CELL_HOP_TIMER, uniform(1000, 1500));
 }
@@ -1381,9 +1414,10 @@ void CellularRouting::sendCellHopAnnouncementPacket()
         pkt->setCellDestination(myCellId);
         CellHopAnnouncementInfo pktInfo;
         pktInfo.nextCell = myNextCellHop;
-        // for (int i = 0; myCellPathToCH[i] != -1 && i < 100; ++i) {
-        //     pktInfo.cellPath[i] = myCellPathToCH[i];
-        // }
+        for (int i = 0; i < 100; ++i) {
+            pkt->setCellPath(i, myCellPathToCH[i]);
+            //trace() << "Announced cell path: " << i << ": " << myCellPathToCH[i] << " -> " << pkt->getCellPath(i);
+        }
         pkt->setCellNextNext(myNextNextCellHop);
         pkt->setCellHopAnnouncementData(pktInfo);
         pkt->setSource(SELF_NETWORK_ADDRESS);
@@ -1410,7 +1444,12 @@ void CellularRouting::handleCellHopAnnouncementPacket(CellularRoutingPacket* pkt
         //     if (pktInfo.cellPath[i] < 0) break;
         //     myCellPathToCH[i] = pktInfo.cellPath[i];
         // }
-        myCellPathToCH[0] = pktInfo.cellPath[0];
+
+        for (int i = 0; i < 100; ++i) {
+            myCellPathToCH[i] = pkt->getCellPath(i);
+            //trace() << "******received cell path " << i << ": " << myCellPathToCH[i];
+        }
+
         myNextNextCellHop = pkt->getCellNextNext();
         setTimer(COLOR_SCHEDULING_TIMER, 600*myColor);
     }
@@ -1420,7 +1459,13 @@ void CellularRouting::sendSensorDataPacket(){
     CellularRoutingPacket* pkt = new CellularRoutingPacket("Sensing State", NETWORK_LAYER_PACKET);
     pkt->setPacketType(SENSOR_DATA);
     pkt->setCellSource(myCellId);
+    pkt->setCellSent(myCellId);
+    pkt->setCellNext(myNextCellHop);
     pkt->setCellDestination(myCellPathToCH[0]);
+    for (int i = 0; i < 100; ++i) {
+        pkt->setCellPath(i, myCellPathToCH[i]);
+        if (pkt->getCellPath(i) != -1) trace() << "Sensor Cell path " << i << ": " << myCellPathToCH[i] << " -> " <<pkt->getCellPath(i);
+    }
     pkt->setCellNextNext(myNextNextCellHop);
 
     SensorData sensorData;
@@ -1430,53 +1475,34 @@ void CellularRouting::sendSensorDataPacket(){
     pkt->setTtl(100);
     pkt->setSensorData(sensorData);
     pkt->setSource(SELF_NETWORK_ADDRESS);
-    cellPacketQueue.push({pkt, myNextCellHop});
+    CellularRoutingPacket* dupPkt = pkt->dup();
+    cellPacketQueue.push({dupPkt, myNextCellHop});
     setTimer(SEND_CELL_PACKET, uniform(1, 10));
 }
 
 void CellularRouting::handleSensorDataPacket(CellularRoutingPacket* pkt){
     SensorData sensorData = pkt->getSensorData();
+    if (myCH_id == self && myCellId == pkt->getCellDestination()) {
+        trace() << "Processing sensor data from  " << sensorData.sensorId << " hop count " << sensorData.hopCount;
+        return;
+    }
+
+
     sensorData.hopCount++;
     trace() << "***********Received sensor data from " << sensorData.sensorId << " hop count " << sensorData.hopCount;
-    if (myCellId != pkt->getCellPathToDestination(0)) {
-        
-        CellularRoutingPacket* dupPkt = pkt->dup();
-        int nextNextCell = pkt->getCellNextNext();
-        // check if next next cell is in range
-        bool isNextNextCellInRange = false;
-        for (int i=0; i<6; i++) {
-            if (neighborCells[i] == nextNextCell) {
-                isNextNextCellInRange = true;
-                break;
-            }
-        }
-        dupPkt->setSensorData(sensorData);
-        if (isNextNextCellInRange && nextNextCell != -1) {
-            cellPacketQueue.push({dupPkt, nextNextCell});
-            setTimer(SEND_CELL_PACKET, uniform(1, 10));
-            //trace() << "*****Forwarding sensor data to " << nextNextCell;
-        }
+    CellularRoutingPacket* dupPkt = pkt->dup();
+    dupPkt->setSensorData(sensorData);
 
-    } else {
-        bool isCHInRange = false;
-        for (const auto& neighborNode : neighborTable) {
-            if (neighborNode.id == myCH_id) {
-                isCHInRange = true;
-                break;
-            }
-        }
-        if (isCHInRange) {
-            //trace() << "#SENSOR_DATA: " << self << " -> " << myCH_id;
-            toMacLayer(pkt, myCH_id);
-        } else {
-            CellularRoutingPacket* dupPkt = pkt->dup();
-            dupPkt->setCellDestination(myCellPathToCH[0]);
-            dupPkt->setSensorData(sensorData);
-            cellPacketQueue.push({dupPkt, myCellPathToCH[0]});
-            setTimer(SEND_CELL_PACKET, uniform(1, 10));
+    int nextCell = -1;
+    for (int i = 0; i < 100; ++i) {
+        int T = dupPkt->getCellPath(i);
+        //trace() << "Cell path " << i << ": " << T;
+        if (T == myCellId && i > 0) {
+            nextCell = dupPkt->getCellPath(i-1);
+            break;
         }
     }
-    if (myCH_id == self) {
-        trace() << "Processing sensor data from  " << sensorData.sensorId << " hop count " << sensorData.hopCount;
-    }
+    trace() << "forward from " << myCellId << " to " << nextCell;
+    cellPacketQueue.push({dupPkt, nextCell});
+    setTimer(SEND_CELL_PACKET, uniform(1, 10));
 }
