@@ -90,6 +90,7 @@ struct CellHopAnnouncementInfo{
 };
 
 struct SensorData{
+    int destinationCH;
     int dataId;
     int sensorId;
     int hopCount;
@@ -98,6 +99,7 @@ struct SensorData{
 packet CellularRoutingPacket extends RoutingPacket {
     int packetType @enum(CellularRoutingPacketType);
 
+    int clusterHead; 
     int cellSent;
     int cellNext;
     int cellNextNext;
