@@ -123,6 +123,19 @@ class CellularRouting : public VirtualRouting {
     double cellRadius;
     int grid_offset;
 
+    int numberHelloIntervals;
+    int sensingDuration;
+    int clCalculationTime;
+    int routingTableUpdateTime;
+    int state1Time;
+    int sensingStageTime;
+    int reconfigurationTime;
+    int clConfirmationTime;
+    int maxNeighborNumber;
+    int maxHopCount;
+
+    double colorTimeSlot;
+
     int myCellId;
     int myColor;
     bool isInScheduling = false;

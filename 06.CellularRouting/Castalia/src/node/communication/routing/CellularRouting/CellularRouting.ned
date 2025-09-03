@@ -13,8 +13,22 @@ simple CellularRouting like node.communication.routing.iRouting {
         double clElectionDelayInterval = default(100);  
         double cellRadius = default(80);       
         bool isCH = default(false);   
-        bool isSink = default(false);           
-        
+        bool isSink = default(false); 
+
+        int numberHelloIntervals = default(6);
+        int sensingDuration = default(7000);
+        int clCalculationTime = default(300);
+        int routingTableUpdateTime = default(100); 
+        int state1Time = default(1000);
+        int sensingStageTime = default(3000);
+        int reconfigurationTime = default(15000);
+        int clConfirmationTime = default(100);
+        int maxNeighborNumber = default(20);
+        int maxHopCount = default(100);
+
+        double colorTimeSlot = default (600);
+
+
         @display("i=block/routing");
 
     gates:
