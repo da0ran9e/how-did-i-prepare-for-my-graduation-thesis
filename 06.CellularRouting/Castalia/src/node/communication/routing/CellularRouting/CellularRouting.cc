@@ -8,6 +8,11 @@ static bool g_isPrecalculated = false;
 static map<int, map<int, int>> g_routingTable; // <nodeId, <cellId, nextHopId>>
 static int g_newCH[3] = {-1, -1, -1};
 static int g_lifetime = 0;
+static int g_cellHopAnnouncement[100][100]; // <node> <CH>
+static int g_announcementCount = 0;
+static int g_sensorData[100]; // < data>
+static int g_sensorDataReceived[100]; // < data>
+
 
 void CellularRouting::startup()
 {
@@ -186,6 +191,11 @@ void CellularRouting::PrecalculateSimulationResults()
     g_newCH[0] = uniform(0, 100);
     g_newCH[1] = uniform(0, 100);
     g_newCH[2] = uniform(0, 100);
+
+    for (int i=0; i<100; i++) {
+        g_sensorData[i] = -1;
+        g_sensorDataReceived[i] = -1;
+    }
 
     // Calculate node neighbors
     for (auto& nodeData : g_nodeDataList) {
@@ -1228,7 +1238,7 @@ void CellularRouting::sendAnnouncementQueue()
 {
     if (!announcementQueue.empty()) {
         auto [pkt, nextCellId] = announcementQueue.front();
-        trace() << "Sending cell packet to " << nextCellId;
+        //trace() << "Sending cell packet to " << nextCellId;
         announcementQueue.pop();
 
         pkt->setTtl(pkt->getTtl() - 1);
@@ -1268,10 +1278,10 @@ void CellularRouting::sendCellPacket()
                 return;
             }
 
-            trace() << "Sending sensor data from " << self << " to: " << nextCellId << ": " << pkt->getSensorData().destinationCH;
-            if (nextCellId == -1) {
+            if (pkt->getSensorData().sensorId == 42 ) trace() << "***from" << self << " to: " << nextCellId << ": " << pkt->getSensorData().destinationCH;
+            if (nextCellId == -1 || nextCellId == myCellId) {
                 cellPacketQueue.pop();
-                // send to CH if in range or send to a random neighbor in other cell
+                if (pkt->getSensorData().sensorId == 42 ) trace() << "if***            ***nextCellId" << nextCellId;
                 if (myCH_id != -1) {
                     bool chInRange = false;
                     for (auto &neighborNode : neighborTable) {
@@ -1280,18 +1290,20 @@ void CellularRouting::sendCellPacket()
                             break;
                         }
                     }
+                    if (pkt->getSensorData().sensorId == 42 ) trace() << "                ***myCH_id" << myCH_id << " " << chInRange;
                     if (chInRange) {
                         toMacLayer(dupPkt, myCH_id);
                         trace() << "#SENSOR_DATA: " << self << " -> " << myCH_id;
+                    } else {
+                        if (pkt->getSensorData().sensorId == 42 ) trace() << "            ***myCH_id else: " << myCH_id;
+                        CellularRoutingPacket* dupPkt1 = pkt->dup();
+                        toMacLayer(dupPkt1, myCL_id);
+                        trace() << "#SENSOR_DATA: " << self << " -> " << myCL_id;
                     }
-                } else {
-                    CellularRoutingPacket* dupPkt1 = pkt->dup();
-                    toMacLayer(dupPkt1, myCL_id);
-                    trace() << "#SENSOR_DATA: " << self << " -> " << myCL_id;
-                }
+                } 
                 return;
             }
-
+            
             cellPacketQueue.pop();
 
             pkt->setTtl(pkt->getTtl() - 1);
@@ -1311,10 +1323,8 @@ void CellularRouting::sendCellPacket()
                     break;
                 }
             }
+            if (pkt->getSensorData().sensorId == 42 ) trace() << "else***            ***nextCellId" << nextCellId << " " << isInRange   ;
             if (isInRange) {
-                if (!isInMyCell){
-
-                }
                 trace() << "#SENSOR_DATA: " << self << " -> " << nextHopId;
                 toMacLayer(pkt, nextHopId);
             }
@@ -1429,7 +1439,7 @@ void CellularRouting::sendCellHopAnnouncementPacket()
             CellularRoutingPacket* dupPkt = pkt->dup();
             dupPkt->setDestination(std::to_string(member.id).c_str());
             toMacLayer(dupPkt, member.id);
-            // /trace() << "Sent cell hop announcement to member " << member.id;
+            //trace() << "Sent cell hop announcement to member " << member.id;
         }
     }
 }
@@ -1450,8 +1460,8 @@ void CellularRouting::handleCellHopAnnouncementPacket(CellularRoutingPacket* pkt
             //trace() << "******received cell path " << i << ": " << myCellPathToCH[i];
         }
 
-        myCH_id = getClusterHead();
-        trace() << "my CH id: " << myCH_id;
+        myCH_id = pkt->getClusterHead();
+        //trace() << "my CH id: " << myCH_id;
 
         setTimer(COLOR_SCHEDULING_TIMER, 600*myColor);
     }
@@ -1472,6 +1482,7 @@ void CellularRouting::sendSensorDataPacket(){
 
     SensorData sensorData;
     sensorData.dataId = simTime().dbl();
+    g_sensorData[self] = sensorData.dataId;
     sensorData.sensorId = self;
     sensorData.hopCount = 0;
     sensorData.destinationCH = myCH_id;
@@ -1484,14 +1495,23 @@ void CellularRouting::sendSensorDataPacket(){
 }
 
 void CellularRouting::handleSensorDataPacket(CellularRoutingPacket* pkt){
+    for (int i=0; i<100; i++){
+        if (g_sensorDataReceived[i] == -1){
+            trace() << "receive failed from" << i;
+        }
+    }
+
     SensorData sensorData = pkt->getSensorData();
     if (myCH_id == self && myCellId == pkt->getCellDestination()) {
         trace() << "Processing sensor data from  " << sensorData.sensorId << " hop count " << sensorData.hopCount;
+        if (g_sensorData[sensorData.sensorId] == sensorData.dataId) {
+            g_sensorDataReceived[sensorData.sensorId] = sensorData.dataId;
+        }
         return;
     }
 
     sensorData.hopCount++;
-    trace() << "***********Received sensor data from " << sensorData.sensorId << " hop count " << sensorData.hopCount;
+    
     CellularRoutingPacket* dupPkt = pkt->dup();
 
     if (sensorData.destinationCH == -1) {
@@ -1513,7 +1533,12 @@ void CellularRouting::handleSensorDataPacket(CellularRoutingPacket* pkt){
             break;
         }
     }
-    trace() << "forward from " << myCellId << " to " << nextCell;
+
+    if (sensorData.sensorId == 42){
+        trace() << "*********from 42: " << sensorData.dataId << " des: " << sensorData.destinationCH << " to " << nextCell;
+    }
+    
+    trace() << "***sensor " << sensorData.sensorId << " hc: " << sensorData.hopCount << " to: " << nextCell;
     cellPacketQueue.push({dupPkt, nextCell});
     setTimer(SEND_CELL_PACKET, uniform(1, 10));
 }
