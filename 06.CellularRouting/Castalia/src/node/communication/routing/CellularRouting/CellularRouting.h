@@ -154,6 +154,8 @@ class CellularRouting : public VirtualRouting {
     int myNextCellHop = -1;
     int myNextNextCellHop = -1;
 
+    int levelInCell = -1;
+
     map<int, LinkRequestState> pendingLinkRequests;
     int nextTimerIndex;
 
