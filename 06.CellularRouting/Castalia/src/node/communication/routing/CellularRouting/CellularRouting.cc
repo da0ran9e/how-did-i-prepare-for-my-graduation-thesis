@@ -1515,8 +1515,10 @@ void CellularRouting::sendSensorDataPacket(){
     pkt->setTtl(100);
     pkt->setSensorData(sensorData);
     pkt->setSource(SELF_NETWORK_ADDRESS);
-    CellularRoutingPacket* dupPkt = pkt->dup();
-    cellPacketQueue.push({dupPkt, myNextCellHop});
+    for (int i=0; i<2; i++) {
+        CellularRoutingPacket* dupPkt = pkt->dup();
+        cellPacketQueue.push({dupPkt, myNextCellHop});
+    }
     setTimer(SEND_CELL_PACKET, uniform(1, 10));
 }
 
