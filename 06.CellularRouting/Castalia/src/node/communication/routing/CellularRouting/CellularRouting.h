@@ -149,7 +149,14 @@ class CellularRouting : public VirtualRouting {
     vector<NodeRoutingUpdateInfo> routingUpdates;
 
     queue<pair<CellularRoutingPacket*, int>> announcementQueue;
-    queue<pair<CellularRoutingPacket*, int>> cellPacketQueue;
+
+    struct ComparePacketsPriority {
+        bool operator()(const pair<CellularRoutingPacket*, int>& a, const pair<CellularRoutingPacket*, int>& b) {
+            return a.first->getSensorData().dataId < b.first->getSensorData().dataId;
+        }
+    };
+
+    priority_queue<pair<CellularRoutingPacket*, int>, vector<pair<CellularRoutingPacket*, int>>, ComparePacketsPriority> cellPacketQueue;
     int myCellPathToCH[100] = {-1};
     int myNextCellHop = -1;
     int myNextNextCellHop = -1;

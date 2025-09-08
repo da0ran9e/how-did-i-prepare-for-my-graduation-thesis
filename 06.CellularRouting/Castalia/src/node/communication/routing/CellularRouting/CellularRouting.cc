@@ -1255,7 +1255,7 @@ void CellularRouting::sendAnnouncementQueue()
 void CellularRouting::sendCellPacket()
 {
     if (!cellPacketQueue.empty()) {
-        auto [pkt, nextCellId] = cellPacketQueue.front();
+        auto [pkt, nextCellId] = cellPacketQueue.top();
 
 
         if (pkt->getPacketType() == SENSOR_DATA) {
