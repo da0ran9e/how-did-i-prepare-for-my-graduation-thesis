@@ -6,12 +6,16 @@ static vector<NodeData> g_nodeDataList;
 static vector<CellData> g_cellDataList;
 static bool g_isPrecalculated = false;
 static map<int, map<int, int>> g_routingTable; // <nodeId, <cellId, nextHopId>>
-static int g_newCH[3] = {-1, -1, -1};
+static int g_newCH[3][3] = {{-1, -1, -1}, {-1, -1, -1}, {-1, -1, -1}};
 static int g_lifetime = 0;
 static int g_cellHopAnnouncement[100][100]; // <node> <CH>
 static int g_announcementCount = 0;
 static int g_sensorData[100]; // < data>
-static int g_sensorDataReceived[100]; // < data>
+static int g_sensorDataArr[100]; // < data>
+static vector<int> g_sensorDataSent;
+static vector<int> g_sensorDataReceived;
+static int g_sensorDataSentCount = 0;
+static int g_sensorDataReceivedCount = 0;
 
 
 void CellularRouting::startup()
@@ -69,6 +73,7 @@ void CellularRouting::startup()
             setTimer(PRECALCULATE_TIMERS, 20);
         }
 
+    setTimer(STATE_0, uniform(0, 10));
     setTimer(RECONFIGURATION_TIMER, 0);
 }
 
@@ -159,25 +164,26 @@ void CellularRouting::timerFiredCallback(int index)
 
         case SENSING_STATE:
             sendSensorDataPacket();
-            setTimer(SENSING_STATE, 15000); //uniform(9000,10000));
+            setTimer(SENSING_STATE, 3000); //uniform(9000,10000));
             break;
 
         case RECONFIGURATION_TIMER:
+            cancelTimer(SENSING_STATE);
+
             if (g_lifetime > 0) {
                 if (myCH_id == self) {
-                    myCH_id = -1;
                     myRole = NORMAL_NODE;
                 }
-                if (self == g_newCH[0] || self == g_newCH[1] || self == g_newCH[2]) {
+                myCH_id = -1;
+                if (self == g_newCH[g_lifetime][0] || self == g_newCH[g_lifetime][1] || self == g_newCH[g_lifetime][2]) {
                     myCH_id = self;
                     trace() << "#CH " << self;
                 }
             }
 
-            setTimer(STATE_0, uniform(0, 10));
             setTimer(STATE_1, 1000);
             setTimer(SENSING_STATE, uniform(3000, 3100));
-            setTimer(RECONFIGURATION_TIMER, 15000);
+            setTimer(RECONFIGURATION_TIMER, 6000);
             break;
     }
 }
@@ -188,13 +194,15 @@ double CellularRouting::calculateDistance(double x1, double y1, double x2, doubl
 
 void CellularRouting::PrecalculateSimulationResults()
 {
-    g_newCH[0] = uniform(0, 100);
-    g_newCH[1] = uniform(0, 100);
-    g_newCH[2] = uniform(0, 100);
+    for(int i=0; i<3; i++){
+        for(int j=0; j<3; j++){
+            g_newCH[i][j] = -1;
+        }
+    }
 
     for (int i=0; i<100; i++) {
         g_sensorData[i] = -1;
-        g_sensorDataReceived[i] = -1;
+        g_sensorDataArr[i] = -1;
     }
 
     // Calculate node neighbors
@@ -1508,14 +1516,18 @@ void CellularRouting::sendSensorDataPacket(){
 
     SensorData sensorData;
     sensorData.dataId = simTime().dbl();
+
     g_sensorData[self] = sensorData.dataId;
+    g_sensorDataSent.push_back((sensorData.dataId*100 + self));
+    g_sensorDataSentCount ++;
+
     sensorData.sensorId = self;
     sensorData.hopCount = 0;
     sensorData.destinationCH = myCH_id;
     pkt->setTtl(100);
     pkt->setSensorData(sensorData);
     pkt->setSource(SELF_NETWORK_ADDRESS);
-    for (int i=0; i<2; i++) {
+    for (int i=0; i<1; i++) {
         CellularRoutingPacket* dupPkt = pkt->dup();
         cellPacketQueue.push({dupPkt, myNextCellHop});
     }
@@ -1524,7 +1536,7 @@ void CellularRouting::sendSensorDataPacket(){
 
 void CellularRouting::handleSensorDataPacket(CellularRoutingPacket* pkt){
     // for (int i=0; i<100; i++){
-    //     if (g_sensorDataReceived[i] == -1){
+    //     if (g_sensorDataArr[i] == -1){
     //         trace() << "receive failed from" << i;
     //     }
     // }
@@ -1533,8 +1545,11 @@ void CellularRouting::handleSensorDataPacket(CellularRoutingPacket* pkt){
     if (myCH_id == self && myCellId == pkt->getCellDestination()) {
         trace() << "Processing sensor data from  " << sensorData.sensorId << " hop count " << sensorData.hopCount;
         if (g_sensorData[sensorData.sensorId] == sensorData.dataId) {
-            g_sensorDataReceived[sensorData.sensorId] = sensorData.dataId;
+            g_sensorDataArr[sensorData.sensorId] = sensorData.dataId;
         }
+        g_sensorDataReceivedCount++;
+        g_sensorDataReceived.push_back(sensorData.dataId*100 + sensorData.sensorId);
+        trace() << "Received " << g_sensorDataReceivedCount << "/" << g_sensorDataSentCount << " sensor data pkts";
         return;
     }
 
