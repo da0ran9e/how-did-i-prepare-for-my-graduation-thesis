@@ -16,6 +16,7 @@ static vector<int> g_sensorDataSent;
 static vector<int> g_sensorDataReceived;
 static int g_sensorDataSentCount = 0;
 static int g_sensorDataReceivedCount = 0;
+static int g_nodeWeight[100]; // < node> <weight>
 
 
 void CellularRouting::startup()
@@ -622,25 +623,28 @@ void CellularRouting::handleHelloPacket(CellularRoutingPacket* pkt)
 void CellularRouting::calculateFitnessScore()
 {
     // rate the neighborTable to the pre-calculated neighbors in g_nodeDataList
-    int rightCount = 0;
-    int errorCount = 0;
-    for (const auto& nodeData : g_nodeDataList) {
-        if (nodeData.id == self) {
-            for (const auto& neighbor : nodeData.neighbors) {
-                bool found = false;
-                for (const auto& neighborRecord : neighborTable) {
-                    if (neighborRecord.id == neighbor.id) {
-                        found = true;
-                        rightCount++;
-                        break;
-                    }
-                }
-                if (!found) {
-                    errorCount++;
-                }
-            }
-            trace() << "Neighbor Table Rating: " << rightCount << "/" << nodeData.neighbors.size() << " right, " << errorCount << " errors";
-        }
+    // int rightCount = 0;
+    // int errorCount = 0;
+    // for (const auto& nodeData : g_nodeDataList) {
+    //     if (nodeData.id == self) {
+    //         for (const auto& neighbor : nodeData.neighbors) {
+    //             bool found = false;
+    //             for (const auto& neighborRecord : neighborTable) {
+    //                 if (neighborRecord.id == neighbor.id) {
+    //                     found = true;
+    //                     rightCount++;
+    //                     break;
+    //                 }
+    //             }
+    //             if (!found) {
+    //                 errorCount++;
+    //             }
+    //         }
+    //         trace() << "Neighbor Table Rating: " << rightCount << "/" << nodeData.neighbors.size() << " right, " << errorCount << " errors";
+    //     }
+    // }
+    for (const auto& neighborRecord : neighborTable) {
+        trace() << "#NEIGHBOR " << self << ": " << neighborRecord.id;
     }
     // Calculate fitness score based on id, energy, distance, etc.
     // Or just let the application layer handle it
@@ -881,25 +885,25 @@ void CellularRouting::handleLinkConfirmationPacket(CellularRoutingPacket* pkt)
 void CellularRouting::calculateRoutingTree()
 {
     // rate cell members
-    int rightCount = 0;
-    int errorCount = 0;
-    for (const auto& gCell : g_cellDataList){
-        if (gCell.cellId == myCellId) {
-            for (const auto& member : cellMembers) {
-                bool found = false;
-                for (const auto& gmember : gCell.members) {
-                    if (gmember.id == member.id) {
-                        found = true;
-                        rightCount++;
-                    }
-                }
-                if (!found) {
-                    errorCount++;
-                }
-            }
-            trace() << "Cell member Rating for cell " << myCellId << ": " << rightCount << "/" << gCell.members.size() << " right, " << errorCount << " errors";
-        }
-    }
+    // int rightCount = 0;
+    // int errorCount = 0;
+    // for (const auto& gCell : g_cellDataList){
+    //     if (gCell.cellId == myCellId) {
+    //         for (const auto& member : cellMembers) {
+    //             bool found = false;
+    //             for (const auto& gmember : gCell.members) {
+    //                 if (gmember.id == member.id) {
+    //                     found = true;
+    //                     rightCount++;
+    //                 }
+    //             }
+    //             if (!found) {
+    //                 errorCount++;
+    //             }
+    //         }
+    //         trace() << "Cell member Rating for cell " << myCellId << ": " << rightCount << "/" << gCell.members.size() << " right, " << errorCount << " errors";
+    //     }
+    // }
 
     // Calculate the intra-cell routing trees with CGWs and CL are roots
     // all members should have a routing table entry to every CGW and CL
@@ -1196,12 +1200,13 @@ void CellularRouting::finalizeRouting()
         count++;
         if (intraCellRoutingTable[self][neighborCells[i]] == g_routingTable[self][neighborCells[i]]) {
             rightCount++;
+            trace() << "#INTRA_CELL_TREE " << self << ": " << intraCellRoutingTable[self][neighborCells[i]] << " (" << neighborCells[i] << ")";
         } else {
             wrongCount++;
         }
     }
 
-    trace() << "Routing table finalized: correct" << rightCount << "/" << count << " wrong " << wrongCount;
+    //trace() << "Routing table finalized: correct" << rightCount << "/" << count << " wrong " << wrongCount;
 }
 
 void CellularRouting::sendCHAnnouncement()
@@ -1254,9 +1259,22 @@ void CellularRouting::sendAnnouncementQueue()
             delete pkt;
             return;
         }
+        int nextHopId = intraCellRoutingTable[self][nextCellId];
+        // check if node in range
+        bool isInRange = false;
+        for (auto &neighborNode : neighborTable) {
+            if (neighborNode.id == nextHopId) {
+                isInRange = true;
+                break;
+            }
+        }
 
+        if (!isInRange) {
+            delete pkt;
+            return;
+        } 
         //trace() << "sending for cell " << nextCellId << " via " << intraCellRoutingTable[self][nextCellId];
-        toMacLayer(pkt, intraCellRoutingTable[self][nextCellId]);
+        toMacLayer(pkt, nextHopId);
     }
 }
 
@@ -1580,7 +1598,7 @@ void CellularRouting::handleSensorDataPacket(CellularRoutingPacket* pkt){
         }
     }
     
-    trace() << "***sensor " << sensorData.sensorId << " hc: " << sensorData.hopCount << " to: " << nextCell;
+    //trace() << "***sensor " << sensorData.sensorId << " hc: " << sensorData.hopCount << " to: " << nextCell;
     if (myCellId == nextCell || nextCell == -1) {
         if (prevCell == myCellId) {
             levelInCell = 1;

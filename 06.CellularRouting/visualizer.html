@@ -1,0 +1,748 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8"/>
+<title>Sim Visualizer — Hex Grid + Events</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<!-- D3.js -->
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<style>
+  body { font-family: "Segoe UI", Roboto, Arial; margin: 8px; background:#fafafa; color:#111;}
+  #controls { display:flex; gap:10px; align-items:center; margin-bottom:8px; flex-wrap:wrap;}
+  #canvas-wrap { border:1px solid #ddd; background: #fff; }
+  .btn { padding:6px 10px; border-radius:4px; border:1px solid #bbb; background:#f5f5f5; cursor:pointer;}
+  .btn:hover { background:#eee; }
+  label { font-size:13px; }
+  .legend { display:flex; gap:12px; align-items:center; margin-left:10px;}
+  .legend .item { display:flex; gap:6px; align-items:center; }
+  .tooltip { position:absolute; padding:6px 8px; background:rgba(0,0,0,0.8); color:white; border-radius:4px; font-size:12px; pointer-events:none; display:none;}
+  textarea { width:420px; height:140px; font-family:monospace; }
+  input[type="range"] { width:220px; }
+  .small { font-size:12px; color:#555; }
+  #frameBar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #f0f0f0;
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-top: 1px solid #ccc;
+  z-index: 9999; /* đảm bảo nằm trên cùng */
+}
+
+#frameSlider {
+  flex: 1;
+  height: 22px;
+}
+
+#timeLabel {
+  font-size: 13px;
+  min-width: 90px;
+  text-align: right;
+}
+
+</style>
+</head>
+<body>
+
+<h2>Simulation Visualizer — Hex Grid & Time-based Events</h2>
+
+<div id="controls">
+  <div>
+    <input id="fileInput" type="file" accept=".txt"/>
+    <button id="btnLoad" class="btn">Load</button>
+  </div>
+
+  <div>
+    <label>Or paste log:</label><br/>
+    <textarea id="logArea" placeholder="Paste log lines here (time  object  event)..."></textarea><br/>
+    <button id="btnParse" class="btn">Parse & Prepare</button>
+  </div>
+
+  <div style="min-width:300px;">
+    <button id="playBtn" class="btn">Play</button>
+    <button id="pauseBtn" class="btn">Pause</button>
+    <button id="nextBtn" class="btn">Next</button>
+    <br/>
+
+    <label>Jump to time: 
+      <input id="jumpTime" type="number" step="1" style="width:80px;">
+      <button id="jumpBtn" class="btn">Jump</button>
+    </label>
+    <br/>
+
+    <label>Auto pause at: 
+      <input id="pauseAt" type="number" step="1" style="width:80px;">
+      <button id="setPauseBtn" class="btn">Set</button>
+    </label>
+
+
+    <label>Speed: <input id="speed" type="range" min="0.25" max="4" step="0.25" value="1"></label>
+    <span id="speedLabel" class="small">1×</span>
+    <div class="small">Time step: <input id="timeStep" type="number" min="1" max="1000" value="50" style="width:80px;">  Fade windows (frames): <input id="fadeFrames" type="number" min="1" max="10" value="2" style="width:50px;"></div>
+  </div>
+
+  <div class="legend">
+    <div class="item"><div style="width:16px;height:12px;background:green;border:1px solid #666"></div><div class="small">Cell 0</div></div>
+    <div class="item"><div style="width:16px;height:12px;background:yellow;border:1px solid #666"></div><div class="small">Cell 1</div></div>
+    <div class="item"><div style="width:16px;height:12px;background:blue;border:1px solid #666"></div><div class="small">Cell 2</div></div>
+    <div class="item"><div style="width:16px;height:12px;background:purple;border:1px solid #666"></div><div class="small">CH</div></div>
+    <div class="item"><div style="width:16px;height:12px;background:red;border:1px solid #666"></div><div class="small">Leader</div></div>
+    <div class="item"><svg width="18" height="12"><line x1="2" y1="6" x2="16" y2="6" stroke="blue" stroke-width="2"/></svg><div class="small">CELL_MESSAGE</div></div>
+    <div class="item"><svg width="18" height="12"><line x1="2" y1="6" x2="16" y2="6" stroke="orange" stroke-width="2"/></svg><div class="small">SENSOR_DATA</div></div>
+    <label><input type="checkbox" id="toggleRouting"> Routing Table</label>
+    <button id="nextRouting" class="btn">Next Routing</button>
+<span id="routingLabel" class="small">Cell: none</span>
+  </div>
+</div>
+
+<div id="canvas-wrap">
+  <svg id="svg" width="1000" height="800">
+    <defs>
+      <!-- Larger arrow markers; markerUnits="strokeWidth" keeps size independent of coordinate scaling below -->
+      <marker id="arrow-blue" markerWidth="16" markerHeight="16" refX="12" refY="6"
+              orient="auto" markerUnits="strokeWidth">
+        <path d="M0,0 L0,12 L15,6 z" fill="steelblue"/>
+      </marker>
+      <marker id="arrow-orange" markerWidth="16" markerHeight="16" refX="12" refY="6"
+              orient="auto" markerUnits="strokeWidth">
+        <path d="M0,0 L0,12 L15,6 z" fill="orange"/>
+      </marker>
+    </defs>
+  </svg>
+</div>
+
+<div style="margin-top:8px;">
+  <button id="btnReset" class="btn">Reset view</button>
+  <span class="small" style="margin-left:10px;">Hover node to see id.</span>
+</div>
+
+<div class="tooltip" id="tooltip"></div>
+
+<div id="frameBar">
+  <input id="frameSlider" type="range" min="0" max="0" value="0">
+  <div id="timeLabel">Time: 0</div>
+</div>
+
+<script>
+// ------------------- CONFIG -------------------
+let showRouting = false;
+
+const SVG = d3.select("#svg");
+const W = +SVG.attr("width");
+const H = +SVG.attr("height");
+const PADDING = 20;
+let CELL_RADIUS = 80; // use 80 as you asked
+let zoomTransform = { k: 1, x: 0, y: 0 };
+let autoPauseTime = null; // null = không dùng
+let nodeStats = {}; // id -> { sent: {CELL_MESSAGE:0, SENSOR_DATA:0}, recv: {CELL_MESSAGE:0, SENSOR_DATA:0} }
+
+
+// color map for cell ids
+const COLOR_MAP = {0: "green", 1: "yellow", 2: "blue"};
+
+// state
+let rawEvents = [];   // {t, type, data}
+let tMin=0, tMax=0;
+let frames = 0;
+let playing = false;
+let currentFrame = 0;
+let intervalId = null;
+
+// interactive settings
+const timeStepInput = document.getElementById("timeStep");
+const fadeFramesInput = document.getElementById("fadeFrames");
+const speedInput = document.getElementById("speed");
+
+// persistent state across frames
+let rawPositions = {};   // id -> [rawX,rawY] (no translate)
+let leaderNodes = new Set();
+let chNodes = new Set();
+let cellColors = new Map();  // "q,r" -> color string
+let routingTableByCell2 = {}; // {cell2: [ {src, nextHop} ] }
+
+// drawing groups (wrapped in mainLayer if needed)
+const mainLayer = SVG.append("g").attr("class", "main-layer");
+const gridLayer = mainLayer.append("g").attr("class","grid-layer");
+const cellLayer = mainLayer.append("g").attr("class","cell-layer");
+const edgeLayer = mainLayer.append("g").attr("class","edge-layer");
+const nodeLayer = mainLayer.append("g").attr("class","node-layer");
+const routeLayer = mainLayer.append("g").attr("class","route-layer");
+const labelLayer = mainLayer.append("g").attr("class","label-layer");
+
+const tooltip = d3.select("#tooltip");
+
+// gridCells cached (list of {q,r, baseCx, baseCy})
+let gridCells = [];
+let gridIndex = {}; // map "q,r"->cell
+
+// d3.zoom listens but we only store transform and redraw using computed coords (keeps object sizes fixed)
+const zoomBehavior = d3.zoom()
+  .scaleExtent([0.3, 4])
+  .on("zoom", (event) => {
+    zoomTransform = event.transform;
+    updateFrame(currentFrame);
+  });
+
+SVG.call(zoomBehavior);
+
+// ------------------- HEX MATH -------------------
+function axialToPixel(q, r, radius) {
+  const x = radius * (Math.sqrt(3) * q + Math.sqrt(3)/2 * r);
+  const y = radius * (1.5 * r);
+  return [x, y];
+}
+
+function pixelToAxial(x, y, radius) {
+  const q = (Math.sqrt(3)/3 * x - 1/3 * y) / radius;
+  const r = (2/3 * y) / radius;
+  return hexRound(q, r);
+}
+
+function hexRound(q, r) {
+  let x = q, z = r, y = -x - z;
+  let rx = Math.round(x), ry = Math.round(y), rz = Math.round(z);
+  const dx = Math.abs(rx - x), dy = Math.abs(ry - y), dz = Math.abs(rz - z);
+  if (dx > dy && dx > dz) rx = -ry - rz;
+  else if (dy > dz) ry = -rx - rz;
+  else rz = -rx - ry;
+  return [rx, rz];
+}
+
+function hexPolygon(cx, cy, radius) {
+  const pts=[];
+  for (let i=0;i<6;i++){
+    const angle = Math.PI/6 + i * (Math.PI*2/6);
+    pts.push([cx + radius * Math.cos(angle), cy + radius * Math.sin(angle)]);
+  }
+  return pts;
+}
+
+// apply zoom/pan to a raw coordinate (raw coords are in same units as axialToPixel)
+function applyTransform(rawX, rawY) {
+  // translate by drawing offset, then scale/translate by zoomTransform
+  const tx = SVG.node().__translate.x, ty = SVG.node().__translate.y;
+  const x = (rawX + tx) * zoomTransform.k + zoomTransform.x;
+  const y = (rawY + ty) * zoomTransform.k + zoomTransform.y;
+  return [x, y];
+}
+
+// ------------------- PARSING -------------------
+function parseLogText(text) {
+  rawEvents = [];
+  const lines = text.split(/\r?\n/);
+  for (let line of lines) {
+    if (!line.trim()) continue;
+    const parts = line.trim().split(/\s+/);
+    if (parts.length < 2) continue;
+    const t = parseFloat(parts[0]);
+    if (isNaN(t)) continue;
+    const rest = parts.slice(2).join(" ").trim();  // lấy phần event
+
+    if (rest.startsWith("#NODE")) {
+      const m = rest.match(/#NODE\s+(\d+)\s*\(\s*([-\d.]+)\s*,\s*([-\d.]+)\s*\)/);
+      if (m) rawEvents.push({t, type:"NODE", data:{id:+m[1], x:+m[2], y:+m[3]}});
+    } else if (rest.startsWith("#CELL_COLOR")) {
+      const m = rest.match(/#CELL_COLOR\s+(\d+)\s*:\s*(\d+)/);
+      if (m) rawEvents.push({t, type:"CELL_COLOR", data:{id:+m[1], cid:+m[2]}});
+    } else if (rest.startsWith("#CELL_LEADER")) {
+      const m = rest.match(/#CELL_LEADER\s+(\d+):\s*(\d+)/);
+      if (m) rawEvents.push({t, type:"CELL_LEADER", data:+m[2]});
+    } else if (rest.startsWith("#CH")) {
+      const m = rest.match(/#CH\s+(\d+)/);
+      if (m) rawEvents.push({t, type:"CH", data:+m[1]});
+    } else if (rest.startsWith("#CELL_MESSAGE")) {
+      const m = rest.match(/#CELL_MESSAGE\s+(\d+)\s*->\s*(\d+)/);
+      if (m) rawEvents.push({t, type:"CELL_MESSAGE", data:{src:+m[1], dst:+m[2]}});
+    } else if (rest.startsWith("#SENSOR_DATA")) {
+      const m = rest.match(/#SENSOR_DATA\s*:\s*(\d+)\s*->\s*(\d+)/);
+      if (m) rawEvents.push({t, type:"SENSOR_DATA", data:{src:+m[1], dst:+m[2]}});
+    } else if (rest.startsWith("#GATEWAY_SELECTION")) {
+      const m = rest.match(/#GATEWAY_SELECTION\s+\d+\s*:\s*(\d+)\s*->\s*(\d+)/);
+      if (m) rawEvents.push({t, type:"GATEWAY_SELECTION", data:{src:+m[1], dst:+m[2]}});
+    } else if (rest.startsWith("#NEIGHBOR")) {
+      const m = rest.match(/#NEIGHBOR\s+(\d+)\s*:\s*(\d+)/);
+      if (m) rawEvents.push({t, type:"NEIGHBOR", data:{id:+m[1], nbr:+m[2]}});
+    } else if (rest.startsWith("#ROUTING_TABLE")) {
+      const m = rest.match(/#ROUTING_TABLE\s+(\d+)\s*\((\d+)\)\s*->\s*(\d+)\s*\((\d+)\)/);
+      if (m) {
+        rawEvents.push({
+          t, type:"ROUTING_TABLE",
+          data:{ src:+m[1], cell1:+m[2], nextHop:+m[3], cell2:+m[4] }
+        });
+      }
+    }
+
+
+  }
+  if (rawEvents.length === 0) {
+    alert("Không tìm thấy event hợp lệ trong input.");
+    return;
+  }
+  tMin = d3.min(rawEvents, d=>d.t);
+  tMax = d3.max(rawEvents, d=>d.t);
+}
+
+// ------------------- PREPARE FRAMES -------------------
+function prepareFrames() {
+  const timeStep = +timeStepInput.value;
+  frames = Math.max(1, Math.floor((tMax - tMin) / timeStep) + 1);
+  d3.select("#frameSlider").attr("max", frames-1).property("value", 0);
+  currentFrame = 0;
+  d3.select("#timeLabel").text(`Time: ${tMin.toFixed(2)}`);
+
+  // reset persistent states
+  rawPositions = {};
+  leaderNodes = new Set();
+  chNodes = new Set();
+  cellColors = new Map();
+
+  // build grid cells (base coordinates, not scaled)
+  buildGridCells();
+
+  // initial draw
+  updateFrame(0);
+}
+
+// build gridCells once (base centers relative to hex origin)
+function buildGridCells() {
+  gridCells = [];
+  gridIndex = {};
+  const radius = CELL_RADIUS;
+  const translateX = PADDING;
+  const translateY = PADDING;
+
+const max_q = Math.ceil(W / (radius * Math.sqrt(3))) * 3;
+const max_r = Math.ceil(H / (radius * 1.5)) * 3;
+
+
+  for (let r = -max_r; r <= max_r; r++) {
+  for (let q = -max_q; q <= max_q; q++) {
+      const [cx, cy] = axialToPixel(q, r, radius);
+      const baseCx = cx + translateX;
+      const baseCy = cy + translateY;
+      const cell = {q, r, baseCx, baseCy};
+      gridCells.push(cell);
+      gridIndex[`${q},${r}`] = cell;
+    }
+  }
+
+  // store translate + radius to SVG DOM node for access elsewhere
+  SVG.node().__translate = { x: translateX, y: translateY, radius: radius };
+}
+
+// ------------------- UPDATE FRAME -------------------
+function updateFrame(frameIdx) {
+  if (!rawEvents || rawEvents.length===0) return;
+  const timeStep = +timeStepInput.value;
+  const fadeFrames = +fadeFramesInput.value;
+  const fadeWindow = fadeFrames * timeStep;
+  const currentTime = tMin + frameIdx * timeStep;
+  const windowStart = currentTime - fadeWindow;
+
+  // rebuild persistent rawPositions/leader/ch/cellColors using events up to currentTime
+  rawPositions = {};
+  leaderNodes = new Set();
+  chNodes = new Set();
+  cellColors = new Map();
+  let neighbors = {}; // id -> Set()
+  let routingTable = {}; // id -> list of {srcCell,nextHop,dstCell}
+
+  rawEvents.forEach(ev => {
+    if (ev.t <= currentTime) {
+      if (ev.type === "NODE") {
+        // store raw X,Y (no translate)
+        rawPositions[ev.data.id] = [ev.data.x, ev.data.y];
+      } else if (ev.type === "CELL_COLOR") {
+        const nid = ev.data.id, cid = ev.data.cid;
+        const rp = rawPositions[nid];
+        if (rp) {
+          const [q,r] = pixelToAxial(rp[0], rp[1], CELL_RADIUS);
+          // lưu cả 2: cell theo q,r để vẽ, cellId cho logic routing
+          cellColors.set(`${q},${r}`, { color: COLOR_MAP[cid] || "none", cid });
+        }
+      } else if (ev.type === "CELL_LEADER") {
+        leaderNodes.add(ev.data);
+      } else if (ev.type === "CH") {
+        chNodes.add(ev.data);
+      } else if (ev.type === "NEIGHBOR") {
+        const {id, nbr} = ev.data;
+        if (!neighbors[id]) neighbors[id] = new Set();
+        if (!neighbors[nbr]) neighbors[nbr] = new Set();
+        neighbors[id].add(nbr);
+        neighbors[nbr].add(id);
+      } else if (ev.type === "ROUTING_TABLE") {
+        const {src, srcCell, nextHop, dstCell} = ev.data;
+        if (!routingTable[src]) routingTable[src] = [];
+        routingTable[src].push({srcCell, nextHop, dstCell});
+      }
+
+
+    }
+  });
+
+    // Khởi tạo nodeStats cho tất cả nodes đã biết
+  for (let idStr of Object.keys(rawPositions)) {
+    const id = +idStr;
+    nodeStats[id] = {
+      sent: { CELL_MESSAGE: 0, SENSOR_DATA: 0 },
+      recv: { CELL_MESSAGE: 0, SENSOR_DATA: 0 }
+    };
+  }
+
+  rawEvents.forEach(ev => {
+  if ((ev.type === "CELL_MESSAGE" || ev.type === "SENSOR_DATA") && ev.t <= currentTime) {
+    const src = ev.data.src, dst = ev.data.dst;
+    if (nodeStats[src]) nodeStats[src].sent[ev.type] += 1;
+    if (nodeStats[dst]) nodeStats[dst].recv[ev.type] += 1;
+  }
+});
+
+rawEvents.forEach(ev => {
+  if (ev.t <= currentTime && ev.type==="ROUTING_TABLE") {
+    if (!routingTableByCell2[ev.data.cell2]) routingTableByCell2[ev.data.cell2] = [];
+    routingTableByCell2[ev.data.cell2].push({src:ev.data.src, nextHop:ev.data.nextHop});
+  }
+});
+
+  // draw grid (stroke)
+  const radiusScaled = CELL_RADIUS * zoomTransform.k;
+  gridLayer.selectAll("polygon.grid")
+    .data(gridCells, d=>`${d.q},${d.r}`)
+    .join(
+      enter => enter.append("polygon").attr("class","grid"),
+      update => update,
+      exit => exit.remove()
+    )
+    .attr("points", d => {
+      const cx = d.baseCx * zoomTransform.k + zoomTransform.x;
+      const cy = d.baseCy * zoomTransform.k + zoomTransform.y;
+      const pts = hexPolygon(cx, cy, radiusScaled).map(p=>p.join(",")).join(" ");
+      return pts;
+    })
+    .attr("fill", "none")
+    .attr("stroke", "#ddd")
+    .attr("stroke-width", 1);
+
+  // draw colored cells
+  cellLayer.selectAll("*").remove();
+  for (let [key, color] of cellColors.entries()) {
+    const cell = gridIndex[key];
+    if (!cell) continue;
+    const cx = cell.baseCx * zoomTransform.k + zoomTransform.x;
+    const cy = cell.baseCy * zoomTransform.k + zoomTransform.y;
+    const pts = hexPolygon(cx, cy, radiusScaled).map(p=>p.join(",")).join(" ");
+    cellLayer.append("polygon")
+      .attr("points", pts)
+      .attr("fill", color)
+      .attr("fill-opacity", 0.35)
+      .attr("stroke", "#aaa")
+      .attr("stroke-width", 1)
+      .on("mouseover", function() {
+      const cid = +this.dataset.cellid;
+      routeLayer.selectAll("*").remove();
+if (showRouting && routingCell2 !== null) {
+  const routes = routingTableByCell2[routingCell2] || [];
+  routes.forEach(r => {
+    if (rawPositions[r.src] && rawPositions[r.nextHop]) {
+      const [sx, sy] = applyTransform(rawPositions[r.src][0], rawPositions[r.src][1]);
+      const [tx, ty] = applyTransform(rawPositions[r.nextHop][0], rawPositions[r.nextHop][1]);
+      routeLayer.append("line")
+        .attr("x1", sx).attr("y1", sy)
+        .attr("x2", tx).attr("y2", ty)
+        .attr("stroke", "black")
+        .attr("stroke-dasharray", "4,2")
+        .attr("stroke-width", 1.5);
+    }
+  });
+}
+
+      cellNodes.forEach(id => {
+        const routes = routingTable[id] || [];
+        routes.forEach(r => {
+          if (rawPositions[r.nextHop]) {
+            const [sx,sy] = applyTransform(rawPositions[id][0], rawPositions[id][1]);
+            const [tx,ty] = applyTransform(rawPositions[r.nextHop][0], rawPositions[r.nextHop][1]);
+            routeLayer.append("line")
+              .attr("x1",sx).attr("y1",sy).attr("x2",tx).attr("y2",ty)
+              .attr("stroke","black")
+              .attr("stroke-dasharray","4,2")
+              .attr("stroke-width",1.5);
+          }
+        });
+      });
+    })
+    .on("mouseout", () => {
+      routeLayer.selectAll("*").remove();
+    });
+  }
+
+  // prepare screen node list
+  const screenNodes = [];
+  for (let idStr of Object.keys(rawPositions)) {
+    const id = +idStr;
+    const [rawX, rawY] = rawPositions[id];
+    const [sx, sy] = applyTransform(rawX, rawY);
+    screenNodes.push({id, x:sx, y:sy});
+  }
+
+  // draw nodes (nodes size fixed)
+  nodeLayer.selectAll("*").remove();
+  const nodeSel = nodeLayer.selectAll("g.node")
+    .data(screenNodes, d=>d.id);
+
+  const nodeEnter = nodeSel.enter().append("g").attr("class","node")
+    .attr("transform", d=>`translate(${d.x},${d.y})`)
+    .style("cursor","pointer")
+    .on("mouseover", (event,d)=>{
+      const stats = nodeStats[d.id];
+      let html = `Node ${d.id}`;
+      if (stats) {
+        html += `<br/>Sent: CELL_MESSAGE=${stats.sent.CELL_MESSAGE}, SENSOR_DATA=${stats.sent.SENSOR_DATA}`;
+        html += `<br/>Recv: CELL_MESSAGE=${stats.recv.CELL_MESSAGE}, SENSOR_DATA=${stats.recv.SENSOR_DATA}`;
+      }
+      tooltip.style("display","block").html(html);
+
+      // highlight neighbor nodes
+      if (neighbors[d.id]) {
+        nodeLayer.selectAll("circle")
+          .filter(nd => neighbors[d.id].has(nd.id))
+          .attr("fill", "#add8e6"); // màu xanh nhạt
+      }
+    })
+        .on("mouseout", (event,d)=>{
+      tooltip.style("display","none");
+      nodeLayer.selectAll("g.node").select("circle")
+        .attr("fill", nd => (leaderNodes.has(nd.id) ? "red" : (chNodes.has(nd.id) ? "purple" : "white")));
+    })
+    .on("mousemove", (event)=>{
+      tooltip.style("left", (event.pageX + 12) + "px").style("top", (event.pageY + 6) + "px");
+    });
+
+
+  nodeEnter.append("circle")
+    .attr("r", 16) // fixed radius
+    .attr("stroke", "#333")
+    .attr("stroke-width", 1.2)
+    .attr("fill", d => (leaderNodes.has(d.id) ? "red" : (chNodes.has(d.id) ? "purple" : "white")));
+
+  nodeEnter.append("text")
+    .attr("y",4)
+    .attr("text-anchor","middle")
+    .attr("font-size",10)
+    .attr("fill", d => (leaderNodes.has(d.id) ? "white" : "black"))
+    .text(d=>d.id);
+
+  // draw edges in sliding window (using screen positions)
+  edgeLayer.selectAll("*").remove();
+  const activeEdges = [];
+  rawEvents.forEach(ev=>{
+    if ((ev.type==="CELL_MESSAGE" || ev.type==="SENSOR_DATA") && ev.t >= windowStart && ev.t <= currentTime) {
+      const age = currentTime - ev.t;
+      const alpha = (age < timeStep) ? 1.0 : 0.5;
+      const src = ev.data.src, dst = ev.data.dst;
+      if (rawPositions[src] && rawPositions[dst]) {
+        const [sx, sy] = applyTransform(rawPositions[src][0], rawPositions[src][1]);
+        const [tx2, ty2] = applyTransform(rawPositions[dst][0], rawPositions[dst][1]);
+        activeEdges.push({src, dst, sx, sy, tx2, ty2, type:ev.type, alpha});
+      }
+    }
+  });
+
+  // draw curved path + marker-end
+  activeEdges.forEach(e=>{
+    const sx = e.sx, sy = e.sy, tx2 = e.tx2, ty2 = e.ty2;
+    const dx = tx2 - sx, dy = ty2 - sy;
+    const mx = (sx + tx2)/2, my = (sy + ty2)/2;
+    const norm = Math.sqrt(dx*dx + dy*dy) || 1;
+    const px = mx + (-dy/norm) * 20 * zoomTransform.k; // curve offset scaled with zoom so shape consistent
+    const py = my + (dx/norm) * 20 * zoomTransform.k;
+    const path = `M ${sx} ${sy} Q ${px} ${py} ${tx2} ${ty2}`;
+    edgeLayer.append("path")
+      .attr("d", path)
+      .attr("fill", "none")
+      .attr("stroke", e.type === "CELL_MESSAGE" ? "steelblue" : "orange")
+      .attr("stroke-width", 2)
+      .attr("stroke-opacity", e.alpha)
+      .attr("marker-end", e.type === "CELL_MESSAGE" ? "url(#arrow-blue)" : "url(#arrow-orange)")
+      .attr("stroke-linecap","round");
+  });
+
+  routeLayer.selectAll("*").remove();
+if (showRouting && routingCell2 !== null) {
+  const routes = routingTableByCell2[routingCell2] || [];
+  routes.forEach(r => {
+    if (rawPositions[r.src] && rawPositions[r.nextHop]) {
+      const [sx, sy] = applyTransform(rawPositions[r.src][0], rawPositions[r.src][1]);
+      const [tx, ty] = applyTransform(rawPositions[r.nextHop][0], rawPositions[r.nextHop][1]);
+      routeLayer.append("line")
+        .attr("x1", sx).attr("y1", sy)
+        .attr("x2", tx).attr("y2", ty)
+        .attr("stroke", "black")
+        .attr("stroke-dasharray", "4,2")
+        .attr("stroke-width", 1.5);
+    }
+  });
+}
+
+  // update title/time and slider
+  d3.select("#timeLabel").text(`Time: ${currentTime.toFixed(2)}`);
+  d3.select("#frameSlider").property("value", frameIdx);
+}
+
+// ------------------- Playback -------------------
+function play() {
+  if (playing) return;
+  playing = true;
+  const fps = 10; // base fps
+  const speed = +speedInput.value;
+  const intervalMs = 1000 / (fps * speed);
+  intervalId = setInterval(()=>{
+  if (currentFrame >= frames-1) { pause(); return; }
+  currentFrame++;
+  updateFrame(currentFrame);
+
+  // kiểm tra autoPause
+  if (autoPauseTime !== null) {
+    const timeStep = +timeStepInput.value;
+    const currentTime = tMin + currentFrame * timeStep;
+    if (currentTime >= autoPauseTime) {
+      pause();
+    }
+  }
+}, intervalMs);
+
+}
+
+function pause() {
+  playing = false;
+  if (intervalId) { clearInterval(intervalId); intervalId = null; }
+}
+
+// ------------------- UI hooks -------------------
+document.getElementById("btnLoad").addEventListener("click", ()=>{
+  const f = document.getElementById("fileInput").files[0];
+  if (!f) { alert("Chọn file log trước."); return; }
+  const reader = new FileReader();
+  reader.onload = () => {
+    document.getElementById("logArea").value = reader.result;
+    alert("File loaded to textarea. Click Parse & Prepare.");
+  };
+  reader.readAsText(f);
+});
+
+document.getElementById("btnParse").addEventListener("click", ()=>{
+  const text = document.getElementById("logArea").value;
+  if (!text.trim()) { alert("Paste hoặc load log trước."); return; }
+  parseLogText(text);
+  prepareFrames();
+});
+
+document.getElementById("playBtn").addEventListener("click", ()=>{ play(); });
+document.getElementById("pauseBtn").addEventListener("click", ()=>{ pause(); });
+document.getElementById("btnReset").addEventListener("click", ()=>{
+  // reset zoom and re-render
+  SVG.transition().duration(300).call(zoomBehavior.transform, d3.zoomIdentity);
+  zoomTransform = {k:1, x:0, y:0};
+  updateFrame(currentFrame);
+});
+
+document.getElementById("nextBtn").addEventListener("click", ()=>{
+  pause();
+  if (currentFrame < frames-1) {
+    currentFrame++;
+    updateFrame(currentFrame);
+  }
+});
+
+document.getElementById("jumpBtn").addEventListener("click", ()=>{
+  const t = parseFloat(document.getElementById("jumpTime").value);
+  if (isNaN(t) || !rawEvents.length) return;
+  const timeStep = +timeStepInput.value;
+  let frameIdx = Math.floor((t - tMin)/timeStep);
+  frameIdx = Math.max(0, Math.min(frames-1, frameIdx));
+  pause();
+  currentFrame = frameIdx;
+  updateFrame(currentFrame);
+});
+
+document.getElementById("setPauseBtn").addEventListener("click", ()=>{
+  const t = parseFloat(document.getElementById("pauseAt").value);
+  autoPauseTime = isNaN(t) ? null : t;
+  if (autoPauseTime !== null) {
+    alert("Auto pause set at time " + autoPauseTime);
+  } else {
+    alert("Auto pause cleared");
+  }
+});
+
+document.getElementById("jumpTime").addEventListener("change", (ev)=>{
+  const t = parseFloat(ev.target.value);
+  if (isNaN(t) || !rawEvents.length) return;
+  const timeStep = +timeStepInput.value;
+  let frameIdx = Math.floor((t - tMin)/timeStep);
+  frameIdx = Math.max(0, Math.min(frames-1, frameIdx));
+  pause();
+  currentFrame = frameIdx;
+  updateFrame(currentFrame);
+});
+
+document.getElementById("toggleRouting").addEventListener("change", (ev) => {
+  showRouting = ev.target.checked;
+  updateFrame(currentFrame); // redraw khi thay đổi
+});
+
+document.getElementById("frameSlider").addEventListener("input", (ev)=>{
+  pause();
+  currentFrame = +ev.target.value;
+  updateFrame(currentFrame);
+});
+
+let routingCell2 = null;
+let routingCell2List = [];
+
+document.getElementById("toggleRouting").addEventListener("change", ev => {
+  showRouting = ev.target.checked;
+  if (showRouting) {
+    // xây danh sách cell2 đã xuất hiện, sắp xếp
+    routingCell2List = Object.keys(routingTableByCell2).map(Number).sort((a,b)=>a-b);
+    routingCell2 = routingCell2List.length ? routingCell2List[0] : null;
+  } else {
+    routingCell2 = null;
+  }
+  updateFrame(currentFrame);
+});
+
+document.getElementById("nextRouting").addEventListener("click", ()=>{
+  if (!routingCell2List.length) return;
+  let idx = routingCell2List.indexOf(routingCell2);
+  idx = (idx+1) % routingCell2List.length;
+  routingCell2 = routingCell2List[idx];
+  document.getElementById("routingLabel").textContent = "Cell: "+routingCell2;
+  updateFrame(currentFrame);
+});
+
+
+speedInput.addEventListener("input", ()=>{
+  d3.select("#speedLabel").text(speedInput.value + "×");
+  if (playing) { pause(); play(); }
+});
+
+timeStepInput.addEventListener("change", ()=>{
+  if (!rawEvents.length) return;
+  prepareFrames();
+  updateFrame(0);
+});
+
+fadeFramesInput.addEventListener("change", ()=>{ updateFrame(currentFrame); });
+
+// initial grid
+buildGridCells();
+updateFrame(0);
+
+</script>
+</body>
+</html>
