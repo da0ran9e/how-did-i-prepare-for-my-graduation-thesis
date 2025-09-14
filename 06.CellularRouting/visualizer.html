@@ -219,12 +219,7 @@ let pinnedNode = null; // id node đang được ghim
 
 
 // color map for cell ids
-const COLOR_MAP = {
-  0: "lightgreen",
-  1: "khaki",
-  2: "lightblue"
-};
-
+const COLOR_MAP = {0: "green", 1: "yellow", 2: "blue"};
 
 // state
 let rawEvents = [];   // {t, type, data}
@@ -249,8 +244,8 @@ let routingTableByCell2 = {}; // {cell2: [ {src, nextHop} ] }
 // drawing groups (wrapped in mainLayer if needed)
 const mainLayer = SVG.append("g").attr("class", "main-layer");
 const helloLayer = mainLayer.append("g").attr("class","hello-layer");
-const cellLayer = mainLayer.append("g").attr("class","cell-layer");
 const gridLayer = mainLayer.append("g").attr("class","grid-layer");
+const cellLayer = mainLayer.append("g").attr("class","cell-layer");
 const edgeLayer = mainLayer.append("g").attr("class","edge-layer");
 const nodeLayer = mainLayer.append("g").attr("class","node-layer");
 const routeLayer = mainLayer.append("g").attr("class","route-layer");
@@ -314,7 +309,6 @@ function applyTransform(rawX, rawY) {
 }
 
 // ------------------- PARSING -------------------
-
 function parseLogText(text) {
   rawEvents = [];
   const lines = text.split(/\r?\n/);
@@ -520,15 +514,15 @@ function updateFrame(frameIdx) {
       if (ev.type === "NODE") {
         // store raw X,Y (no translate)
         rawPositions[ev.data.id] = [ev.data.x, ev.data.y];
-      } } else if (ev.type === "CELL_COLOR") {
-  const nid = ev.data.id;
-  const cid = ev.data.cid;
-  const rp = rawPositions[nid];
-  if (rp) {
-    const [q,r] = pixelToAxial(rp[0], rp[1], CELL_RADIUS);
-    cellColors.set(`${q},${r}`, { color: COLOR_MAP[cid] || "lightgray", cid });
-  }
- else if (ev.type === "CELL_LEADER") {
+      } else if (ev.type === "CELL_COLOR") {
+        const nid = ev.data.id, cid = ev.data.cid;
+        const rp = rawPositions[nid];
+        if (rp) {
+          const [q,r] = pixelToAxial(rp[0], rp[1], CELL_RADIUS);
+          // lưu cả 2: cell theo q,r để vẽ, cellId cho logic routing
+          cellColors.set(`${q},${r}`, COLOR_MAP[cid] || "none");
+        }
+      } else if (ev.type === "CELL_LEADER") {
         leaderNodes.add(ev.data);
       } else if (ev.type === "CH") {
         chNodes.add(ev.data);
@@ -608,7 +602,7 @@ rawEvents.forEach(ev => {
 
   // draw colored cells
   cellLayer.selectAll("*").remove();
-  for (let [key, val] of cellColors.entries()) {
+  for (let [key, color] of cellColors.entries()) {
     const cell = gridIndex[key];
     if (!cell) continue;
     const cx = cell.baseCx * zoomTransform.k + zoomTransform.x;
@@ -616,10 +610,10 @@ rawEvents.forEach(ev => {
     const pts = hexPolygon(cx, cy, radiusScaled).map(p=>p.join(",")).join(" ");
     cellLayer.append("polygon")
       .attr("points", pts)
-      .attr("fill", val.color)     
-      .attr("fill-opacity", 0.5)
+      .attr("fill", color)
+      .attr("fill-opacity", 0.15)
       .attr("stroke", "#aaa")
-    .attr("stroke-width", 1)
+      .attr("stroke-width", 1)
       .on("mouseover", function() {
       const cid = +this.dataset.cellid;
       routeLayer.selectAll("*").remove();
