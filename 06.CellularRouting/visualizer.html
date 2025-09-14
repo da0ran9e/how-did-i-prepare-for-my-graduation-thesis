@@ -44,6 +44,28 @@
   text-align: right;
 }
 
+#main {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+#canvas-wrap {
+  width: 800px;
+  flex: 1;
+}
+
+#infoPanel {
+  width: 400px;
+  border: 1px solid #ccc;
+  background: #fff;
+  padding: 8px;
+  font-size: 13px;
+  max-height: 800px;
+  overflow-y: auto;
+}
+
+
 </style>
 </head>
 <body>
@@ -89,8 +111,25 @@
     <div class="item"><div style="width:16px;height:12px;background:green;border:1px solid #666"></div><div class="small">Cell 0</div></div>
     <div class="item"><div style="width:16px;height:12px;background:yellow;border:1px solid #666"></div><div class="small">Cell 1</div></div>
     <div class="item"><div style="width:16px;height:12px;background:blue;border:1px solid #666"></div><div class="small">Cell 2</div></div>
-    <div class="item"><div style="width:16px;height:12px;background:purple;border:1px solid #666"></div><div class="small">CH</div></div>
-    <div class="item"><div style="width:16px;height:12px;background:red;border:1px solid #666"></div><div class="small">Leader</div></div>
+    <div class="item">
+  <svg width="22" height="22">
+    <circle cx="11" cy="11" r="7" fill="white" stroke="#333" stroke-width="2"/>
+    <circle cx="11" cy="11" r="9.5" fill="none" stroke="#333" stroke-width="1.2"/>
+  </svg>
+  <div class="small">Leader (CL)</div>
+</div>
+
+<div class="item">
+  <svg width="22" height="22">
+    <circle cx="11" cy="11" r="8" fill="white" stroke="#333" stroke-width="2"/>
+    <path d="
+      M11,4
+      L13,9 L18,9 L14,12 L16,17 L11,14 L6,17 L8,12 L4,9 L9,9 Z"
+      fill="none" stroke="#333" stroke-width="1"/>
+  </svg>
+  <div class="small">Cluster Head (CH)</div>
+</div>
+
     <div class="item"><svg width="18" height="12"><line x1="2" y1="6" x2="16" y2="6" stroke="blue" stroke-width="2"/></svg><div class="small">CELL_MESSAGE</div></div>
     <div class="item"><svg width="18" height="12"><line x1="2" y1="6" x2="16" y2="6" stroke="orange" stroke-width="2"/></svg><div class="small">SENSOR_DATA</div></div>
     <label><input type="checkbox" id="toggleRouting"> Routing Table</label>
@@ -98,7 +137,7 @@
 <span id="routingLabel" class="small">Cell: none</span>
   </div>
 </div>
-
+<div id="main">
 <div id="canvas-wrap">
   <svg id="svg" width="1000" height="800">
     <defs>
@@ -115,6 +154,30 @@
   </svg>
 </div>
 
+<div id="infoPanel">
+  <div style="display: flex;">
+    <div>
+      <h3>Info</h3>
+      <div id="networkStats">
+        <p><b>Total nodes:</b> <span id="totalNodes">0</span></p>
+        <p><b>CH:</b> <span id="totalCH">0</span></p>
+      </div>
+      </div>
+      <div style="margin-left:20px;">
+      <h4>Message counters</h4>
+      <div id="messageStats">
+        <p>CELL_MESSAGE: <span id="countCellMsg">0</span></p>
+        <p>SENSOR_DATA: <span id="countSensorData">0</span></p>
+      </div>
+      </div>
+    </div>
+    <div id="nodeDetails">
+    <h3>Node Details</h3>
+    <div id="nodeInfo">Hover a node to see details here.</div>
+  </div>
+  </div>
+  
+</div>
 <div style="margin-top:8px;">
   <button id="btnReset" class="btn">Reset view</button>
   <span class="small" style="margin-left:10px;">Hover node to see id.</span>
@@ -139,6 +202,9 @@ let CELL_RADIUS = 80; // use 80 as you asked
 let zoomTransform = { k: 1, x: 0, y: 0 };
 let autoPauseTime = null; // null = không dùng
 let nodeStats = {}; // id -> { sent: {CELL_MESSAGE:0, SENSOR_DATA:0}, recv: {CELL_MESSAGE:0, SENSOR_DATA:0} }
+
+let pinnedNode = null; // id node đang được ghim
+
 
 
 // color map for cell ids
@@ -335,6 +401,74 @@ const max_r = Math.ceil(H / (radius * 1.5)) * 3;
 }
 
 // ------------------- UPDATE FRAME -------------------
+function showNodeInfo(nodeId){
+  const stats = nodeStats[nodeId];
+  let html = `<p><b>Node ${nodeId}</b></p>`;
+  if (stats) {
+    html += `<p>Sent: CELL_MESSAGE=${stats.sent.CELL_MESSAGE}, SENSOR_DATA=${stats.sent.SENSOR_DATA}</p>`;
+    html += `<p>Recv: CELL_MESSAGE=${stats.recv.CELL_MESSAGE}, SENSOR_DATA=${stats.recv.SENSOR_DATA}</p>`;
+  }
+  if (neighbors[nodeId]) {
+    html += `<p>Neighbors: ${Array.from(neighbors[nodeId]).join(", ")}</p>`;
+  }
+  d3.select("#nodeInfo").html(html);
+}
+
+function clearNodeInfo(){
+  d3.select("#nodeInfo").html("Hover a node to see details here.");
+}
+
+function highlightNeighbors(nodeId){
+  if (!neighbors[nodeId]) return;
+  nodeLayer.selectAll("g.node")
+    .filter(nd => neighbors[nodeId].has(nd.id))
+    .select("circle")
+    .attr("fill", "#add8e6");
+}
+
+function resetNodes(){
+
+
+  // Reset lại toàn bộ node theo role
+  nodeLayer.selectAll("g.node").each(function(nd){
+    const g = d3.select(this);
+    g.selectAll("*").remove();  // clear nội dung node
+
+    // Vẽ lại node đúng loại
+    if (leaderNodes.has(nd.id)) {
+      // Leader = vòng kép
+      g.append("circle").attr("r",16).attr("fill","white").attr("stroke","#333").attr("stroke-width",2);
+      g.append("circle").attr("r",19).attr("fill","none").attr("stroke","#333").attr("stroke-width",2);
+    } else if (chNodes.has(nd.id)) {
+      // CH = circle + star
+      g.append("circle").attr("r",16).attr("fill","white").attr("stroke","#333").attr("stroke-width",2);
+      const rOuter=15.5, rInner=6, numPoints=5;
+      const starPts=[];
+      for (let i=0;i<numPoints*2;i++){
+        const ang=Math.PI/2+i*Math.PI/numPoints;
+        const r=i%2===0?rOuter:rInner;
+        starPts.push([r*Math.cos(ang),-r*Math.sin(ang)]);
+      }
+      g.append("path")
+        .attr("d",d3.line()(starPts))
+        .attr("fill","none").attr("stroke","#333").attr("stroke-width",1.2);
+    } else {
+      // node thường
+      g.append("circle").attr("r",16).attr("fill","white").attr("stroke","#333").attr("stroke-width",1.2);
+    }
+
+    // vẽ lại text ID
+    g.append("text")
+      .attr("y",4)
+      .attr("text-anchor","middle")
+      .attr("font-size",10)
+      .attr("fill","black")
+      .text(nd.id);
+
+      
+  })
+}
+
 function updateFrame(frameIdx) {
   if (!rawEvents || rawEvents.length===0) return;
   const timeStep = +timeStepInput.value;
@@ -348,7 +482,7 @@ function updateFrame(frameIdx) {
   leaderNodes = new Set();
   chNodes = new Set();
   cellColors = new Map();
-  let neighbors = {}; // id -> Set()
+  neighbors = {}; // id -> Set()
   let routingTable = {}; // id -> list of {srcCell,nextHop,dstCell}
 
   rawEvents.forEach(ev => {
@@ -498,42 +632,108 @@ if (showRouting && routingCell2 !== null) {
     .attr("transform", d=>`translate(${d.x},${d.y})`)
     .style("cursor","pointer")
     .on("mouseover", (event,d)=>{
-      const stats = nodeStats[d.id];
-      let html = `Node ${d.id}`;
-      if (stats) {
-        html += `<br/>Sent: CELL_MESSAGE=${stats.sent.CELL_MESSAGE}, SENSOR_DATA=${stats.sent.SENSOR_DATA}`;
-        html += `<br/>Recv: CELL_MESSAGE=${stats.recv.CELL_MESSAGE}, SENSOR_DATA=${stats.recv.SENSOR_DATA}`;
-      }
-      tooltip.style("display","block").html(html);
+      if (pinnedNode !== null) return; // đang ghim thì bỏ qua hover
+      showNodeInfo(d.id);
+      highlightNeighbors(d.id);
 
-      // highlight neighbor nodes
-      if (neighbors[d.id]) {
-        nodeLayer.selectAll("circle")
-          .filter(nd => neighbors[d.id].has(nd.id))
-          .attr("fill", "#add8e6"); // màu xanh nhạt
-      }
-    })
-        .on("mouseout", (event,d)=>{
-      tooltip.style("display","none");
-      nodeLayer.selectAll("g.node").select("circle")
-        .attr("fill", nd => (leaderNodes.has(nd.id) ? "red" : (chNodes.has(nd.id) ? "purple" : "white")));
-    })
+})
+
+        .on("mouseout", ()=>{
+           if (pinnedNode !== null) return; // đang ghim thì bỏ qua mouseout
+            clearNodeInfo();
+            resetNodes();
+
+})
+      .on("click", (event,d)=>{
+        if (pinnedNode === d.id) {
+          // bỏ ghim nếu click lại
+          pinnedNode = null;
+          clearNodeInfo();
+          resetNodes();
+        } else {
+          pinnedNode = d.id;
+          showNodeInfo(d.id);
+          highlightNeighbors(d.id);
+        }
+      })
+
     .on("mousemove", (event)=>{
       tooltip.style("left", (event.pageX + 12) + "px").style("top", (event.pageY + 6) + "px");
     });
 
+    
 
-  nodeEnter.append("circle")
-    .attr("r", 16) // fixed radius
+
+ nodeEnter.each(function(d) {
+  const g = d3.select(this);
+
+  if (leaderNodes.has(d.id)) {
+    // CL: circle with double border
+    g.append("circle")
+      .attr("r", 16)
+      .attr("fill", "white")
+      .attr("stroke", "#333")
+      .attr("stroke-width", 2);
+    g.append("circle")
+      .attr("r", 19) // outer border
+      .attr("fill", "none")
+      .attr("stroke", "#333")
+      .attr("stroke-width", 1.2);
+
+  } else if (chNodes.has(d.id)) {
+  // CH: circle + star inside
+  g.append("circle")
+    .attr("r", 16)
+    .attr("fill", "white")
     .attr("stroke", "#333")
-    .attr("stroke-width", 1.2)
-    .attr("fill", d => (leaderNodes.has(d.id) ? "red" : (chNodes.has(d.id) ? "purple" : "white")));
+    .attr("stroke-width", 2);
+
+  // Star spanning out to the border
+  const rOuter = 15.5; // gần chạm viền ngoài (node r=16)
+  const rInner = 6;    // điểm lõm vào
+  const numPoints = 5;
+
+  const starPoints = [];
+  for (let i = 0; i < numPoints * 2; i++) {
+    const angle = Math.PI/2 + i * Math.PI / numPoints;
+    const r = i % 2 === 0 ? rOuter : rInner;
+    starPoints.push([r * Math.cos(angle), -r * Math.sin(angle)]);
+  }
+
+  const starPath = d3.line()(starPoints);
+
+  g.append("path")
+    .attr("d", starPath)
+    .attr("fill", "none")
+    .attr("stroke", "#333")
+    .attr("stroke-width", 1.2);
+
+
+
+  } else {
+    // Normal node
+    g.append("circle")
+      .attr("r", 16)
+      .attr("fill", "white")
+      .attr("stroke", "#333")
+      .attr("stroke-width", 1.2);
+  }
+
+  // Node id (luôn màu đen)
+  g.append("text")
+    .attr("y", 4)
+    .attr("text-anchor","middle")
+    .attr("font-size",10)
+    .attr("fill","black")
+    .text(d.id);
+});
+
 
   nodeEnter.append("text")
     .attr("y",4)
     .attr("text-anchor","middle")
     .attr("font-size",10)
-    .attr("fill", d => (leaderNodes.has(d.id) ? "white" : "black"))
+    .attr("fill", "black")
     .text(d=>d.id);
 
   // draw edges in sliding window (using screen positions)
@@ -587,6 +787,22 @@ if (showRouting && routingCell2 !== null) {
     }
   });
 }
+
+// --- update info panel ---
+d3.select("#totalNodes").text(Object.keys(rawPositions).length);
+d3.select("#totalCells").text(cellColors.size);
+d3.select("#totalCL").text(leaderNodes.size);
+d3.select("#totalCH").text(chNodes.size);
+
+// đếm message
+let cellMsg = 0, sensorMsg = 0;
+rawEvents.forEach(ev=>{
+  if (ev.type==="CELL_MESSAGE" && ev.t <= currentTime) cellMsg++;
+  if (ev.type==="SENSOR_DATA" && ev.t <= currentTime) sensorMsg++;
+});
+d3.select("#countCellMsg").text(cellMsg);
+d3.select("#countSensorData").text(sensorMsg);
+
 
   // update title/time and slider
   d3.select("#timeLabel").text(`Time: ${currentTime.toFixed(2)}`);
