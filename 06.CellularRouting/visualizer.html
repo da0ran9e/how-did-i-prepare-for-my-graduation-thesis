@@ -87,7 +87,9 @@
   <div style="min-width:300px;">
     <button id="playBtn" class="btn">Play</button>
     <button id="pauseBtn" class="btn">Pause</button>
-    <button id="nextBtn" class="btn">Next</button>
+    <button id="prevBtn" class="btn">Prev</button>
+<button id="nextBtn" class="btn">Next</button>
+
     <br/>
 
     <label>Jump to time: 
@@ -111,6 +113,7 @@
     <div class="item"><div style="width:16px;height:12px;background:green;border:1px solid #666"></div><div class="small">Cell 0</div></div>
     <div class="item"><div style="width:16px;height:12px;background:yellow;border:1px solid #666"></div><div class="small">Cell 1</div></div>
     <div class="item"><div style="width:16px;height:12px;background:blue;border:1px solid #666"></div><div class="small">Cell 2</div></div>
+    
     <div class="item">
   <svg width="22" height="22">
     <circle cx="11" cy="11" r="7" fill="white" stroke="#333" stroke-width="2"/>
@@ -132,6 +135,9 @@
 
     <div class="item"><svg width="18" height="12"><line x1="2" y1="6" x2="16" y2="6" stroke="blue" stroke-width="2"/></svg><div class="small">CELL_MESSAGE</div></div>
     <div class="item"><svg width="18" height="12"><line x1="2" y1="6" x2="16" y2="6" stroke="orange" stroke-width="2"/></svg><div class="small">SENSOR_DATA</div></div>
+    <div class="item"><svg width="18" height="12"><line x1="2" y1="6" x2="16" y2="6" stroke="red" stroke-width="2"/></svg><div class="small">CL_ANNOUNCEMENT</div></div>
+<div class="item"><svg width="18" height="12"><line x1="2" y1="6" x2="16" y2="6" stroke="red" stroke-width="2" stroke-dasharray="5,3"/></svg><div class="small">CL_CONFIRMATION</div></div>
+
     <label><input type="checkbox" id="toggleRouting"> Routing Table</label>
     <button id="nextRouting" class="btn">Next Routing</button>
 <span id="routingLabel" class="small">Cell: none</span>
@@ -150,6 +156,11 @@
               orient="auto" markerUnits="strokeWidth">
         <path d="M0,0 L0,12 L15,6 z" fill="orange"/>
       </marker>
+      <marker id="arrow-red" markerWidth="16" markerHeight="16" refX="12" refY="6"
+        orient="auto" markerUnits="strokeWidth">
+  <path d="M0,0 L0,12 L15,6 z" fill="red"/>
+</marker>
+
     </defs>
   </svg>
 </div>
@@ -208,7 +219,12 @@ let pinnedNode = null; // id node đang được ghim
 
 
 // color map for cell ids
-const COLOR_MAP = {0: "green", 1: "yellow", 2: "blue"};
+const COLOR_MAP = {
+  0: "lightgreen",
+  1: "khaki",
+  2: "lightblue"
+};
+
 
 // state
 let rawEvents = [];   // {t, type, data}
@@ -232,8 +248,9 @@ let routingTableByCell2 = {}; // {cell2: [ {src, nextHop} ] }
 
 // drawing groups (wrapped in mainLayer if needed)
 const mainLayer = SVG.append("g").attr("class", "main-layer");
-const gridLayer = mainLayer.append("g").attr("class","grid-layer");
+const helloLayer = mainLayer.append("g").attr("class","hello-layer");
 const cellLayer = mainLayer.append("g").attr("class","cell-layer");
+const gridLayer = mainLayer.append("g").attr("class","grid-layer");
 const edgeLayer = mainLayer.append("g").attr("class","edge-layer");
 const nodeLayer = mainLayer.append("g").attr("class","node-layer");
 const routeLayer = mainLayer.append("g").attr("class","route-layer");
@@ -297,6 +314,7 @@ function applyTransform(rawX, rawY) {
 }
 
 // ------------------- PARSING -------------------
+
 function parseLogText(text) {
   rawEvents = [];
   const lines = text.split(/\r?\n/);
@@ -340,7 +358,18 @@ function parseLogText(text) {
           data:{ src:+m[1], cell1:+m[2], nextHop:+m[3], cell2:+m[4] }
         });
       }
-    }
+    } else if (rest.startsWith("#CL_ANNOUNCEMENT")) {
+      const m = rest.match(/#CL_ANNOUNCEMENT\s+(\d+)\s*:\s*(\d+)/);
+      if (m) rawEvents.push({t, type:"CL_ANNOUNCEMENT", data:{src:+m[1], dst:+m[2]}});
+    } else if (rest.startsWith("#CL_CONFIRMATION")) {
+      const m = rest.match(/#CL_CONFIRMATION\s+(\d+)\s*:\s*(\d+)/);
+      if (m) rawEvents.push({t, type:"CL_CONFIRMATION", data:{src:+m[1], dst:+m[2]}});
+    } else if (rest.startsWith("#HELLO")) {
+  const m = rest.match(/#HELLO\s+(\d+)/);
+  if (m) rawEvents.push({t, type:"HELLO", data:{id:+m[1]}});
+}
+
+
 
 
   }
@@ -476,6 +505,7 @@ function updateFrame(frameIdx) {
   const fadeWindow = fadeFrames * timeStep;
   const currentTime = tMin + frameIdx * timeStep;
   const windowStart = currentTime - fadeWindow;
+  const activeEdges = [];
 
   // rebuild persistent rawPositions/leader/ch/cellColors using events up to currentTime
   rawPositions = {};
@@ -490,15 +520,15 @@ function updateFrame(frameIdx) {
       if (ev.type === "NODE") {
         // store raw X,Y (no translate)
         rawPositions[ev.data.id] = [ev.data.x, ev.data.y];
-      } else if (ev.type === "CELL_COLOR") {
-        const nid = ev.data.id, cid = ev.data.cid;
-        const rp = rawPositions[nid];
-        if (rp) {
-          const [q,r] = pixelToAxial(rp[0], rp[1], CELL_RADIUS);
-          // lưu cả 2: cell theo q,r để vẽ, cellId cho logic routing
-          cellColors.set(`${q},${r}`, { color: COLOR_MAP[cid] || "none", cid });
-        }
-      } else if (ev.type === "CELL_LEADER") {
+      } } else if (ev.type === "CELL_COLOR") {
+  const nid = ev.data.id;
+  const cid = ev.data.cid;
+  const rp = rawPositions[nid];
+  if (rp) {
+    const [q,r] = pixelToAxial(rp[0], rp[1], CELL_RADIUS);
+    cellColors.set(`${q},${r}`, { color: COLOR_MAP[cid] || "lightgray", cid });
+  }
+ else if (ev.type === "CELL_LEADER") {
         leaderNodes.add(ev.data);
       } else if (ev.type === "CH") {
         chNodes.add(ev.data);
@@ -512,7 +542,22 @@ function updateFrame(frameIdx) {
         const {src, srcCell, nextHop, dstCell} = ev.data;
         if (!routingTable[src]) routingTable[src] = [];
         routingTable[src].push({srcCell, nextHop, dstCell});
-      }
+      } else if (
+        (ev.type==="CELL_MESSAGE" || ev.type==="SENSOR_DATA" ||
+        ev.type==="CL_ANNOUNCEMENT" || ev.type==="CL_CONFIRMATION")
+        && ev.t >= windowStart && ev.t <= currentTime
+      ) {
+        const age = currentTime - ev.t;
+        const alpha = (age < timeStep) ? 1.0 : 0.5;
+        const src = ev.data.src, dst = ev.data.dst;
+        if (rawPositions[src] && rawPositions[dst]) {
+          const [sx, sy] = applyTransform(rawPositions[src][0], rawPositions[src][1]);
+          const [tx2, ty2] = applyTransform(rawPositions[dst][0], rawPositions[dst][1]);
+          activeEdges.push({src, dst, sx, sy, tx2, ty2, type:ev.type, alpha});
+        }
+      } 
+
+
 
 
     }
@@ -563,7 +608,7 @@ rawEvents.forEach(ev => {
 
   // draw colored cells
   cellLayer.selectAll("*").remove();
-  for (let [key, color] of cellColors.entries()) {
+  for (let [key, val] of cellColors.entries()) {
     const cell = gridIndex[key];
     if (!cell) continue;
     const cx = cell.baseCx * zoomTransform.k + zoomTransform.x;
@@ -571,10 +616,10 @@ rawEvents.forEach(ev => {
     const pts = hexPolygon(cx, cy, radiusScaled).map(p=>p.join(",")).join(" ");
     cellLayer.append("polygon")
       .attr("points", pts)
-      .attr("fill", color)
-      .attr("fill-opacity", 0.35)
+      .attr("fill", val.color)     
+      .attr("fill-opacity", 0.5)
       .attr("stroke", "#aaa")
-      .attr("stroke-width", 1)
+    .attr("stroke-width", 1)
       .on("mouseover", function() {
       const cid = +this.dataset.cellid;
       routeLayer.selectAll("*").remove();
@@ -737,39 +782,85 @@ if (showRouting && routingCell2 !== null) {
     .text(d=>d.id);
 
   // draw edges in sliding window (using screen positions)
-  edgeLayer.selectAll("*").remove();
-  const activeEdges = [];
-  rawEvents.forEach(ev=>{
-    if ((ev.type==="CELL_MESSAGE" || ev.type==="SENSOR_DATA") && ev.t >= windowStart && ev.t <= currentTime) {
-      const age = currentTime - ev.t;
-      const alpha = (age < timeStep) ? 1.0 : 0.5;
-      const src = ev.data.src, dst = ev.data.dst;
-      if (rawPositions[src] && rawPositions[dst]) {
-        const [sx, sy] = applyTransform(rawPositions[src][0], rawPositions[src][1]);
-        const [tx2, ty2] = applyTransform(rawPositions[dst][0], rawPositions[dst][1]);
-        activeEdges.push({src, dst, sx, sy, tx2, ty2, type:ev.type, alpha});
-      }
-    }
-  });
+edgeLayer.selectAll("*").remove();
 
-  // draw curved path + marker-end
-  activeEdges.forEach(e=>{
-    const sx = e.sx, sy = e.sy, tx2 = e.tx2, ty2 = e.ty2;
-    const dx = tx2 - sx, dy = ty2 - sy;
-    const mx = (sx + tx2)/2, my = (sy + ty2)/2;
-    const norm = Math.sqrt(dx*dx + dy*dy) || 1;
-    const px = mx + (-dy/norm) * 20 * zoomTransform.k; // curve offset scaled with zoom so shape consistent
-    const py = my + (dx/norm) * 20 * zoomTransform.k;
-    const path = `M ${sx} ${sy} Q ${px} ${py} ${tx2} ${ty2}`;
-    edgeLayer.append("path")
-      .attr("d", path)
-      .attr("fill", "none")
-      .attr("stroke", e.type === "CELL_MESSAGE" ? "steelblue" : "orange")
-      .attr("stroke-width", 2)
-      .attr("stroke-opacity", e.alpha)
-      .attr("marker-end", e.type === "CELL_MESSAGE" ? "url(#arrow-blue)" : "url(#arrow-orange)")
-      .attr("stroke-linecap","round");
-  });
+rawEvents.forEach(ev=>{
+  if (
+    (ev.type==="CELL_MESSAGE" || ev.type==="SENSOR_DATA" ||
+     ev.type==="CL_ANNOUNCEMENT" || ev.type==="CL_CONFIRMATION")
+    && ev.t >= windowStart && ev.t <= currentTime
+  ) {
+    const age = currentTime - ev.t;
+    const alpha = (age < timeStep) ? 1.0 : 0.5;
+    const src = ev.data.src, dst = ev.data.dst;
+    if (rawPositions[src] && rawPositions[dst]) {
+      const [sx, sy] = applyTransform(rawPositions[src][0], rawPositions[src][1]);
+      const [tx2, ty2] = applyTransform(rawPositions[dst][0], rawPositions[dst][1]);
+      activeEdges.push({src, dst, sx, sy, tx2, ty2, type:ev.type, alpha});
+    }
+  }
+});
+
+// vẽ path sau khi đã có activeEdges
+activeEdges.forEach(e => {
+  const sx = e.sx, sy = e.sy, tx2 = e.tx2, ty2 = e.ty2;
+  const dx = tx2 - sx, dy = ty2 - sy;
+  const mx = (sx + tx2)/2, my = (sy + ty2)/2;
+  const norm = Math.sqrt(dx*dx + dy*dy) || 1;
+  const px = mx + (-dy/norm) * 20 * zoomTransform.k;
+  const py = my + (dx/norm) * 20 * zoomTransform.k;
+  const path = `M ${sx} ${sy} Q ${px} ${py} ${tx2} ${ty2}`;
+
+  let strokeColor = "gray", dash = null, marker = null;
+  if (e.type === "CELL_MESSAGE") {
+    strokeColor = "steelblue"; marker = "url(#arrow-blue)";
+  } else if (e.type === "SENSOR_DATA") {
+    strokeColor = "orange"; marker = "url(#arrow-orange)";
+  } else if (e.type === "CL_ANNOUNCEMENT") {
+  strokeColor = "red"; dash = null; marker = "url(#arrow-red)";
+} else if (e.type === "CL_CONFIRMATION") {
+  strokeColor = "red"; dash = "5,3"; marker = "url(#arrow-red)";
+}
+
+
+  edgeLayer.append("path")
+    .attr("d", path)
+    .attr("fill", "none")
+    .attr("stroke", strokeColor)
+    .attr("stroke-width", 2)
+    .attr("stroke-opacity", e.alpha)   // giữ fading cho mọi loại
+    .attr("marker-end", marker)
+    .attr("stroke-linecap","round")
+    .attr("stroke-dasharray", dash ? dash : null);
+});
+
+helloLayer.selectAll("*").remove();
+
+rawEvents.forEach(ev => {
+  if (ev.type === "HELLO" && ev.t >= windowStart && ev.t <= currentTime) {
+    const id = ev.data.id;
+    if (rawPositions[id]) {
+      const [sx, sy] = applyTransform(rawPositions[id][0], rawPositions[id][1]);
+
+      const circle = helloLayer.append("circle")
+        .attr("cx", sx)
+        .attr("cy", sy)
+        .attr("r", 16)   // bắt đầu bằng bán kính node
+        .attr("stroke", "green")
+        .attr("stroke-width", 2)
+        .attr("fill", "none")
+        .attr("opacity", 0.8);
+
+      circle.transition()
+        .duration(800)           // thời gian hiệu ứng (ms)
+        .attr("r", 80)           // bán kính tối đa
+        .attr("opacity", 0)      // biến mất dần
+        .remove();               // xóa khỏi DOM sau khi xong
+    }
+  }
+});
+
+
 
   routeLayer.selectAll("*").remove();
 if (showRouting && routingCell2 !== null) {
@@ -941,6 +1032,13 @@ document.getElementById("nextRouting").addEventListener("click", ()=>{
   updateFrame(currentFrame);
 });
 
+document.getElementById("prevBtn").addEventListener("click", ()=> {
+  pause();
+  if (currentFrame > 0) {
+    currentFrame--;
+    updateFrame(currentFrame);
+  }
+});
 
 speedInput.addEventListener("input", ()=>{
   d3.select("#speedLabel").text(speedInput.value + "×");
