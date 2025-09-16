@@ -1093,6 +1093,12 @@ void CellularRouting::calculateRoutingTree()
 void CellularRouting::announceRoutingTable()
 {
     NodeRoutingUpdateInfo nodeRoutingUpdateInfo;
+    for (int i = 0; i < 6; ++i) {
+        if (neighborCells[i] == -1 || (intraCellRoutingTable[self][neighborCells[i]] == 0 && myCellId != 0) ) {
+            continue;
+        }
+        trace() << "#ROUTING_TABLE " << self << " (" << myCellId << ") -> " << intraCellRoutingTable[self][neighborCells[i]] << " (" << neighborCells[i] << ")";
+    }
     for (const auto& member : cellMembers) {
         // for (int i = 0; i < 6; ++i) {
         //     trace() << "Routing node " << member.id

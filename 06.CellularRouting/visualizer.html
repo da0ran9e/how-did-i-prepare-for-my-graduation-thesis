@@ -1,1056 +1,1277 @@
 <!doctype html>
 <html lang="vi">
+
 <head>
-<meta charset="utf-8"/>
-<title>Sim Visualizer — Hex Grid + Events</title>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<!-- D3.js -->
-<script src="https://d3js.org/d3.v7.min.js"></script>
-<style>
-  body { font-family: "Segoe UI", Roboto, Arial; margin: 8px; background:#fafafa; color:#111;}
-  #controls { display:flex; gap:10px; align-items:center; margin-bottom:8px; flex-wrap:wrap;}
-  #canvas-wrap { border:1px solid #ddd; background: #fff; }
-  .btn { padding:6px 10px; border-radius:4px; border:1px solid #bbb; background:#f5f5f5; cursor:pointer;}
-  .btn:hover { background:#eee; }
-  label { font-size:13px; }
-  .legend { display:flex; gap:12px; align-items:center; margin-left:10px;}
-  .legend .item { display:flex; gap:6px; align-items:center; }
-  .tooltip { position:absolute; padding:6px 8px; background:rgba(0,0,0,0.8); color:white; border-radius:4px; font-size:12px; pointer-events:none; display:none;}
-  textarea { width:420px; height:140px; font-family:monospace; }
-  input[type="range"] { width:220px; }
-  .small { font-size:12px; color:#555; }
-  #frameBar {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: #f0f0f0;
-  padding: 8px 16px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  border-top: 1px solid #ccc;
-  z-index: 9999; /* đảm bảo nằm trên cùng */
-}
+  <meta charset="utf-8" />
+  <title>Sim Visualizer — Hex Grid + Events</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <!-- D3.js -->
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    body {
+      font-family: "Segoe UI", Roboto, Arial;
+      margin: 8px;
+      background: #fafafa;
+      color: #111;
+    }
 
-#frameSlider {
-  flex: 1;
-  height: 22px;
-}
+    #controls {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+    }
 
-#timeLabel {
-  font-size: 13px;
-  min-width: 90px;
-  text-align: right;
-}
+    #canvas-wrap {
+      border: 1px solid #ddd;
+      background: #fff;
+    }
 
-#main {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-}
+    .btn {
+      padding: 6px 10px;
+      border-radius: 4px;
+      border: 1px solid #bbb;
+      background: #f5f5f5;
+      cursor: pointer;
+    }
 
-#canvas-wrap {
-  width: 800px;
-  flex: 1;
-}
+    .btn:hover {
+      background: #eee;
+    }
 
-#infoPanel {
-  width: 400px;
-  border: 1px solid #ccc;
-  background: #fff;
-  padding: 8px;
-  font-size: 13px;
-  max-height: 800px;
-  overflow-y: auto;
-}
+    label {
+      font-size: 13px;
+    }
 
+    .legend {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin-left: 10px;
+    }
 
-</style>
+    .legend .item {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .tooltip {
+      position: absolute;
+      padding: 6px 8px;
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+      border-radius: 4px;
+      font-size: 12px;
+      pointer-events: none;
+      display: none;
+    }
+
+    textarea {
+      width: 420px;
+      height: 140px;
+      font-family: monospace;
+    }
+
+    input[type="range"] {
+      width: 220px;
+    }
+
+    .small {
+      font-size: 12px;
+      color: #555;
+    }
+
+    #frameBar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #f0f0f0;
+      padding: 8px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-top: 1px solid #ccc;
+      z-index: 9999;
+      /* đảm bảo nằm trên cùng */
+    }
+
+    #frameSlider {
+      flex: 1;
+      height: 22px;
+    }
+
+    #timeLabel {
+      font-size: 13px;
+      min-width: 90px;
+      text-align: right;
+    }
+
+    #main {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    #canvas-wrap {
+      width: 800px;
+      flex: 1;
+    }
+
+    #infoPanel {
+      width: 400px;
+      border: 1px solid #ccc;
+      background: #fff;
+      padding: 8px;
+      font-size: 13px;
+      max-height: 800px;
+      overflow-y: auto;
+    }
+  </style>
 </head>
+
 <body>
 
-<h2>Simulation Visualizer — Hex Grid & Time-based Events</h2>
+  <h2>Simulation Visualizer — Hex Grid & Time-based Events</h2>
 
-<div id="controls">
-  <div>
-    <input id="fileInput" type="file" accept=".txt"/>
-    <button id="btnLoad" class="btn">Load</button>
-  </div>
-
-  <div>
-    <label>Or paste log:</label><br/>
-    <textarea id="logArea" placeholder="Paste log lines here (time  object  event)..."></textarea><br/>
-    <button id="btnParse" class="btn">Parse & Prepare</button>
-  </div>
-
-  <div style="min-width:300px;">
-    <button id="playBtn" class="btn">Play</button>
-    <button id="pauseBtn" class="btn">Pause</button>
-    <button id="prevBtn" class="btn">Prev</button>
-<button id="nextBtn" class="btn">Next</button>
-
-    <br/>
-
-    <label>Jump to time: 
-      <input id="jumpTime" type="number" step="1" style="width:80px;">
-      <button id="jumpBtn" class="btn">Jump</button>
-    </label>
-    <br/>
-
-    <label>Auto pause at: 
-      <input id="pauseAt" type="number" step="1" style="width:80px;">
-      <button id="setPauseBtn" class="btn">Set</button>
-    </label>
-
-
-    <label>Speed: <input id="speed" type="range" min="0.25" max="4" step="0.25" value="1"></label>
-    <span id="speedLabel" class="small">1×</span>
-    <div class="small">Time step: <input id="timeStep" type="number" min="1" max="1000" value="50" style="width:80px;">  Fade windows (frames): <input id="fadeFrames" type="number" min="1" max="10" value="2" style="width:50px;"></div>
-  </div>
-
-  <div class="legend">
-    <div class="item"><div style="width:16px;height:12px;background:green;border:1px solid #666"></div><div class="small">Cell 0</div></div>
-    <div class="item"><div style="width:16px;height:12px;background:yellow;border:1px solid #666"></div><div class="small">Cell 1</div></div>
-    <div class="item"><div style="width:16px;height:12px;background:blue;border:1px solid #666"></div><div class="small">Cell 2</div></div>
-    
-    <div class="item">
-  <svg width="22" height="22">
-    <circle cx="11" cy="11" r="7" fill="white" stroke="#333" stroke-width="2"/>
-    <circle cx="11" cy="11" r="9.5" fill="none" stroke="#333" stroke-width="1.2"/>
-  </svg>
-  <div class="small">Leader (CL)</div>
-</div>
-
-<div class="item">
-  <svg width="22" height="22">
-    <circle cx="11" cy="11" r="8" fill="white" stroke="#333" stroke-width="2"/>
-    <path d="
-      M11,4
-      L13,9 L18,9 L14,12 L16,17 L11,14 L6,17 L8,12 L4,9 L9,9 Z"
-      fill="none" stroke="#333" stroke-width="1"/>
-  </svg>
-  <div class="small">Cluster Head (CH)</div>
-</div>
-
-    <div class="item"><svg width="18" height="12"><line x1="2" y1="6" x2="16" y2="6" stroke="blue" stroke-width="2"/></svg><div class="small">CELL_MESSAGE</div></div>
-    <div class="item"><svg width="18" height="12"><line x1="2" y1="6" x2="16" y2="6" stroke="orange" stroke-width="2"/></svg><div class="small">SENSOR_DATA</div></div>
-    <div class="item"><svg width="18" height="12"><line x1="2" y1="6" x2="16" y2="6" stroke="red" stroke-width="2"/></svg><div class="small">CL_ANNOUNCEMENT</div></div>
-<div class="item"><svg width="18" height="12"><line x1="2" y1="6" x2="16" y2="6" stroke="red" stroke-width="2" stroke-dasharray="5,3"/></svg><div class="small">CL_CONFIRMATION</div></div>
-
-    <label><input type="checkbox" id="toggleRouting"> Routing Table</label>
-    <button id="nextRouting" class="btn">Next Routing</button>
-<span id="routingLabel" class="small">Cell: none</span>
-  </div>
-</div>
-<div id="main">
-<div id="canvas-wrap">
-  <svg id="svg" width="1000" height="800">
-    <defs>
-      <!-- Larger arrow markers; markerUnits="strokeWidth" keeps size independent of coordinate scaling below -->
-      <marker id="arrow-blue" markerWidth="16" markerHeight="16" refX="12" refY="6"
-              orient="auto" markerUnits="strokeWidth">
-        <path d="M0,0 L0,12 L15,6 z" fill="steelblue"/>
-      </marker>
-      <marker id="arrow-orange" markerWidth="16" markerHeight="16" refX="12" refY="6"
-              orient="auto" markerUnits="strokeWidth">
-        <path d="M0,0 L0,12 L15,6 z" fill="orange"/>
-      </marker>
-      <marker id="arrow-red" markerWidth="16" markerHeight="16" refX="12" refY="6"
-        orient="auto" markerUnits="strokeWidth">
-  <path d="M0,0 L0,12 L15,6 z" fill="red"/>
-</marker>
-
-    </defs>
-  </svg>
-</div>
-
-<div id="infoPanel">
-  <div style="display: flex;">
+  <div id="controls">
     <div>
-      <h3>Info</h3>
-      <div id="networkStats">
-        <p><b>Total nodes:</b> <span id="totalNodes">0</span></p>
-        <p><b>CH:</b> <span id="totalCH">0</span></p>
+      <input id="fileInput" type="file" accept=".txt" />
+      <button id="btnLoad" class="btn">Load</button>
+    </div>
+
+    <div>
+      <label>Or paste log:</label><br />
+      <textarea id="logArea" placeholder="Paste log lines here (time  object  event)..."></textarea><br />
+      <button id="btnParse" class="btn">Parse & Prepare</button>
+    </div>
+
+    <div style="min-width:300px;">
+      <button id="playBtn" class="btn">Play</button>
+      <button id="pauseBtn" class="btn">Pause</button>
+      <button id="prevBtn" class="btn">Prev</button>
+      <button id="nextBtn" class="btn">Next</button>
+
+      <br />
+
+      <label>Jump to time:
+        <input id="jumpTime" type="number" step="1" style="width:80px;">
+        <button id="jumpBtn" class="btn">Jump</button>
+      </label>
+      <br />
+
+      <label>Auto pause at:
+        <input id="pauseAt" type="number" step="1" style="width:80px;">
+        <button id="setPauseBtn" class="btn">Set</button>
+      </label>
+      <div>
+        <label><input type="checkbox" id="toggleRouting"> Routing Table</label>
+        <button id="nextRouting" class="btn">Next Routing</button>
+        <span id="routingLabel" class="small">Cell: none</span>
       </div>
+      <div>
+        <label><input type="checkbox" id="toggleHeatmap"> Heatmap</label>
+        <select id="heatmapMode">
+          <option value="recv">Packets Received</option>
+          <option value="sent">Packets Sent</option>
+          <option value="total">Sent+Recv</option>
+        </select>
       </div>
-      <div style="margin-left:20px;">
-      <h4>Message counters</h4>
-      <div id="messageStats">
-        <p>CELL_MESSAGE: <span id="countCellMsg">0</span></p>
-        <p>SENSOR_DATA: <span id="countSensorData">0</span></p>
+
+
+      <label>Speed: <input id="speed" type="range" min="0.25" max="4" step="0.25" value="1"></label>
+      <span id="speedLabel" class="small">1×</span>
+      <div class="small">Time step: <input id="timeStep" type="number" min="1" max="1000" value="50"
+          style="width:80px;"> Fade windows (frames): <input id="fadeFrames" type="number" min="1" max="10" value="2"
+          style="width:50px;"></div>
+    </div>
+
+    <div class="legend">
+      <label><input type="checkbox" id="toggleCellColor" checked> Cell Color</label>
+      <div class="item">
+        <div style="width:16px;height:12px;background:green;border:1px solid #666"></div>
+        <div class="small">Cell 0</div>
       </div>
+      <div class="item">
+        <div style="width:16px;height:12px;background:yellow;border:1px solid #666"></div>
+        <div class="small">Cell 1</div>
+      </div>
+      <div class="item">
+        <div style="width:16px;height:12px;background:blue;border:1px solid #666"></div>
+        <div class="small">Cell 2</div>
+      </div>
+
+      <div class="item">
+        <svg width="22" height="22">
+          <circle cx="11" cy="11" r="7" fill="white" stroke="#333" stroke-width="2" />
+          <circle cx="11" cy="11" r="9.5" fill="none" stroke="#333" stroke-width="1.2" />
+        </svg>
+        <div class="small">Leader (CL)</div>
+      </div>
+
+      <div class="item">
+        <svg width="22" height="22">
+          <circle cx="11" cy="11" r="8" fill="white" stroke="#333" stroke-width="2" />
+          <path d="
+      M11,4
+      L13,9 L18,9 L14,12 L16,17 L11,14 L6,17 L8,12 L4,9 L9,9 Z" fill="none" stroke="#333" stroke-width="1" />
+        </svg>
+        <div class="small">Cluster Head (CH)</div>
+      </div>
+
+      <div class="item"><svg width="18" height="12">
+          <line x1="2" y1="6" x2="16" y2="6" stroke="blue" stroke-width="2" />
+        </svg>
+        <div class="small">CELL_MESSAGE</div>
+      </div>
+      <div class="item"><svg width="18" height="12">
+          <line x1="2" y1="6" x2="16" y2="6" stroke="orange" stroke-width="2" />
+        </svg>
+        <div class="small">SENSOR_DATA</div>
+      </div>
+      <div class="item"><svg width="18" height="12">
+          <line x1="2" y1="6" x2="16" y2="6" stroke="red" stroke-width="2" />
+        </svg>
+        <div class="small">CL_ANNOUNCEMENT</div>
+      </div>
+      <div class="item"><svg width="18" height="12">
+          <line x1="2" y1="6" x2="16" y2="6" stroke="red" stroke-width="2" stroke-dasharray="5,3" />
+        </svg>
+        <div class="small">CL_CONFIRMATION</div>
+      </div>
+
+
+
+    </div>
+  </div>
+  <div id="main">
+    <div id="canvas-wrap">
+      <svg id="svg" width="1000" height="800">
+        <defs>
+          <!-- Larger arrow markers; markerUnits="strokeWidth" keeps size independent of coordinate scaling below -->
+          <marker id="arrow-blue" markerWidth="16" markerHeight="16" refX="12" refY="6" orient="auto"
+            markerUnits="strokeWidth">
+            <path d="M0,0 L0,12 L15,6 z" fill="steelblue" />
+          </marker>
+          <marker id="arrow-orange" markerWidth="16" markerHeight="16" refX="12" refY="6" orient="auto"
+            markerUnits="strokeWidth">
+            <path d="M0,0 L0,12 L15,6 z" fill="orange" />
+          </marker>
+          <marker id="arrow-red" markerWidth="16" markerHeight="16" refX="12" refY="6" orient="auto"
+            markerUnits="strokeWidth">
+            <path d="M0,0 L0,12 L15,6 z" fill="red" />
+          </marker>
+          <filter id="blur" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="25" />
+          </filter>
+        </defs>
+      </svg>
+    </div>
+
+    <div id="infoPanel">
+      <div style="display: flex;">
+        <div>
+          <h3>Info</h3>
+          <div id="networkStats">
+            <p><b>Total nodes:</b> <span id="totalNodes">0</span></p>
+            <p><b>CH:</b> <span id="totalCH">0</span></p>
+          </div>
+        </div>
+        <div style="margin-left:20px;">
+          <h4>Message counters</h4>
+          <div id="messageStats">
+            <p>CELL_MESSAGE: <span id="countCellMsg">0</span></p>
+            <p>SENSOR_DATA: <span id="countSensorData">0</span></p>
+          </div>
+        </div>
+      </div>
+      <div id="nodeDetails">
+        <h3>Node Details</h3>
+        <div id="nodeInfo">Hover a node to see details here.</div>
       </div>
     </div>
-    <div id="nodeDetails">
-    <h3>Node Details</h3>
-    <div id="nodeInfo">Hover a node to see details here.</div>
+
   </div>
+  <div style="margin-top:8px;">
+    <button id="btnReset" class="btn">Reset view</button>
+    <span class="small" style="margin-left:10px;">Hover node to see id.</span>
   </div>
-  
-</div>
-<div style="margin-top:8px;">
-  <button id="btnReset" class="btn">Reset view</button>
-  <span class="small" style="margin-left:10px;">Hover node to see id.</span>
-</div>
 
-<div class="tooltip" id="tooltip"></div>
+  <div class="tooltip" id="tooltip"></div>
 
-<div id="frameBar">
-  <input id="frameSlider" type="range" min="0" max="0" value="0">
-  <div id="timeLabel">Time: 0</div>
-</div>
+  <div id="frameBar">
+    <input id="frameSlider" type="range" min="0" max="0" value="0">
+    <div id="timeLabel">Time: 0</div>
+  </div>
 
-<script>
-// ------------------- CONFIG -------------------
-let showRouting = false;
+  <script>
+    // ------------------- CONFIG -------------------
+    let showRouting = false;
+    let showHeatmap = false;
+    let showCellColor = true;
 
-const SVG = d3.select("#svg");
-const W = +SVG.attr("width");
-const H = +SVG.attr("height");
-const PADDING = 20;
-let CELL_RADIUS = 80; // use 80 as you asked
-let zoomTransform = { k: 1, x: 0, y: 0 };
-let autoPauseTime = null; // null = không dùng
-let nodeStats = {}; // id -> { sent: {CELL_MESSAGE:0, SENSOR_DATA:0}, recv: {CELL_MESSAGE:0, SENSOR_DATA:0} }
+    const SVG = d3.select("#svg");
+    const W = +SVG.attr("width");
+    const H = +SVG.attr("height");
+    const PADDING = 20;
+    let CELL_RADIUS = 80; // use 80 as you asked
+    let zoomTransform = { k: 1, x: 0, y: 0 };
+    let autoPauseTime = null; // null = không dùng
+    let nodeStats = {}; // id -> { sent: {CELL_MESSAGE:0, SENSOR_DATA:0}, recv: {CELL_MESSAGE:0, SENSOR_DATA:0} }
 
-let pinnedNode = null; // id node đang được ghim
+    let pinnedNode = null; // id node đang được ghim
 
 
 
-// color map for cell ids
-const COLOR_MAP = {0: "green", 1: "yellow", 2: "blue"};
+    // color map for cell ids
+    const COLOR_MAP = { 0: "green", 1: "yellow", 2: "blue" };
 
-// state
-let rawEvents = [];   // {t, type, data}
-let tMin=0, tMax=0;
-let frames = 0;
-let playing = false;
-let currentFrame = 0;
-let intervalId = null;
+    // state
+    let rawEvents = [];   // {t, type, data}
+    let tMin = 0, tMax = 0;
+    let frames = 0;
+    let playing = false;
+    let currentFrame = 0;
+    let intervalId = null;
 
-// interactive settings
-const timeStepInput = document.getElementById("timeStep");
-const fadeFramesInput = document.getElementById("fadeFrames");
-const speedInput = document.getElementById("speed");
+    // interactive settings
+    const timeStepInput = document.getElementById("timeStep");
+    const fadeFramesInput = document.getElementById("fadeFrames");
+    const speedInput = document.getElementById("speed");
 
-// persistent state across frames
-let rawPositions = {};   // id -> [rawX,rawY] (no translate)
-let leaderNodes = new Set();
-let chNodes = new Set();
-let cellColors = new Map();  // "q,r" -> color string
-let routingTableByCell2 = {}; // {cell2: [ {src, nextHop} ] }
+    // persistent state across frames
+    let rawPositions = {};   // id -> [rawX,rawY] (no translate)
+    let leaderNodes = new Set();
+    let chNodes = new Set();
+    let cellColors = new Map();  // "q,r" -> color string
+    let routingTableByCell2 = {}; // {cell2: [ {src, nextHop} ] }
 
-// drawing groups (wrapped in mainLayer if needed)
-const mainLayer = SVG.append("g").attr("class", "main-layer");
-const helloLayer = mainLayer.append("g").attr("class","hello-layer");
-const gridLayer = mainLayer.append("g").attr("class","grid-layer");
-const cellLayer = mainLayer.append("g").attr("class","cell-layer");
-const edgeLayer = mainLayer.append("g").attr("class","edge-layer");
-const nodeLayer = mainLayer.append("g").attr("class","node-layer");
-const routeLayer = mainLayer.append("g").attr("class","route-layer");
-const labelLayer = mainLayer.append("g").attr("class","label-layer");
+    // drawing groups (wrapped in mainLayer if needed)
+    const mainLayer = SVG.append("g").attr("class", "main-layer");
+    const helloLayer = mainLayer.append("g").attr("class", "hello-layer");
+    const gridLayer = mainLayer.append("g").attr("class", "grid-layer");
+    const cellLayer = mainLayer.append("g").attr("class", "cell-layer");
+    const edgeLayer = mainLayer.append("g").attr("class", "edge-layer");
+    const nodeLayer = mainLayer.append("g").attr("class", "node-layer");
+    const routeLayer = mainLayer.append("g").attr("class", "route-layer");
+    const labelLayer = mainLayer.append("g").attr("class", "label-layer");
+    const heatmapLayer = mainLayer.append("g").attr("class", "heatmap-layer");
 
-const tooltip = d3.select("#tooltip");
 
-// gridCells cached (list of {q,r, baseCx, baseCy})
-let gridCells = [];
-let gridIndex = {}; // map "q,r"->cell
+    const tooltip = d3.select("#tooltip");
 
-// d3.zoom listens but we only store transform and redraw using computed coords (keeps object sizes fixed)
-const zoomBehavior = d3.zoom()
-  .scaleExtent([0.3, 4])
-  .on("zoom", (event) => {
-    zoomTransform = event.transform;
-    updateFrame(currentFrame);
-  });
+    // gridCells cached (list of {q,r, baseCx, baseCy})
+    let gridCells = [];
+    let gridIndex = {}; // map "q,r"->cell
 
-SVG.call(zoomBehavior);
+    // d3.zoom listens but we only store transform and redraw using computed coords (keeps object sizes fixed)
+    const zoomBehavior = d3.zoom()
+      .scaleExtent([0.3, 4])
+      .on("zoom", (event) => {
+        zoomTransform = event.transform;
+        updateFrame(currentFrame);
+      });
 
-// ------------------- HEX MATH -------------------
-function axialToPixel(q, r, radius) {
-  const x = radius * (Math.sqrt(3) * q + Math.sqrt(3)/2 * r);
-  const y = radius * (1.5 * r);
-  return [x, y];
-}
+    SVG.call(zoomBehavior);
 
-function pixelToAxial(x, y, radius) {
-  const q = (Math.sqrt(3)/3 * x - 1/3 * y) / radius;
-  const r = (2/3 * y) / radius;
-  return hexRound(q, r);
-}
+    // ------------------- HEX MATH -------------------
+    function axialToPixel(q, r, radius) {
+      const x = radius * (Math.sqrt(3) * q + Math.sqrt(3) / 2 * r);
+      const y = radius * (1.5 * r);
+      return [x, y];
+    }
 
-function hexRound(q, r) {
-  let x = q, z = r, y = -x - z;
-  let rx = Math.round(x), ry = Math.round(y), rz = Math.round(z);
-  const dx = Math.abs(rx - x), dy = Math.abs(ry - y), dz = Math.abs(rz - z);
-  if (dx > dy && dx > dz) rx = -ry - rz;
-  else if (dy > dz) ry = -rx - rz;
-  else rz = -rx - ry;
-  return [rx, rz];
-}
+    function pixelToAxial(x, y, radius) {
+      const q = (Math.sqrt(3) / 3 * x - 1 / 3 * y) / radius;
+      const r = (2 / 3 * y) / radius;
+      return hexRound(q, r);
+    }
 
-function hexPolygon(cx, cy, radius) {
-  const pts=[];
-  for (let i=0;i<6;i++){
-    const angle = Math.PI/6 + i * (Math.PI*2/6);
-    pts.push([cx + radius * Math.cos(angle), cy + radius * Math.sin(angle)]);
-  }
-  return pts;
-}
+    function hexRound(q, r) {
+      let x = q, z = r, y = -x - z;
+      let rx = Math.round(x), ry = Math.round(y), rz = Math.round(z);
+      const dx = Math.abs(rx - x), dy = Math.abs(ry - y), dz = Math.abs(rz - z);
+      if (dx > dy && dx > dz) rx = -ry - rz;
+      else if (dy > dz) ry = -rx - rz;
+      else rz = -rx - ry;
+      return [rx, rz];
+    }
 
-// apply zoom/pan to a raw coordinate (raw coords are in same units as axialToPixel)
-function applyTransform(rawX, rawY) {
-  // translate by drawing offset, then scale/translate by zoomTransform
-  const tx = SVG.node().__translate.x, ty = SVG.node().__translate.y;
-  const x = (rawX + tx) * zoomTransform.k + zoomTransform.x;
-  const y = (rawY + ty) * zoomTransform.k + zoomTransform.y;
-  return [x, y];
-}
-
-// ------------------- PARSING -------------------
-function parseLogText(text) {
-  rawEvents = [];
-  const lines = text.split(/\r?\n/);
-  for (let line of lines) {
-    if (!line.trim()) continue;
-    const parts = line.trim().split(/\s+/);
-    if (parts.length < 2) continue;
-    const t = parseFloat(parts[0]);
-    if (isNaN(t)) continue;
-    const rest = parts.slice(2).join(" ").trim();  // lấy phần event
-
-    if (rest.startsWith("#NODE")) {
-      const m = rest.match(/#NODE\s+(\d+)\s*\(\s*([-\d.]+)\s*,\s*([-\d.]+)\s*\)/);
-      if (m) rawEvents.push({t, type:"NODE", data:{id:+m[1], x:+m[2], y:+m[3]}});
-    } else if (rest.startsWith("#CELL_COLOR")) {
-      const m = rest.match(/#CELL_COLOR\s+(\d+)\s*:\s*(\d+)/);
-      if (m) rawEvents.push({t, type:"CELL_COLOR", data:{id:+m[1], cid:+m[2]}});
-    } else if (rest.startsWith("#CELL_LEADER")) {
-      const m = rest.match(/#CELL_LEADER\s+(\d+):\s*(\d+)/);
-      if (m) rawEvents.push({t, type:"CELL_LEADER", data:+m[2]});
-    } else if (rest.startsWith("#CH")) {
-      const m = rest.match(/#CH\s+(\d+)/);
-      if (m) rawEvents.push({t, type:"CH", data:+m[1]});
-    } else if (rest.startsWith("#CELL_MESSAGE")) {
-      const m = rest.match(/#CELL_MESSAGE\s+(\d+)\s*->\s*(\d+)/);
-      if (m) rawEvents.push({t, type:"CELL_MESSAGE", data:{src:+m[1], dst:+m[2]}});
-    } else if (rest.startsWith("#SENSOR_DATA")) {
-      const m = rest.match(/#SENSOR_DATA\s*:\s*(\d+)\s*->\s*(\d+)/);
-      if (m) rawEvents.push({t, type:"SENSOR_DATA", data:{src:+m[1], dst:+m[2]}});
-    } else if (rest.startsWith("#GATEWAY_SELECTION")) {
-      const m = rest.match(/#GATEWAY_SELECTION\s+\d+\s*:\s*(\d+)\s*->\s*(\d+)/);
-      if (m) rawEvents.push({t, type:"GATEWAY_SELECTION", data:{src:+m[1], dst:+m[2]}});
-    } else if (rest.startsWith("#NEIGHBOR")) {
-      const m = rest.match(/#NEIGHBOR\s+(\d+)\s*:\s*(\d+)/);
-      if (m) rawEvents.push({t, type:"NEIGHBOR", data:{id:+m[1], nbr:+m[2]}});
-    } else if (rest.startsWith("#ROUTING_TABLE")) {
-      const m = rest.match(/#ROUTING_TABLE\s+(\d+)\s*\((\d+)\)\s*->\s*(\d+)\s*\((\d+)\)/);
-      if (m) {
-        rawEvents.push({
-          t, type:"ROUTING_TABLE",
-          data:{ src:+m[1], cell1:+m[2], nextHop:+m[3], cell2:+m[4] }
-        });
+    function hexPolygon(cx, cy, radius) {
+      const pts = [];
+      for (let i = 0; i < 6; i++) {
+        const angle = Math.PI / 6 + i * (Math.PI * 2 / 6);
+        pts.push([cx + radius * Math.cos(angle), cy + radius * Math.sin(angle)]);
       }
-    } else if (rest.startsWith("#CL_ANNOUNCEMENT")) {
-      const m = rest.match(/#CL_ANNOUNCEMENT\s+(\d+)\s*:\s*(\d+)/);
-      if (m) rawEvents.push({t, type:"CL_ANNOUNCEMENT", data:{src:+m[1], dst:+m[2]}});
-    } else if (rest.startsWith("#CL_CONFIRMATION")) {
-      const m = rest.match(/#CL_CONFIRMATION\s+(\d+)\s*:\s*(\d+)/);
-      if (m) rawEvents.push({t, type:"CL_CONFIRMATION", data:{src:+m[1], dst:+m[2]}});
-    } else if (rest.startsWith("#HELLO")) {
-  const m = rest.match(/#HELLO\s+(\d+)/);
-  if (m) rawEvents.push({t, type:"HELLO", data:{id:+m[1]}});
-}
-
-
-
-
-  }
-  if (rawEvents.length === 0) {
-    alert("Không tìm thấy event hợp lệ trong input.");
-    return;
-  }
-  tMin = d3.min(rawEvents, d=>d.t);
-  tMax = d3.max(rawEvents, d=>d.t);
-}
-
-// ------------------- PREPARE FRAMES -------------------
-function prepareFrames() {
-  const timeStep = +timeStepInput.value;
-  frames = Math.max(1, Math.floor((tMax - tMin) / timeStep) + 1);
-  d3.select("#frameSlider").attr("max", frames-1).property("value", 0);
-  currentFrame = 0;
-  d3.select("#timeLabel").text(`Time: ${tMin.toFixed(2)}`);
-
-  // reset persistent states
-  rawPositions = {};
-  leaderNodes = new Set();
-  chNodes = new Set();
-  cellColors = new Map();
-
-  // build grid cells (base coordinates, not scaled)
-  buildGridCells();
-
-  // initial draw
-  updateFrame(0);
-}
-
-// build gridCells once (base centers relative to hex origin)
-function buildGridCells() {
-  gridCells = [];
-  gridIndex = {};
-  const radius = CELL_RADIUS;
-  const translateX = PADDING;
-  const translateY = PADDING;
-
-const max_q = Math.ceil(W / (radius * Math.sqrt(3))) * 3;
-const max_r = Math.ceil(H / (radius * 1.5)) * 3;
-
-
-  for (let r = -max_r; r <= max_r; r++) {
-  for (let q = -max_q; q <= max_q; q++) {
-      const [cx, cy] = axialToPixel(q, r, radius);
-      const baseCx = cx + translateX;
-      const baseCy = cy + translateY;
-      const cell = {q, r, baseCx, baseCy};
-      gridCells.push(cell);
-      gridIndex[`${q},${r}`] = cell;
-    }
-  }
-
-  // store translate + radius to SVG DOM node for access elsewhere
-  SVG.node().__translate = { x: translateX, y: translateY, radius: radius };
-}
-
-// ------------------- UPDATE FRAME -------------------
-function showNodeInfo(nodeId){
-  const stats = nodeStats[nodeId];
-  let html = `<p><b>Node ${nodeId}</b></p>`;
-  if (stats) {
-    html += `<p>Sent: CELL_MESSAGE=${stats.sent.CELL_MESSAGE}, SENSOR_DATA=${stats.sent.SENSOR_DATA}</p>`;
-    html += `<p>Recv: CELL_MESSAGE=${stats.recv.CELL_MESSAGE}, SENSOR_DATA=${stats.recv.SENSOR_DATA}</p>`;
-  }
-  if (neighbors[nodeId]) {
-    html += `<p>Neighbors: ${Array.from(neighbors[nodeId]).join(", ")}</p>`;
-  }
-  d3.select("#nodeInfo").html(html);
-}
-
-function clearNodeInfo(){
-  d3.select("#nodeInfo").html("Hover a node to see details here.");
-}
-
-function highlightNeighbors(nodeId){
-  if (!neighbors[nodeId]) return;
-  nodeLayer.selectAll("g.node")
-    .filter(nd => neighbors[nodeId].has(nd.id))
-    .select("circle")
-    .attr("fill", "#add8e6");
-}
-
-function resetNodes(){
-
-
-  // Reset lại toàn bộ node theo role
-  nodeLayer.selectAll("g.node").each(function(nd){
-    const g = d3.select(this);
-    g.selectAll("*").remove();  // clear nội dung node
-
-    // Vẽ lại node đúng loại
-    if (leaderNodes.has(nd.id)) {
-      // Leader = vòng kép
-      g.append("circle").attr("r",16).attr("fill","white").attr("stroke","#333").attr("stroke-width",2);
-      g.append("circle").attr("r",19).attr("fill","none").attr("stroke","#333").attr("stroke-width",2);
-    } else if (chNodes.has(nd.id)) {
-      // CH = circle + star
-      g.append("circle").attr("r",16).attr("fill","white").attr("stroke","#333").attr("stroke-width",2);
-      const rOuter=15.5, rInner=6, numPoints=5;
-      const starPts=[];
-      for (let i=0;i<numPoints*2;i++){
-        const ang=Math.PI/2+i*Math.PI/numPoints;
-        const r=i%2===0?rOuter:rInner;
-        starPts.push([r*Math.cos(ang),-r*Math.sin(ang)]);
-      }
-      g.append("path")
-        .attr("d",d3.line()(starPts))
-        .attr("fill","none").attr("stroke","#333").attr("stroke-width",1.2);
-    } else {
-      // node thường
-      g.append("circle").attr("r",16).attr("fill","white").attr("stroke","#333").attr("stroke-width",1.2);
-    }
-
-    // vẽ lại text ID
-    g.append("text")
-      .attr("y",4)
-      .attr("text-anchor","middle")
-      .attr("font-size",10)
-      .attr("fill","black")
-      .text(nd.id);
-
-      
-  })
-}
-
-function updateFrame(frameIdx) {
-  if (!rawEvents || rawEvents.length===0) return;
-  const timeStep = +timeStepInput.value;
-  const fadeFrames = +fadeFramesInput.value;
-  const fadeWindow = fadeFrames * timeStep;
-  const currentTime = tMin + frameIdx * timeStep;
-  const windowStart = currentTime - fadeWindow;
-  const activeEdges = [];
-
-  // rebuild persistent rawPositions/leader/ch/cellColors using events up to currentTime
-  rawPositions = {};
-  leaderNodes = new Set();
-  chNodes = new Set();
-  cellColors = new Map();
-  neighbors = {}; // id -> Set()
-  let routingTable = {}; // id -> list of {srcCell,nextHop,dstCell}
-
-  rawEvents.forEach(ev => {
-    if (ev.t <= currentTime) {
-      if (ev.type === "NODE") {
-        // store raw X,Y (no translate)
-        rawPositions[ev.data.id] = [ev.data.x, ev.data.y];
-      } else if (ev.type === "CELL_COLOR") {
-        const nid = ev.data.id, cid = ev.data.cid;
-        const rp = rawPositions[nid];
-        if (rp) {
-          const [q,r] = pixelToAxial(rp[0], rp[1], CELL_RADIUS);
-          // lưu cả 2: cell theo q,r để vẽ, cellId cho logic routing
-          cellColors.set(`${q},${r}`, COLOR_MAP[cid] || "none");
-        }
-      } else if (ev.type === "CELL_LEADER") {
-        leaderNodes.add(ev.data);
-      } else if (ev.type === "CH") {
-        chNodes.add(ev.data);
-      } else if (ev.type === "NEIGHBOR") {
-        const {id, nbr} = ev.data;
-        if (!neighbors[id]) neighbors[id] = new Set();
-        if (!neighbors[nbr]) neighbors[nbr] = new Set();
-        neighbors[id].add(nbr);
-        neighbors[nbr].add(id);
-      } else if (ev.type === "ROUTING_TABLE") {
-        const {src, srcCell, nextHop, dstCell} = ev.data;
-        if (!routingTable[src]) routingTable[src] = [];
-        routingTable[src].push({srcCell, nextHop, dstCell});
-      } else if (
-        (ev.type==="CELL_MESSAGE" || ev.type==="SENSOR_DATA" ||
-        ev.type==="CL_ANNOUNCEMENT" || ev.type==="CL_CONFIRMATION")
-        && ev.t >= windowStart && ev.t <= currentTime
-      ) {
-        const age = currentTime - ev.t;
-        const alpha = (age < timeStep) ? 1.0 : 0.5;
-        const src = ev.data.src, dst = ev.data.dst;
-        if (rawPositions[src] && rawPositions[dst]) {
-          const [sx, sy] = applyTransform(rawPositions[src][0], rawPositions[src][1]);
-          const [tx2, ty2] = applyTransform(rawPositions[dst][0], rawPositions[dst][1]);
-          activeEdges.push({src, dst, sx, sy, tx2, ty2, type:ev.type, alpha});
-        }
-      } 
-
-
-
-
-    }
-  });
-
-    // Khởi tạo nodeStats cho tất cả nodes đã biết
-  for (let idStr of Object.keys(rawPositions)) {
-    const id = +idStr;
-    nodeStats[id] = {
-      sent: { CELL_MESSAGE: 0, SENSOR_DATA: 0 },
-      recv: { CELL_MESSAGE: 0, SENSOR_DATA: 0 }
-    };
-  }
-
-  rawEvents.forEach(ev => {
-  if ((ev.type === "CELL_MESSAGE" || ev.type === "SENSOR_DATA") && ev.t <= currentTime) {
-    const src = ev.data.src, dst = ev.data.dst;
-    if (nodeStats[src]) nodeStats[src].sent[ev.type] += 1;
-    if (nodeStats[dst]) nodeStats[dst].recv[ev.type] += 1;
-  }
-});
-
-rawEvents.forEach(ev => {
-  if (ev.t <= currentTime && ev.type==="ROUTING_TABLE") {
-    if (!routingTableByCell2[ev.data.cell2]) routingTableByCell2[ev.data.cell2] = [];
-    routingTableByCell2[ev.data.cell2].push({src:ev.data.src, nextHop:ev.data.nextHop});
-  }
-});
-
-  // draw grid (stroke)
-  const radiusScaled = CELL_RADIUS * zoomTransform.k;
-  gridLayer.selectAll("polygon.grid")
-    .data(gridCells, d=>`${d.q},${d.r}`)
-    .join(
-      enter => enter.append("polygon").attr("class","grid"),
-      update => update,
-      exit => exit.remove()
-    )
-    .attr("points", d => {
-      const cx = d.baseCx * zoomTransform.k + zoomTransform.x;
-      const cy = d.baseCy * zoomTransform.k + zoomTransform.y;
-      const pts = hexPolygon(cx, cy, radiusScaled).map(p=>p.join(",")).join(" ");
       return pts;
-    })
-    .attr("fill", "none")
-    .attr("stroke", "#ddd")
-    .attr("stroke-width", 1);
-
-  // draw colored cells
-  cellLayer.selectAll("*").remove();
-  for (let [key, color] of cellColors.entries()) {
-    const cell = gridIndex[key];
-    if (!cell) continue;
-    const cx = cell.baseCx * zoomTransform.k + zoomTransform.x;
-    const cy = cell.baseCy * zoomTransform.k + zoomTransform.y;
-    const pts = hexPolygon(cx, cy, radiusScaled).map(p=>p.join(",")).join(" ");
-    cellLayer.append("polygon")
-      .attr("points", pts)
-      .attr("fill", color)
-      .attr("fill-opacity", 0.15)
-      .attr("stroke", "#aaa")
-      .attr("stroke-width", 1)
-      .on("mouseover", function() {
-      const cid = +this.dataset.cellid;
-      routeLayer.selectAll("*").remove();
-if (showRouting && routingCell2 !== null) {
-  const routes = routingTableByCell2[routingCell2] || [];
-  routes.forEach(r => {
-    if (rawPositions[r.src] && rawPositions[r.nextHop]) {
-      const [sx, sy] = applyTransform(rawPositions[r.src][0], rawPositions[r.src][1]);
-      const [tx, ty] = applyTransform(rawPositions[r.nextHop][0], rawPositions[r.nextHop][1]);
-      routeLayer.append("line")
-        .attr("x1", sx).attr("y1", sy)
-        .attr("x2", tx).attr("y2", ty)
-        .attr("stroke", "black")
-        .attr("stroke-dasharray", "4,2")
-        .attr("stroke-width", 1.5);
     }
-  });
-}
 
-      cellNodes.forEach(id => {
-        const routes = routingTable[id] || [];
-        routes.forEach(r => {
-          if (rawPositions[r.nextHop]) {
-            const [sx,sy] = applyTransform(rawPositions[id][0], rawPositions[id][1]);
-            const [tx,ty] = applyTransform(rawPositions[r.nextHop][0], rawPositions[r.nextHop][1]);
-            routeLayer.append("line")
-              .attr("x1",sx).attr("y1",sy).attr("x2",tx).attr("y2",ty)
-              .attr("stroke","black")
-              .attr("stroke-dasharray","4,2")
-              .attr("stroke-width",1.5);
+    // apply zoom/pan to a raw coordinate (raw coords are in same units as axialToPixel)
+    function applyTransform(rawX, rawY) {
+      // translate by drawing offset, then scale/translate by zoomTransform
+      const tx = SVG.node().__translate.x, ty = SVG.node().__translate.y;
+      const x = (rawX + tx) * zoomTransform.k + zoomTransform.x;
+      const y = (rawY + ty) * zoomTransform.k + zoomTransform.y;
+      return [x, y];
+    }
+
+    // ------------------- PARSING -------------------
+    function parseLogText(text) {
+      rawEvents = [];
+      const lines = text.split(/\r?\n/);
+      for (let line of lines) {
+        if (!line.trim()) continue;
+        const parts = line.trim().split(/\s+/);
+        if (parts.length < 2) continue;
+        const t = parseFloat(parts[0]);
+        if (isNaN(t)) continue;
+        const rest = parts.slice(2).join(" ").trim();  // lấy phần event
+
+        if (rest.startsWith("#NODE")) {
+          const m = rest.match(/#NODE\s+(\d+)\s*\(\s*([-\d.]+)\s*,\s*([-\d.]+)\s*\)/);
+          if (m) rawEvents.push({ t, type: "NODE", data: { id: +m[1], x: +m[2], y: +m[3] } });
+        } else if (rest.startsWith("#CELL_COLOR")) {
+          const m = rest.match(/#CELL_COLOR\s+(\d+)\s*:\s*(\d+)/);
+          if (m) rawEvents.push({ t, type: "CELL_COLOR", data: { id: +m[1], cid: +m[2] } });
+        } else if (rest.startsWith("#CELL_LEADER")) {
+          const m = rest.match(/#CELL_LEADER\s+(\d+):\s*(\d+)/);
+          if (m) rawEvents.push({ t, type: "CELL_LEADER", data: +m[2] });
+        } else if (rest.startsWith("#CH")) {
+          const m = rest.match(/#CH\s+(\d+)/);
+          if (m) rawEvents.push({ t, type: "CH", data: +m[1] });
+        } else if (rest.startsWith("#CELL_MESSAGE")) {
+          const m = rest.match(/#CELL_MESSAGE\s+(\d+)\s*->\s*(\d+)/);
+          if (m) rawEvents.push({ t, type: "CELL_MESSAGE", data: { src: +m[1], dst: +m[2] } });
+        } else if (rest.startsWith("#SENSOR_DATA")) {
+          const m = rest.match(/#SENSOR_DATA\s*:\s*(\d+)\s*->\s*(\d+)/);
+          if (m) rawEvents.push({ t, type: "SENSOR_DATA", data: { src: +m[1], dst: +m[2] } });
+        } else if (rest.startsWith("#GATEWAY_SELECTION")) {
+          const m = rest.match(/#GATEWAY_SELECTION\s+\d+\s*:\s*(\d+)\s*->\s*(\d+)/);
+          if (m) rawEvents.push({ t, type: "GATEWAY_SELECTION", data: { src: +m[1], dst: +m[2] } });
+        } else if (rest.startsWith("#NEIGHBOR")) {
+          const m = rest.match(/#NEIGHBOR\s+(\d+)\s*:\s*(\d+)/);
+          if (m) rawEvents.push({ t, type: "NEIGHBOR", data: { id: +m[1], nbr: +m[2] } });
+        } else if (rest.startsWith("#ROUTING_TABLE")) {
+          const m = rest.match(/#ROUTING_TABLE\s+(\d+)\s*\((\d+)\)\s*->\s*(\d+)\s*\((\d+)\)/);
+          if (m) {
+            rawEvents.push({
+              t, type: "ROUTING_TABLE",
+              data: { src: +m[1], cell1: +m[2], nextHop: +m[3], cell2: +m[4] }
+            });
+          }
+        } else if (rest.startsWith("#CL_ANNOUNCEMENT")) {
+          const m = rest.match(/#CL_ANNOUNCEMENT\s+(\d+)\s*:\s*(\d+)/);
+          if (m) rawEvents.push({ t, type: "CL_ANNOUNCEMENT", data: { src: +m[1], dst: +m[2] } });
+        } else if (rest.startsWith("#CL_CONFIRMATION")) {
+          const m = rest.match(/#CL_CONFIRMATION\s+(\d+)\s*:\s*(\d+)/);
+          if (m) rawEvents.push({ t, type: "CL_CONFIRMATION", data: { src: +m[1], dst: +m[2] } });
+        } else if (rest.startsWith("#HELLO")) {
+          const m = rest.match(/#HELLO\s+(\d+)/);
+          if (m) rawEvents.push({ t, type: "HELLO", data: { id: +m[1] } });
+        }
+
+
+
+
+      }
+      if (rawEvents.length === 0) {
+        alert("Không tìm thấy event hợp lệ trong input.");
+        return;
+      }
+      tMin = d3.min(rawEvents, d => d.t);
+      tMax = d3.max(rawEvents, d => d.t);
+    }
+
+    // ------------------- PREPARE FRAMES -------------------
+    function prepareFrames() {
+      const timeStep = +timeStepInput.value;
+      frames = Math.max(1, Math.floor((tMax - tMin) / timeStep) + 1);
+      d3.select("#frameSlider").attr("max", frames - 1).property("value", 0);
+      currentFrame = 0;
+      d3.select("#timeLabel").text(`Time: ${tMin.toFixed(2)}`);
+
+      // reset persistent states
+      rawPositions = {};
+      leaderNodes = new Set();
+      chNodes = new Set();
+      cellColors = new Map();
+
+      // build grid cells (base coordinates, not scaled)
+      buildGridCells();
+
+      // initial draw
+      updateFrame(0);
+    }
+
+    // build gridCells once (base centers relative to hex origin)
+    function buildGridCells() {
+      gridCells = [];
+      gridIndex = {};
+      const radius = CELL_RADIUS;
+      const translateX = PADDING;
+      const translateY = PADDING;
+
+      const max_q = Math.ceil(W / (radius * Math.sqrt(3))) * 3;
+      const max_r = Math.ceil(H / (radius * 1.5)) * 3;
+
+
+      for (let r = -max_r; r <= max_r; r++) {
+        for (let q = -max_q; q <= max_q; q++) {
+          const [cx, cy] = axialToPixel(q, r, radius);
+          const baseCx = cx + translateX;
+          const baseCy = cy + translateY;
+          const cell = { q, r, baseCx, baseCy };
+          gridCells.push(cell);
+          gridIndex[`${q},${r}`] = cell;
+        }
+      }
+
+      // store translate + radius to SVG DOM node for access elsewhere
+      SVG.node().__translate = { x: translateX, y: translateY, radius: radius };
+    }
+
+    // ------------------- UPDATE FRAME -------------------
+    function showNodeInfo(nodeId) {
+      const stats = nodeStats[nodeId];
+      let html = `<p><b>Node ${nodeId}</b></p>`;
+      if (stats) {
+        html += `<p>Sent: CELL_MESSAGE=${stats.sent.CELL_MESSAGE}, SENSOR_DATA=${stats.sent.SENSOR_DATA}</p>`;
+        html += `<p>Recv: CELL_MESSAGE=${stats.recv.CELL_MESSAGE}, SENSOR_DATA=${stats.recv.SENSOR_DATA}</p>`;
+      }
+      if (neighbors[nodeId]) {
+        html += `<p>Neighbors: ${Array.from(neighbors[nodeId]).join(", ")}</p>`;
+      }
+      d3.select("#nodeInfo").html(html);
+    }
+
+    function clearNodeInfo() {
+      d3.select("#nodeInfo").html("Hover a node to see details here.");
+    }
+
+    function highlightNeighbors(nodeId) {
+      if (!neighbors[nodeId]) return;
+      nodeLayer.selectAll("g.node")
+        .filter(nd => neighbors[nodeId].has(nd.id))
+        .select("circle")
+        .attr("fill", "#add8e6");
+    }
+
+    function resetNodes() {
+
+
+      // Reset lại toàn bộ node theo role
+      nodeLayer.selectAll("g.node").each(function (nd) {
+        const g = d3.select(this);
+        g.selectAll("*").remove();  // clear nội dung node
+
+        // Vẽ lại node đúng loại
+        if (leaderNodes.has(nd.id)) {
+          // Leader = vòng kép
+          g.append("circle").attr("r", 16).attr("fill", "white").attr("stroke", "#333").attr("stroke-width", 2);
+          g.append("circle").attr("r", 19).attr("fill", "none").attr("stroke", "#333").attr("stroke-width", 2);
+        } else if (chNodes.has(nd.id)) {
+          // CH = circle + star
+          g.append("circle").attr("r", 16).attr("fill", "white").attr("stroke", "#333").attr("stroke-width", 2);
+          const rOuter = 15.5, rInner = 6, numPoints = 5;
+          const starPts = [];
+          for (let i = 0; i < numPoints * 2; i++) {
+            const ang = Math.PI / 2 + i * Math.PI / numPoints;
+            const r = i % 2 === 0 ? rOuter : rInner;
+            starPts.push([r * Math.cos(ang), -r * Math.sin(ang)]);
+          }
+          g.append("path")
+            .attr("d", d3.line()(starPts))
+            .attr("fill", "none").attr("stroke", "#333").attr("stroke-width", 1.2);
+        } else {
+          // node thường
+          g.append("circle").attr("r", 16).attr("fill", "white").attr("stroke", "#333").attr("stroke-width", 1.2);
+        }
+
+        // vẽ lại text ID
+        g.append("text")
+          .attr("y", 4)
+          .attr("text-anchor", "middle")
+          .attr("font-size", 10)
+          .attr("fill", "black")
+          .text(nd.id);
+
+
+      })
+    }
+
+    function updateFrame(frameIdx) {
+      if (!rawEvents || rawEvents.length === 0) return;
+      const timeStep = +timeStepInput.value;
+      const fadeFrames = +fadeFramesInput.value;
+      const fadeWindow = fadeFrames * timeStep;
+      const currentTime = tMin + frameIdx * timeStep;
+      const windowStart = currentTime - fadeWindow;
+      const activeEdges = [];
+
+      // rebuild persistent rawPositions/leader/ch/cellColors using events up to currentTime
+      rawPositions = {};
+      leaderNodes = new Set();
+      chNodes = new Set();
+      cellColors = new Map();
+      neighbors = {}; // id -> Set()
+      let routingTable = {}; // id -> list of {srcCell,nextHop,dstCell}
+
+      rawEvents.forEach(ev => {
+        if (ev.t <= currentTime) {
+          if (ev.type === "NODE") {
+            // store raw X,Y (no translate)
+            rawPositions[ev.data.id] = [ev.data.x, ev.data.y];
+          } else if (ev.type === "CELL_COLOR") {
+            const nid = ev.data.id, cid = ev.data.cid;
+            const rp = rawPositions[nid];
+            if (rp) {
+              const [q, r] = pixelToAxial(rp[0], rp[1], CELL_RADIUS);
+              // lưu cả 2: cell theo q,r để vẽ, cellId cho logic routing
+              cellColors.set(`${q},${r}`, COLOR_MAP[cid] || "none");
+            }
+          } else if (ev.type === "CELL_LEADER") {
+            leaderNodes.add(ev.data);
+          } else if (ev.type === "CH") {
+            chNodes.add(ev.data);
+          } else if (ev.type === "NEIGHBOR") {
+            const { id, nbr } = ev.data;
+            if (!neighbors[id]) neighbors[id] = new Set();
+            if (!neighbors[nbr]) neighbors[nbr] = new Set();
+            neighbors[id].add(nbr);
+            neighbors[nbr].add(id);
+          } else if (ev.type === "ROUTING_TABLE") {
+            const { src, srcCell, nextHop, dstCell } = ev.data;
+            if (!routingTable[src]) routingTable[src] = [];
+            routingTable[src].push({ srcCell, nextHop, dstCell });
+          } else if (
+            (ev.type === "CELL_MESSAGE" || ev.type === "SENSOR_DATA" ||
+              ev.type === "CL_ANNOUNCEMENT" || ev.type === "CL_CONFIRMATION")
+            && ev.t >= windowStart && ev.t <= currentTime
+          ) {
+            const age = currentTime - ev.t;
+            const alpha = (age < timeStep) ? 1.0 : 0.5;
+            const src = ev.data.src, dst = ev.data.dst;
+            if (rawPositions[src] && rawPositions[dst]) {
+              const [sx, sy] = applyTransform(rawPositions[src][0], rawPositions[src][1]);
+              const [tx2, ty2] = applyTransform(rawPositions[dst][0], rawPositions[dst][1]);
+              activeEdges.push({ src, dst, sx, sy, tx2, ty2, type: ev.type, alpha });
+            }
+          }
+
+
+
+
+        }
+      });
+
+      // Khởi tạo nodeStats cho tất cả nodes đã biết
+      for (let idStr of Object.keys(rawPositions)) {
+        const id = +idStr;
+        nodeStats[id] = {
+          sent: { CELL_MESSAGE: 0, SENSOR_DATA: 0 },
+          recv: { CELL_MESSAGE: 0, SENSOR_DATA: 0 }
+        };
+      }
+
+      rawEvents.forEach(ev => {
+        if ((ev.type === "CELL_MESSAGE" || ev.type === "SENSOR_DATA") && ev.t <= currentTime) {
+          const src = ev.data.src, dst = ev.data.dst;
+          if (nodeStats[src]) nodeStats[src].sent[ev.type] += 1;
+          if (nodeStats[dst]) nodeStats[dst].recv[ev.type] += 1;
+        }
+      });
+
+      rawEvents.forEach(ev => {
+        if (ev.t <= currentTime && ev.type === "ROUTING_TABLE") {
+          if (!routingTableByCell2[ev.data.cell2]) routingTableByCell2[ev.data.cell2] = [];
+          routingTableByCell2[ev.data.cell2].push({ src: ev.data.src, nextHop: ev.data.nextHop });
+        }
+      });
+
+      heatmapLayer.selectAll("*").remove();
+
+      if (showHeatmap) {
+        heatmapLayer.selectAll("*").remove();
+
+        const mode = document.getElementById("heatmapMode").value;
+
+        // tạo data points với trọng số
+        const points = [];
+        Object.entries(rawPositions).forEach(([id, [x, y]]) => {
+          const stats = nodeStats[+id];
+          if (!stats) return;
+          let val = 0;
+          if (mode === "recv") val = stats.recv.CELL_MESSAGE + stats.recv.SENSOR_DATA;
+          else if (mode === "sent") val = stats.sent.CELL_MESSAGE + stats.sent.SENSOR_DATA;
+          else val = stats.recv.CELL_MESSAGE + stats.recv.SENSOR_DATA +
+            stats.sent.CELL_MESSAGE + stats.sent.SENSOR_DATA;
+          if (val > 0) {
+            const [sx, sy] = applyTransform(x, y);
+            points.push([sx, sy, val]);
           }
         });
-      });
-    })
-    .on("mouseout", () => {
-      routeLayer.selectAll("*").remove();
-    });
-  }
 
-  // prepare screen node list
-  const screenNodes = [];
-  for (let idStr of Object.keys(rawPositions)) {
-    const id = +idStr;
-    const [rawX, rawY] = rawPositions[id];
-    const [sx, sy] = applyTransform(rawX, rawY);
-    screenNodes.push({id, x:sx, y:sy});
-  }
+        if (points.length === 0) return;
 
-  // draw nodes (nodes size fixed)
-  nodeLayer.selectAll("*").remove();
-  const nodeSel = nodeLayer.selectAll("g.node")
-    .data(screenNodes, d=>d.id);
+        // scale màu cho contour
+        const maxVal = d3.max(points, d => d[2]);
+        const colorScale = d3.scaleSequential(d3.interpolateTurbo) // palette đẹp
+          .domain([0, maxVal]);
 
-  const nodeEnter = nodeSel.enter().append("g").attr("class","node")
-    .attr("transform", d=>`translate(${d.x},${d.y})`)
-    .style("cursor","pointer")
-    .on("mouseover", (event,d)=>{
-      if (pinnedNode !== null) return; // đang ghim thì bỏ qua hover
-      showNodeInfo(d.id);
-      highlightNeighbors(d.id);
+        // tính contour density
+        const density = d3.contourDensity()
+          .x(d => d[0])
+          .y(d => d[1])
+          .weight(d => d[2])
+          .size([W, H])       // size = kích thước svg
+          .bandwidth(60)     // smoothing radius (điều chỉnh để mịn hơn)
+          .thresholds(6);
 
-})
+        const contours = density(points);
 
-        .on("mouseout", ()=>{
-           if (pinnedNode !== null) return; // đang ghim thì bỏ qua mouseout
-            clearNodeInfo();
-            resetNodes();
+        heatmapLayer.selectAll("path")
+          .data(contours)
+          .join("path")
+          .attr("d", d3.geoPath())
+          .attr("fill", d => colorScale(d.value))
+          .attr("stroke", "#444")
+          .attr("stroke-width", 0.3)
+          .attr("opacity", 0.5);
+      }
 
-})
-      .on("click", (event,d)=>{
-        if (pinnedNode === d.id) {
-          // bỏ ghim nếu click lại
-          pinnedNode = null;
-          clearNodeInfo();
-          resetNodes();
-        } else {
-          pinnedNode = d.id;
+
+      heatmapLayer.selectAll("*").remove();
+
+      if (showHeatmap) {
+        // tìm giá trị lớn nhất để chuẩn hóa
+        let maxVal = 0;
+        const mode = document.getElementById("heatmapMode").value;
+
+        Object.keys(nodeStats).forEach(id => {
+          const stats = nodeStats[id];
+          let val = 0;
+          if (mode === "recv") val = stats.recv.CELL_MESSAGE + stats.recv.SENSOR_DATA;
+          else if (mode === "sent") val = stats.sent.CELL_MESSAGE + stats.sent.SENSOR_DATA;
+          else val = stats.recv.CELL_MESSAGE + stats.recv.SENSOR_DATA + stats.sent.CELL_MESSAGE + stats.sent.SENSOR_DATA;
+          if (val > maxVal) maxVal = val;
+          stats._heatVal = val;
+        });
+
+        // scale màu: xanh -> vàng -> đỏ
+        const colorScale = d3.scaleLinear()
+          .domain([0, maxVal / 2, maxVal])
+          .range(["#00f", "#ff0", "#f00"]);
+
+        // vẽ overlay heatmap (circle mờ bên dưới node)
+        Object.entries(rawPositions).forEach(([id, [x, y]]) => {
+          const stats = nodeStats[+id];
+          if (!stats) return;
+          const val = stats._heatVal;
+          if (val <= 0) return;
+          const [sx, sy] = applyTransform(x, y);
+          heatmapLayer.append("circle")
+            .attr("cx", sx)
+            .attr("cy", sy)
+            .attr("r", 30 * zoomTransform.k) // bán kính heatmap
+            .attr("fill", colorScale(val))
+            .attr("opacity", 0.35);
+        });
+      }
+
+
+
+
+      // draw grid (stroke)
+      const radiusScaled = CELL_RADIUS * zoomTransform.k;
+      gridLayer.selectAll("polygon.grid")
+        .data(gridCells, d => `${d.q},${d.r}`)
+        .join(
+          enter => enter.append("polygon").attr("class", "grid"),
+          update => update,
+          exit => exit.remove()
+        )
+        .attr("points", d => {
+          const cx = d.baseCx * zoomTransform.k + zoomTransform.x;
+          const cy = d.baseCy * zoomTransform.k + zoomTransform.y;
+          const pts = hexPolygon(cx, cy, radiusScaled).map(p => p.join(",")).join(" ");
+          return pts;
+        })
+        .attr("fill", "none")
+        .attr("stroke", "#ddd")
+        .attr("stroke-width", 1);
+
+      // draw colored cells
+      cellLayer.selectAll("*").remove();
+      if (showCellColor) {
+        for (let [key, color] of cellColors.entries()) {
+          const cell = gridIndex[key];
+          if (!cell) continue;
+          const cx = cell.baseCx * zoomTransform.k + zoomTransform.x;
+          const cy = cell.baseCy * zoomTransform.k + zoomTransform.y;
+          const pts = hexPolygon(cx, cy, radiusScaled).map(p => p.join(",")).join(" ");
+          cellLayer.append("polygon")
+            .attr("points", pts)
+            .attr("fill", color)
+            .attr("fill-opacity", 0.15)
+            .attr("stroke", "#aaa")
+            .attr("stroke-width", 1)
+            .on("mouseover", function () {
+              const cid = +this.dataset.cellid
+
+
+
+              routeLayer.selectAll("*").remove();
+              if (showRouting && routingCell2 !== null) {
+                const routes = routingTableByCell2[routingCell2] || [];
+                routes.forEach(r => {
+                  if (rawPositions[r.src] && rawPositions[r.nextHop]) {
+                    const [sx, sy] = applyTransform(rawPositions[r.src][0], rawPositions[r.src][1]);
+                    const [tx, ty] = applyTransform(rawPositions[r.nextHop][0], rawPositions[r.nextHop][1]);
+                    routeLayer.append("line")
+                      .attr("x1", sx).attr("y1", sy)
+                      .attr("x2", tx).attr("y2", ty)
+                      .attr("stroke", "black")
+                      .attr("stroke-dasharray", "4,2")
+                      .attr("stroke-width", 1.5);
+                  }
+                });
+              }
+
+              cellNodes.forEach(id => {
+                const routes = routingTable[id] || [];
+                routes.forEach(r => {
+                  if (rawPositions[r.nextHop]) {
+                    const [sx, sy] = applyTransform(rawPositions[id][0], rawPositions[id][1]);
+                    const [tx, ty] = applyTransform(rawPositions[r.nextHop][0], rawPositions[r.nextHop][1]);
+                    routeLayer.append("line")
+                      .attr("x1", sx).attr("y1", sy).attr("x2", tx).attr("y2", ty)
+                      .attr("stroke", "black")
+                      .attr("stroke-dasharray", "4,2")
+                      .attr("stroke-width", 1.5);
+                  }
+                });
+              });
+            })
+            .on("mouseout", () => {
+              routeLayer.selectAll("*").remove();
+            });
+        }
+      }
+
+      // prepare screen node list
+      const screenNodes = [];
+      for (let idStr of Object.keys(rawPositions)) {
+        const id = +idStr;
+        const [rawX, rawY] = rawPositions[id];
+        const [sx, sy] = applyTransform(rawX, rawY);
+        screenNodes.push({ id, x: sx, y: sy });
+      }
+
+      // draw nodes (nodes size fixed)
+      nodeLayer.selectAll("*").remove();
+      const nodeSel = nodeLayer.selectAll("g.node")
+        .data(screenNodes, d => d.id);
+
+      const nodeEnter = nodeSel.enter().append("g").attr("class", "node")
+        .attr("transform", d => `translate(${d.x},${d.y})`)
+        .style("cursor", "pointer")
+        .on("mouseover", (event, d) => {
+          if (pinnedNode !== null) return; // đang ghim thì bỏ qua hover
           showNodeInfo(d.id);
           highlightNeighbors(d.id);
-        }
-      })
 
-    .on("mousemove", (event)=>{
-      tooltip.style("left", (event.pageX + 12) + "px").style("top", (event.pageY + 6) + "px");
+        })
+
+        .on("mouseout", () => {
+          if (pinnedNode !== null) return; // đang ghim thì bỏ qua mouseout
+          clearNodeInfo();
+          resetNodes();
+
+        })
+        .on("click", (event, d) => {
+          if (pinnedNode === d.id) {
+            // bỏ ghim nếu click lại
+            pinnedNode = null;
+            clearNodeInfo();
+            resetNodes();
+          } else {
+            pinnedNode = d.id;
+            showNodeInfo(d.id);
+            highlightNeighbors(d.id);
+          }
+        })
+
+        .on("mousemove", (event) => {
+          tooltip.style("left", (event.pageX + 12) + "px").style("top", (event.pageY + 6) + "px");
+        });
+
+
+
+
+      nodeEnter.each(function (d) {
+        const g = d3.select(this);
+
+        if (leaderNodes.has(d.id)) {
+          // CL: circle with double border
+          g.append("circle")
+            .attr("r", 16)
+            .attr("fill", "white")
+            .attr("stroke", "#333")
+            .attr("stroke-width", 2);
+          g.append("circle")
+            .attr("r", 19) // outer border
+            .attr("fill", "none")
+            .attr("stroke", "#333")
+            .attr("stroke-width", 1.2);
+
+        } else if (chNodes.has(d.id)) {
+          // CH: circle + star inside
+          g.append("circle")
+            .attr("r", 16)
+            .attr("fill", "white")
+            .attr("stroke", "#333")
+            .attr("stroke-width", 2);
+
+          // Star spanning out to the border
+          const rOuter = 15.5; // gần chạm viền ngoài (node r=16)
+          const rInner = 6;    // điểm lõm vào
+          const numPoints = 5;
+
+          const starPoints = [];
+          for (let i = 0; i < numPoints * 2; i++) {
+            const angle = Math.PI / 2 + i * Math.PI / numPoints;
+            const r = i % 2 === 0 ? rOuter : rInner;
+            starPoints.push([r * Math.cos(angle), -r * Math.sin(angle)]);
+          }
+
+          const starPath = d3.line()(starPoints);
+
+          g.append("path")
+            .attr("d", starPath)
+            .attr("fill", "none")
+            .attr("stroke", "#333")
+            .attr("stroke-width", 1.2);
+
+
+
+        } else {
+          // Normal node
+          g.append("circle")
+            .attr("r", 16)
+            .attr("fill", "white")
+            .attr("stroke", "#333")
+            .attr("stroke-width", 1.2);
+        }
+
+        // Node id (luôn màu đen)
+        g.append("text")
+          .attr("y", 4)
+          .attr("text-anchor", "middle")
+          .attr("font-size", 10)
+          .attr("fill", "black")
+          .text(d.id);
+      });
+
+
+      nodeEnter.append("text")
+        .attr("y", 4)
+        .attr("text-anchor", "middle")
+        .attr("font-size", 10)
+        .attr("fill", "black")
+        .text(d => d.id);
+
+      // draw edges in sliding window (using screen positions)
+      edgeLayer.selectAll("*").remove();
+
+      rawEvents.forEach(ev => {
+        if (
+          (ev.type === "CELL_MESSAGE" || ev.type === "SENSOR_DATA" ||
+            ev.type === "CL_ANNOUNCEMENT" || ev.type === "CL_CONFIRMATION")
+          && ev.t >= windowStart && ev.t <= currentTime
+        ) {
+          const age = currentTime - ev.t;
+          const alpha = (age < timeStep) ? 1.0 : 0.5;
+          const src = ev.data.src, dst = ev.data.dst;
+          if (rawPositions[src] && rawPositions[dst]) {
+            const [sx, sy] = applyTransform(rawPositions[src][0], rawPositions[src][1]);
+            const [tx2, ty2] = applyTransform(rawPositions[dst][0], rawPositions[dst][1]);
+            activeEdges.push({ src, dst, sx, sy, tx2, ty2, type: ev.type, alpha });
+          }
+        }
+      });
+
+      // vẽ path sau khi đã có activeEdges
+      activeEdges.forEach(e => {
+        const sx = e.sx, sy = e.sy, tx2 = e.tx2, ty2 = e.ty2;
+        const dx = tx2 - sx, dy = ty2 - sy;
+        const mx = (sx + tx2) / 2, my = (sy + ty2) / 2;
+        const norm = Math.sqrt(dx * dx + dy * dy) || 1;
+        const px = mx + (-dy / norm) * 20 * zoomTransform.k;
+        const py = my + (dx / norm) * 20 * zoomTransform.k;
+        const path = `M ${sx} ${sy} Q ${px} ${py} ${tx2} ${ty2}`;
+
+        let strokeColor = "gray", dash = null, marker = null;
+        if (e.type === "CELL_MESSAGE") {
+          strokeColor = "steelblue"; marker = "url(#arrow-blue)";
+        } else if (e.type === "SENSOR_DATA") {
+          strokeColor = "orange"; marker = "url(#arrow-orange)";
+        } else if (e.type === "CL_ANNOUNCEMENT") {
+          strokeColor = "red"; dash = null; marker = "url(#arrow-red)";
+        } else if (e.type === "CL_CONFIRMATION") {
+          strokeColor = "red"; dash = "5,3"; marker = "url(#arrow-red)";
+        }
+
+
+        edgeLayer.append("path")
+          .attr("d", path)
+          .attr("fill", "none")
+          .attr("stroke", strokeColor)
+          .attr("stroke-width", 2)
+          .attr("stroke-opacity", e.alpha)   // giữ fading cho mọi loại
+          .attr("marker-end", marker)
+          .attr("stroke-linecap", "round")
+          .attr("stroke-dasharray", dash ? dash : null);
+      });
+
+      helloLayer.selectAll("*").remove();
+
+      rawEvents.forEach(ev => {
+        if (ev.type === "HELLO" && ev.t >= windowStart && ev.t <= currentTime) {
+          const id = ev.data.id;
+          if (rawPositions[id]) {
+            const [sx, sy] = applyTransform(rawPositions[id][0], rawPositions[id][1]);
+
+            const circle = helloLayer.append("circle")
+              .attr("cx", sx)
+              .attr("cy", sy)
+              .attr("r", 16)   // bắt đầu bằng bán kính node
+              .attr("stroke", "green")
+              .attr("stroke-width", 2)
+              .attr("fill", "none")
+              .attr("opacity", 0.8);
+
+            circle.transition()
+              .duration(800)           // thời gian hiệu ứng (ms)
+              .attr("r", 80)           // bán kính tối đa
+              .attr("opacity", 0)      // biến mất dần
+              .remove();               // xóa khỏi DOM sau khi xong
+          }
+        }
+      });
+
+
+
+      routeLayer.selectAll("*").remove();
+      if (showRouting && routingCell2 !== null) {
+        const routes = routingTableByCell2[routingCell2] || [];
+        routes.forEach(r => {
+          if (rawPositions[r.src] && rawPositions[r.nextHop]) {
+            const [sx, sy] = applyTransform(rawPositions[r.src][0], rawPositions[r.src][1]);
+            const [tx, ty] = applyTransform(rawPositions[r.nextHop][0], rawPositions[r.nextHop][1]);
+            routeLayer.append("line")
+              .attr("x1", sx).attr("y1", sy)
+              .attr("x2", tx).attr("y2", ty)
+              .attr("stroke", "black")
+              .attr("stroke-dasharray", "4,2")
+              .attr("stroke-width", 1.5);
+          }
+        });
+      }
+
+      // --- update info panel ---
+      d3.select("#totalNodes").text(Object.keys(rawPositions).length);
+      d3.select("#totalCells").text(cellColors.size);
+      d3.select("#totalCL").text(leaderNodes.size);
+      d3.select("#totalCH").text(chNodes.size);
+
+      // đếm message
+      let cellMsg = 0, sensorMsg = 0;
+      rawEvents.forEach(ev => {
+        if (ev.type === "CELL_MESSAGE" && ev.t <= currentTime) cellMsg++;
+        if (ev.type === "SENSOR_DATA" && ev.t <= currentTime) sensorMsg++;
+      });
+      d3.select("#countCellMsg").text(cellMsg);
+      d3.select("#countSensorData").text(sensorMsg);
+
+
+      // update title/time and slider
+      d3.select("#timeLabel").text(`Time: ${currentTime.toFixed(2)}`);
+      d3.select("#frameSlider").property("value", frameIdx);
+    }
+
+    // ------------------- Playback -------------------
+    function play() {
+      if (playing) return;
+      playing = true;
+      const fps = 10; // base fps
+      const speed = +speedInput.value;
+      const intervalMs = 1000 / (fps * speed);
+      intervalId = setInterval(() => {
+        if (currentFrame >= frames - 1) { pause(); return; }
+        currentFrame++;
+        updateFrame(currentFrame);
+
+        // kiểm tra autoPause
+        if (autoPauseTime !== null) {
+          const timeStep = +timeStepInput.value;
+          const currentTime = tMin + currentFrame * timeStep;
+          if (currentTime >= autoPauseTime) {
+            pause();
+          }
+        }
+      }, intervalMs);
+
+    }
+
+    function pause() {
+      playing = false;
+      if (intervalId) { clearInterval(intervalId); intervalId = null; }
+    }
+
+    // ------------------- UI hooks -------------------
+    document.getElementById("btnLoad").addEventListener("click", () => {
+      const f = document.getElementById("fileInput").files[0];
+      if (!f) { alert("Chọn file log trước."); return; }
+      const reader = new FileReader();
+      reader.onload = () => {
+        document.getElementById("logArea").value = reader.result;
+        alert("File loaded to textarea. Click Parse & Prepare.");
+      };
+      reader.readAsText(f);
     });
 
-    
+    document.getElementById("btnParse").addEventListener("click", () => {
+      const text = document.getElementById("logArea").value;
+      if (!text.trim()) { alert("Paste hoặc load log trước."); return; }
+      parseLogText(text);
+      prepareFrames();
+    });
 
+    document.getElementById("playBtn").addEventListener("click", () => { play(); });
+    document.getElementById("pauseBtn").addEventListener("click", () => { pause(); });
+    document.getElementById("btnReset").addEventListener("click", () => {
+      // reset zoom and re-render
+      SVG.transition().duration(300).call(zoomBehavior.transform, d3.zoomIdentity);
+      zoomTransform = { k: 1, x: 0, y: 0 };
+      updateFrame(currentFrame);
+    });
 
- nodeEnter.each(function(d) {
-  const g = d3.select(this);
-
-  if (leaderNodes.has(d.id)) {
-    // CL: circle with double border
-    g.append("circle")
-      .attr("r", 16)
-      .attr("fill", "white")
-      .attr("stroke", "#333")
-      .attr("stroke-width", 2);
-    g.append("circle")
-      .attr("r", 19) // outer border
-      .attr("fill", "none")
-      .attr("stroke", "#333")
-      .attr("stroke-width", 1.2);
-
-  } else if (chNodes.has(d.id)) {
-  // CH: circle + star inside
-  g.append("circle")
-    .attr("r", 16)
-    .attr("fill", "white")
-    .attr("stroke", "#333")
-    .attr("stroke-width", 2);
-
-  // Star spanning out to the border
-  const rOuter = 15.5; // gần chạm viền ngoài (node r=16)
-  const rInner = 6;    // điểm lõm vào
-  const numPoints = 5;
-
-  const starPoints = [];
-  for (let i = 0; i < numPoints * 2; i++) {
-    const angle = Math.PI/2 + i * Math.PI / numPoints;
-    const r = i % 2 === 0 ? rOuter : rInner;
-    starPoints.push([r * Math.cos(angle), -r * Math.sin(angle)]);
-  }
-
-  const starPath = d3.line()(starPoints);
-
-  g.append("path")
-    .attr("d", starPath)
-    .attr("fill", "none")
-    .attr("stroke", "#333")
-    .attr("stroke-width", 1.2);
-
-
-
-  } else {
-    // Normal node
-    g.append("circle")
-      .attr("r", 16)
-      .attr("fill", "white")
-      .attr("stroke", "#333")
-      .attr("stroke-width", 1.2);
-  }
-
-  // Node id (luôn màu đen)
-  g.append("text")
-    .attr("y", 4)
-    .attr("text-anchor","middle")
-    .attr("font-size",10)
-    .attr("fill","black")
-    .text(d.id);
-});
-
-
-  nodeEnter.append("text")
-    .attr("y",4)
-    .attr("text-anchor","middle")
-    .attr("font-size",10)
-    .attr("fill", "black")
-    .text(d=>d.id);
-
-  // draw edges in sliding window (using screen positions)
-edgeLayer.selectAll("*").remove();
-
-rawEvents.forEach(ev=>{
-  if (
-    (ev.type==="CELL_MESSAGE" || ev.type==="SENSOR_DATA" ||
-     ev.type==="CL_ANNOUNCEMENT" || ev.type==="CL_CONFIRMATION")
-    && ev.t >= windowStart && ev.t <= currentTime
-  ) {
-    const age = currentTime - ev.t;
-    const alpha = (age < timeStep) ? 1.0 : 0.5;
-    const src = ev.data.src, dst = ev.data.dst;
-    if (rawPositions[src] && rawPositions[dst]) {
-      const [sx, sy] = applyTransform(rawPositions[src][0], rawPositions[src][1]);
-      const [tx2, ty2] = applyTransform(rawPositions[dst][0], rawPositions[dst][1]);
-      activeEdges.push({src, dst, sx, sy, tx2, ty2, type:ev.type, alpha});
-    }
-  }
-});
-
-// vẽ path sau khi đã có activeEdges
-activeEdges.forEach(e => {
-  const sx = e.sx, sy = e.sy, tx2 = e.tx2, ty2 = e.ty2;
-  const dx = tx2 - sx, dy = ty2 - sy;
-  const mx = (sx + tx2)/2, my = (sy + ty2)/2;
-  const norm = Math.sqrt(dx*dx + dy*dy) || 1;
-  const px = mx + (-dy/norm) * 20 * zoomTransform.k;
-  const py = my + (dx/norm) * 20 * zoomTransform.k;
-  const path = `M ${sx} ${sy} Q ${px} ${py} ${tx2} ${ty2}`;
-
-  let strokeColor = "gray", dash = null, marker = null;
-  if (e.type === "CELL_MESSAGE") {
-    strokeColor = "steelblue"; marker = "url(#arrow-blue)";
-  } else if (e.type === "SENSOR_DATA") {
-    strokeColor = "orange"; marker = "url(#arrow-orange)";
-  } else if (e.type === "CL_ANNOUNCEMENT") {
-  strokeColor = "red"; dash = null; marker = "url(#arrow-red)";
-} else if (e.type === "CL_CONFIRMATION") {
-  strokeColor = "red"; dash = "5,3"; marker = "url(#arrow-red)";
-}
-
-
-  edgeLayer.append("path")
-    .attr("d", path)
-    .attr("fill", "none")
-    .attr("stroke", strokeColor)
-    .attr("stroke-width", 2)
-    .attr("stroke-opacity", e.alpha)   // giữ fading cho mọi loại
-    .attr("marker-end", marker)
-    .attr("stroke-linecap","round")
-    .attr("stroke-dasharray", dash ? dash : null);
-});
-
-helloLayer.selectAll("*").remove();
-
-rawEvents.forEach(ev => {
-  if (ev.type === "HELLO" && ev.t >= windowStart && ev.t <= currentTime) {
-    const id = ev.data.id;
-    if (rawPositions[id]) {
-      const [sx, sy] = applyTransform(rawPositions[id][0], rawPositions[id][1]);
-
-      const circle = helloLayer.append("circle")
-        .attr("cx", sx)
-        .attr("cy", sy)
-        .attr("r", 16)   // bắt đầu bằng bán kính node
-        .attr("stroke", "green")
-        .attr("stroke-width", 2)
-        .attr("fill", "none")
-        .attr("opacity", 0.8);
-
-      circle.transition()
-        .duration(800)           // thời gian hiệu ứng (ms)
-        .attr("r", 80)           // bán kính tối đa
-        .attr("opacity", 0)      // biến mất dần
-        .remove();               // xóa khỏi DOM sau khi xong
-    }
-  }
-});
-
-
-
-  routeLayer.selectAll("*").remove();
-if (showRouting && routingCell2 !== null) {
-  const routes = routingTableByCell2[routingCell2] || [];
-  routes.forEach(r => {
-    if (rawPositions[r.src] && rawPositions[r.nextHop]) {
-      const [sx, sy] = applyTransform(rawPositions[r.src][0], rawPositions[r.src][1]);
-      const [tx, ty] = applyTransform(rawPositions[r.nextHop][0], rawPositions[r.nextHop][1]);
-      routeLayer.append("line")
-        .attr("x1", sx).attr("y1", sy)
-        .attr("x2", tx).attr("y2", ty)
-        .attr("stroke", "black")
-        .attr("stroke-dasharray", "4,2")
-        .attr("stroke-width", 1.5);
-    }
-  });
-}
-
-// --- update info panel ---
-d3.select("#totalNodes").text(Object.keys(rawPositions).length);
-d3.select("#totalCells").text(cellColors.size);
-d3.select("#totalCL").text(leaderNodes.size);
-d3.select("#totalCH").text(chNodes.size);
-
-// đếm message
-let cellMsg = 0, sensorMsg = 0;
-rawEvents.forEach(ev=>{
-  if (ev.type==="CELL_MESSAGE" && ev.t <= currentTime) cellMsg++;
-  if (ev.type==="SENSOR_DATA" && ev.t <= currentTime) sensorMsg++;
-});
-d3.select("#countCellMsg").text(cellMsg);
-d3.select("#countSensorData").text(sensorMsg);
-
-
-  // update title/time and slider
-  d3.select("#timeLabel").text(`Time: ${currentTime.toFixed(2)}`);
-  d3.select("#frameSlider").property("value", frameIdx);
-}
-
-// ------------------- Playback -------------------
-function play() {
-  if (playing) return;
-  playing = true;
-  const fps = 10; // base fps
-  const speed = +speedInput.value;
-  const intervalMs = 1000 / (fps * speed);
-  intervalId = setInterval(()=>{
-  if (currentFrame >= frames-1) { pause(); return; }
-  currentFrame++;
-  updateFrame(currentFrame);
-
-  // kiểm tra autoPause
-  if (autoPauseTime !== null) {
-    const timeStep = +timeStepInput.value;
-    const currentTime = tMin + currentFrame * timeStep;
-    if (currentTime >= autoPauseTime) {
+    document.getElementById("nextBtn").addEventListener("click", () => {
       pause();
-    }
-  }
-}, intervalMs);
+      if (currentFrame < frames - 1) {
+        currentFrame++;
+        updateFrame(currentFrame);
+      }
+    });
 
-}
+    document.getElementById("jumpBtn").addEventListener("click", () => {
+      const t = parseFloat(document.getElementById("jumpTime").value);
+      if (isNaN(t) || !rawEvents.length) return;
+      const timeStep = +timeStepInput.value;
+      let frameIdx = Math.floor((t - tMin) / timeStep);
+      frameIdx = Math.max(0, Math.min(frames - 1, frameIdx));
+      pause();
+      currentFrame = frameIdx;
+      updateFrame(currentFrame);
+    });
 
-function pause() {
-  playing = false;
-  if (intervalId) { clearInterval(intervalId); intervalId = null; }
-}
+    document.getElementById("setPauseBtn").addEventListener("click", () => {
+      const t = parseFloat(document.getElementById("pauseAt").value);
+      autoPauseTime = isNaN(t) ? null : t;
+      if (autoPauseTime !== null) {
+        alert("Auto pause set at time " + autoPauseTime);
+      } else {
+        alert("Auto pause cleared");
+      }
+    });
 
-// ------------------- UI hooks -------------------
-document.getElementById("btnLoad").addEventListener("click", ()=>{
-  const f = document.getElementById("fileInput").files[0];
-  if (!f) { alert("Chọn file log trước."); return; }
-  const reader = new FileReader();
-  reader.onload = () => {
-    document.getElementById("logArea").value = reader.result;
-    alert("File loaded to textarea. Click Parse & Prepare.");
-  };
-  reader.readAsText(f);
-});
+    document.getElementById("jumpTime").addEventListener("change", (ev) => {
+      const t = parseFloat(ev.target.value);
+      if (isNaN(t) || !rawEvents.length) return;
+      const timeStep = +timeStepInput.value;
+      let frameIdx = Math.floor((t - tMin) / timeStep);
+      frameIdx = Math.max(0, Math.min(frames - 1, frameIdx));
+      pause();
+      currentFrame = frameIdx;
+      updateFrame(currentFrame);
+    });
 
-document.getElementById("btnParse").addEventListener("click", ()=>{
-  const text = document.getElementById("logArea").value;
-  if (!text.trim()) { alert("Paste hoặc load log trước."); return; }
-  parseLogText(text);
-  prepareFrames();
-});
+    document.getElementById("toggleRouting").addEventListener("change", (ev) => {
+      showRouting = ev.target.checked;
+      updateFrame(currentFrame); // redraw khi thay đổi
+    });
 
-document.getElementById("playBtn").addEventListener("click", ()=>{ play(); });
-document.getElementById("pauseBtn").addEventListener("click", ()=>{ pause(); });
-document.getElementById("btnReset").addEventListener("click", ()=>{
-  // reset zoom and re-render
-  SVG.transition().duration(300).call(zoomBehavior.transform, d3.zoomIdentity);
-  zoomTransform = {k:1, x:0, y:0};
-  updateFrame(currentFrame);
-});
+    document.getElementById("frameSlider").addEventListener("input", (ev) => {
+      pause();
+      currentFrame = +ev.target.value;
+      updateFrame(currentFrame);
+    });
 
-document.getElementById("nextBtn").addEventListener("click", ()=>{
-  pause();
-  if (currentFrame < frames-1) {
-    currentFrame++;
-    updateFrame(currentFrame);
-  }
-});
+    let routingCell2 = null;
+    let routingCell2List = [];
 
-document.getElementById("jumpBtn").addEventListener("click", ()=>{
-  const t = parseFloat(document.getElementById("jumpTime").value);
-  if (isNaN(t) || !rawEvents.length) return;
-  const timeStep = +timeStepInput.value;
-  let frameIdx = Math.floor((t - tMin)/timeStep);
-  frameIdx = Math.max(0, Math.min(frames-1, frameIdx));
-  pause();
-  currentFrame = frameIdx;
-  updateFrame(currentFrame);
-});
+    document.getElementById("toggleRouting").addEventListener("change", ev => {
+      showRouting = ev.target.checked;
+      if (showRouting) {
+        // xây danh sách cell2 đã xuất hiện, sắp xếp
+        routingCell2List = Object.keys(routingTableByCell2).map(Number).sort((a, b) => a - b);
+        routingCell2 = routingCell2List.length ? routingCell2List[0] : null;
+      } else {
+        routingCell2 = null;
+      }
+      updateFrame(currentFrame);
+    });
 
-document.getElementById("setPauseBtn").addEventListener("click", ()=>{
-  const t = parseFloat(document.getElementById("pauseAt").value);
-  autoPauseTime = isNaN(t) ? null : t;
-  if (autoPauseTime !== null) {
-    alert("Auto pause set at time " + autoPauseTime);
-  } else {
-    alert("Auto pause cleared");
-  }
-});
+    document.getElementById("nextRouting").addEventListener("click", () => {
+      if (!routingCell2List.length) return;
+      let idx = routingCell2List.indexOf(routingCell2);
+      idx = (idx + 1) % routingCell2List.length;
+      routingCell2 = routingCell2List[idx];
+      document.getElementById("routingLabel").textContent = "Cell: " + routingCell2;
+      updateFrame(currentFrame);
+    });
 
-document.getElementById("jumpTime").addEventListener("change", (ev)=>{
-  const t = parseFloat(ev.target.value);
-  if (isNaN(t) || !rawEvents.length) return;
-  const timeStep = +timeStepInput.value;
-  let frameIdx = Math.floor((t - tMin)/timeStep);
-  frameIdx = Math.max(0, Math.min(frames-1, frameIdx));
-  pause();
-  currentFrame = frameIdx;
-  updateFrame(currentFrame);
-});
+    document.getElementById("toggleHeatmap").addEventListener("change", ev => {
+      showHeatmap = ev.target.checked;
+      updateFrame(currentFrame);
+    });
+    document.getElementById("heatmapMode").addEventListener("change", () => {
+      if (showHeatmap) updateFrame(currentFrame);
+    });
 
-document.getElementById("toggleRouting").addEventListener("change", (ev) => {
-  showRouting = ev.target.checked;
-  updateFrame(currentFrame); // redraw khi thay đổi
-});
+    document.getElementById("toggleCellColor").addEventListener("change", ev => {
+      showCellColor = ev.target.checked;
+      updateFrame(currentFrame);
+    });
 
-document.getElementById("frameSlider").addEventListener("input", (ev)=>{
-  pause();
-  currentFrame = +ev.target.value;
-  updateFrame(currentFrame);
-});
+    document.getElementById("prevBtn").addEventListener("click", () => {
+      pause();
+      if (currentFrame > 0) {
+        currentFrame--;
+        updateFrame(currentFrame);
+      }
+    });
 
-let routingCell2 = null;
-let routingCell2List = [];
+    speedInput.addEventListener("input", () => {
+      d3.select("#speedLabel").text(speedInput.value + "×");
+      if (playing) { pause(); play(); }
+    });
 
-document.getElementById("toggleRouting").addEventListener("change", ev => {
-  showRouting = ev.target.checked;
-  if (showRouting) {
-    // xây danh sách cell2 đã xuất hiện, sắp xếp
-    routingCell2List = Object.keys(routingTableByCell2).map(Number).sort((a,b)=>a-b);
-    routingCell2 = routingCell2List.length ? routingCell2List[0] : null;
-  } else {
-    routingCell2 = null;
-  }
-  updateFrame(currentFrame);
-});
+    timeStepInput.addEventListener("change", () => {
+      if (!rawEvents.length) return;
+      prepareFrames();
+      updateFrame(0);
+    });
 
-document.getElementById("nextRouting").addEventListener("click", ()=>{
-  if (!routingCell2List.length) return;
-  let idx = routingCell2List.indexOf(routingCell2);
-  idx = (idx+1) % routingCell2List.length;
-  routingCell2 = routingCell2List[idx];
-  document.getElementById("routingLabel").textContent = "Cell: "+routingCell2;
-  updateFrame(currentFrame);
-});
+    fadeFramesInput.addEventListener("change", () => { updateFrame(currentFrame); });
 
-document.getElementById("prevBtn").addEventListener("click", ()=> {
-  pause();
-  if (currentFrame > 0) {
-    currentFrame--;
-    updateFrame(currentFrame);
-  }
-});
+    // initial grid
+    buildGridCells();
+    updateFrame(0);
 
-speedInput.addEventListener("input", ()=>{
-  d3.select("#speedLabel").text(speedInput.value + "×");
-  if (playing) { pause(); play(); }
-});
-
-timeStepInput.addEventListener("change", ()=>{
-  if (!rawEvents.length) return;
-  prepareFrames();
-  updateFrame(0);
-});
-
-fadeFramesInput.addEventListener("change", ()=>{ updateFrame(currentFrame); });
-
-// initial grid
-buildGridCells();
-updateFrame(0);
-
-</script>
+  </script>
 </body>
+
 </html>
