@@ -150,6 +150,26 @@
   display: none; /* mặc định ẩn */
 }
 
+#eventPins {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 22px; /* nằm ngay trên slider */
+  height: 10px;
+  pointer-events: none; /* để không cản slider */
+}
+
+.pin {
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-bottom: 8px solid red; /* pin màu đỏ */
+  cursor: pointer;
+  pointer-events: auto; /* cho phép click */
+}
+
   </style>
 </head>
 
@@ -327,6 +347,7 @@
   <div id="frameBar">
     <input id="frameSlider" type="range" min="0" max="0" value="0">
     <div id="timeLabel">Time: 0</div>
+    <div id="eventPins"></div>
   </div>
 
   <script>
@@ -508,13 +529,29 @@
 
       }
       if (rawEvents.length === 0) {
-        alert("Không tìm thấy event hợp lệ trong input.");
+        //alert("Không tìm thấy event hợp lệ trong input.");
         return;
       }
       tMin = d3.min(rawEvents, d => d.t);
       tMax = d3.max(rawEvents, d => d.t);
     }
+let eventPinsData = []; // {type, time, frame}
 
+function extractEventTimes() {
+  const firstEvents = {}; // type -> earliest time
+  rawEvents.forEach(ev => {
+    if (!firstEvents[ev.type] || ev.t < firstEvents[ev.type]) {
+      firstEvents[ev.type] = ev.t;
+    }
+  });
+
+  eventPinsData = Object.entries(firstEvents).map(([type, time]) => {
+    const frame = Math.floor((time - tMin) / +timeStepInput.value);
+    return { type, time, frame };
+  });
+}
+
+    
     // ------------------- PREPARE FRAMES -------------------
     function prepareFrames() {
       const timeStep = +timeStepInput.value;
@@ -1161,6 +1198,40 @@
     }
 
     // ------------------- Playback -------------------
+    function drawEventPins() {
+  const bar = document.getElementById("eventPins");
+  bar.innerHTML = "";
+
+  const slider = document.getElementById("frameSlider");
+  const min = +slider.min, max = +slider.max;
+
+  // Lấy kích thước thật sự của slider
+  const rect = slider.getBoundingClientRect();
+  const sliderWidth = rect.width;
+
+  eventPinsData.forEach(ev => {
+    const ratio = (ev.frame - min) / (max - min);
+    const left = ratio * sliderWidth;
+
+    const pin = document.createElement("div");
+    pin.className = "pin";
+    // đặt top cho pin (tùy chỉnh CSS đã định) và căn trái chuẩn
+    pin.style.left = `${left + 20}px`;
+
+    // Tooltip mặc định
+    pin.title = `${ev.type} @ ${ev.time.toFixed(2)}`;
+
+    // Click để jump
+    pin.addEventListener("click", () => {
+      pause();
+      currentFrame = ev.frame;
+      updateFrame(currentFrame);
+    });
+
+    bar.appendChild(pin);
+  });
+}
+
     function play() {
       if (playing) return;
       playing = true;
@@ -1196,7 +1267,7 @@
       const reader = new FileReader();
       reader.onload = () => {
         document.getElementById("logArea").value = reader.result;
-        alert("File loaded to textarea. Click Parse & Prepare.");
+        //alert("File loaded to textarea. Click Parse & Prepare.");
       };
       reader.readAsText(f);
     });
@@ -1205,7 +1276,9 @@
       const text = document.getElementById("logArea").value;
       if (!text.trim()) { alert("Paste hoặc load log trước."); return; }
       parseLogText(text);
-      prepareFrames();
+extractEventTimes();
+prepareFrames();
+drawEventPins();
     });
 
     document.getElementById("playBtn").addEventListener("click", () => { play(); });
@@ -1250,9 +1323,9 @@
       const t = parseFloat(document.getElementById("pauseAt").value);
       autoPauseTime = isNaN(t) ? null : t;
       if (autoPauseTime !== null) {
-        alert("Auto pause set at time " + autoPauseTime);
+        ///alert("Auto pause set at time " + autoPauseTime);
       } else {
-        alert("Auto pause cleared");
+        ////alert("Auto pause cleared");
       }
     });
 
@@ -1314,6 +1387,49 @@
       showCellColor = ev.target.checked;
       updateFrame(currentFrame);
     });
+document.addEventListener("keydown", (ev) => {
+  if (ev.target.tagName === "INPUT" || ev.target.tagName === "TEXTAREA") return; 
+  // bỏ qua khi đang nhập liệu
+
+  switch (ev.code) {
+    case "Space":   // phím cách
+      ev.preventDefault(); // tránh scroll
+      if (playing) {
+        pause();
+      } else {
+        play();
+      }
+      break;
+
+    case "ArrowRight": // mũi tên phải → Next frame
+      pause();
+      if (currentFrame < frames - 1) {
+        currentFrame++;
+        updateFrame(currentFrame);
+      }
+      break;
+
+    case "ArrowLeft": // mũi tên trái → Prev frame
+      pause();
+      if (currentFrame > 0) {
+        currentFrame--;
+        updateFrame(currentFrame);
+      }
+      break;
+
+    case "Home": // về đầu
+      pause();
+      currentFrame = 0;
+      updateFrame(currentFrame);
+      break;
+
+    case "End": // nhảy cuối
+      pause();
+      currentFrame = frames - 1;
+      updateFrame(currentFrame);
+      break;
+  }
+});
 
     document.getElementById("prevBtn").addEventListener("click", () => {
       pause();
