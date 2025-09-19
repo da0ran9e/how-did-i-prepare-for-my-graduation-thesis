@@ -129,13 +129,34 @@
       max-height: 800px;
       overflow-y: auto;
     }
+    #controlsBox {
+  border: 1px solid #ccc;
+  background: #fff;
+  margin-bottom: 10px;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+#controlsHeader {
+  background: #eee;
+  padding: 6px 10px;
+  font-weight: bold;
+  cursor: pointer;
+  user-select: none;
+}
+
+#controlsContent {
+  padding: 8px 10px;
+  display: none; /* mặc định ẩn */
+}
+
   </style>
 </head>
 
 <body>
-
-  <h2>Simulation Visualizer — Hex Grid & Time-based Events</h2>
-
+<div id="controlsBox">
+  <div id="controlsHeader">⚙ Controls</div>
+  <div id="controlsContent">
   <div id="controls">
     <div>
       <input id="fileInput" type="file" accept=".txt" />
@@ -243,8 +264,10 @@
       </div>
 
 
-
+</div>
     </div>
+  </div>
+  </div>
   </div>
   <div id="main">
     <div id="canvas-wrap">
@@ -1201,6 +1224,16 @@
         updateFrame(currentFrame);
       }
     });
+
+    document.getElementById("controlsHeader").addEventListener("click", () => {
+  const content = document.getElementById("controlsContent");
+  if (content.style.display === "none") {
+    content.style.display = "block";
+  } else {
+    content.style.display = "none";
+  }
+});
+
 
     document.getElementById("jumpBtn").addEventListener("click", () => {
       const t = parseFloat(document.getElementById("jumpTime").value);
