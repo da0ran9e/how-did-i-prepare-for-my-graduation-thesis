@@ -1189,7 +1189,7 @@ void CellularRouting::handleRoutingTableAnnouncementPacket(CellularRoutingPacket
         //          << " to cell " << routingUpdateInfo[i].toCell
         //          << " via next hop " << routingUpdateInfo[i].nextHop;
         neighborCells[i] = routingUpdateInfo[i].toCell;
-        if (routingUpdateInfo[i].fromCell == myCellId) {
+        if (routingUpdateInfo[i].fromCell == myCellId && (routingUpdateInfo[i].nextHop != 0 && myCellId != 0)) {
             intraCellRoutingTable[routingUpdateInfo[i].nodeId][routingUpdateInfo[i].toCell] = routingUpdateInfo[i].nextHop;
             trace() << "#ROUTING_TABLE " << self << " (" << routingUpdateInfo[i].fromCell << ") -> " << routingUpdateInfo[i].nextHop << " (" << routingUpdateInfo[i].toCell << ")";
         }
@@ -1250,6 +1250,7 @@ void CellularRouting::sendCHAnnouncement()
     setTimer(SEND_ANNOUNCEMENT_QUEUE, uniform(1, 10));
     if (myRole == CELL_LEADER) {
         myCH_id = self;
+        trace() << "#CH_SELECTION " << self << ": " << myCH_id;
         for (int i = 0; i < 100; ++i) {
             myCellPathToCH[i] = -1;
         }
@@ -1468,7 +1469,7 @@ void CellularRouting::selectClusterHead()
 {
     // select the closest CH
     // Or just let the application layer handle it
-
+    trace() << "#CH_SELECTION " << self << ": " << myCH_id;
     // Announce members about next cell hop
     setTimer(ANNOUNCE_CELL_HOP_TIMER, uniform(1000, 1500));
 }
@@ -1526,6 +1527,8 @@ void CellularRouting::handleCellHopAnnouncementPacket(CellularRoutingPacket* pkt
         myCH_id = pkt->getClusterHead();
         //trace() << "my CH id: " << myCH_id;
 
+        trace() << "#CH_SELECTION " << self << ": " << myCH_id;
+
         setTimer(COLOR_SCHEDULING_TIMER, 600*myColor);
     }
 }
@@ -1556,7 +1559,7 @@ void CellularRouting::sendSensorDataPacket(){
     pkt->setTtl(100);
     pkt->setSensorData(sensorData);
     pkt->setSource(SELF_NETWORK_ADDRESS);
-    for (int i=0; i<5; i++) {
+    for (int i=0; i<3; i++) {
         CellularRoutingPacket* dupPkt = pkt->dup();
         cellPacketQueue.push({dupPkt, myNextCellHop});
     }
