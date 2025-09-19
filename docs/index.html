@@ -168,7 +168,10 @@
   border-bottom: 8px solid red; /* pin màu đỏ */
   cursor: pointer;
   pointer-events: auto; /* cho phép click */
+  rotate: 180deg; /* đảo ngược mũi tên */
 }
+.event-line { padding:2px 4px; }
+.event-line.highlight { background: #ffe58a; } /* màu vàng highlight */
 
   </style>
 </head>
@@ -334,6 +337,13 @@
         <h3>Node Details</h3>
         <div id="nodeInfo">Hover a node to see details here.</div>
       </div>
+      <div id="eventLog">
+  <div id="eventLog">
+  <h3>Event Log</h3>
+  <div id="eventList" style="max-height:200px; overflow-y:auto; font-size:12px; border-top:1px solid #ccc; padding-top:4px;"></div>
+</div>
+
+
     </div>
 
   </div>
@@ -550,6 +560,73 @@ function extractEventTimes() {
     return { type, time, frame };
   });
 }
+    function buildEventLog() {
+  const eventList = document.getElementById("eventList");
+  eventList.innerHTML = "";
+
+  rawEvents.forEach((ev, idx) => {
+    let text = "";
+    if (ev.type === "CELL_MESSAGE") {
+      text = `Node ${ev.data.src} gửi CELL_MESSAGE tới Node ${ev.data.dst}`;
+    } else if (ev.type === "SENSOR_DATA") {
+      text = `Node ${ev.data.src} gửi SENSOR_DATA tới Node ${ev.data.dst}`;
+    } else if (ev.type === "CL_ANNOUNCEMENT") {
+      text = `Node ${ev.data.src} gửi CL_ANNOUNCEMENT tới Node ${ev.data.dst}`;
+    } else if (ev.type === "CL_CONFIRMATION") {
+      text = `Node ${ev.data.src} xác nhận CL_CONFIRMATION tới Node ${ev.data.dst}`;
+    } else if (ev.type === "HELLO") {
+      text = `Node ${ev.data.id} broadcast HELLO message`;
+    } else if (ev.type === "CH_SELECTION") {
+      text = `Node ${ev.data.node} chọn Cluster Head là Node ${ev.data.ch}`;
+    } else if (ev.type === "ROUTING_TABLE") {
+      text = `Node ${ev.data.src} từ Cell ${ev.data.cell1} muốn đến Cell ${ev.data.cell2} qua Node ${ev.data.nextHop}`;
+    } else if (ev.type === "NEIGHBOR") {
+      text = `Node ${ev.data.id} kết nối với Node ${ev.data.nbr}`;
+    } else if (ev.type === "CELL_COLOR") {
+      text = `Node ${ev.data.id} thuộc Cell ${ev.data.cid}`;
+    } else if (ev.type === "CELL_LEADER") {
+      text = `Node ${ev.data} trở thành Cluster Leader`;
+    } else if (ev.type === "CH") {
+      text = `Node ${ev.data} trở thành Cluster Head`;
+    }
+
+    if (text) {
+      const p = document.createElement("div");
+      p.className = "event-line";
+      p.dataset.time = ev.t; // lưu time để dễ highlight
+      p.textContent = `[${ev.t.toFixed(2)}] ${text}`;
+      eventList.appendChild(p);
+    }
+  });
+}
+
+function highlightEvents(currentTime, windowStart) {
+  const eventList = document.getElementById("eventList");
+  const lines = eventList.querySelectorAll(".event-line");
+
+  let firstHighlight = null;
+
+  lines.forEach(line => {
+    const t = parseFloat(line.dataset.time);
+    if (t >= windowStart && t <= currentTime) {
+      line.classList.add("highlight");
+      if (!firstHighlight) firstHighlight = line;
+    } else {
+      line.classList.remove("highlight");
+    }
+  });
+
+  // auto scroll đến sự kiện đầu tiên trong khung hiện tại
+  if (firstHighlight) {
+    //firstHighlight.scrollIntoView({ behavior: "smooth", block: "center" });
+    //firstHighlight.scrollIntoView({ behavior: "auto", block: "center" });
+    const eventList = document.getElementById("eventList");
+    eventList.scrollTop = firstHighlight.offsetTop - eventList.clientHeight / 2;
+
+
+  }
+}
+
 
     
     // ------------------- PREPARE FRAMES -------------------
@@ -571,6 +648,8 @@ function extractEventTimes() {
 
       // initial draw
       updateFrame(0);
+
+      buildEventLog();
     }
 
     // build gridCells once (base centers relative to hex origin)
@@ -740,6 +819,8 @@ function extractEventTimes() {
           }
         }
       });
+
+      highlightEvents(currentTime, windowStart);
 
       // Khởi tạo nodeStats cho tất cả nodes đã biết
       for (let idStr of Object.keys(rawPositions)) {
