@@ -184,6 +184,11 @@
     <div>
       <input id="fileInput" type="file" accept=".txt" />
       <button id="btnLoad" class="btn">Load</button>
+      <br/>
+      <label>Or load from history:</label>
+  <select id="historySelect">
+    <option value="">-- Choose log file --</option>
+  </select>
     </div>
 
     <div>
@@ -359,8 +364,30 @@
     <div id="timeLabel">Time: 0</div>
     <div id="eventPins"></div>
   </div>
+<script src="logs/history.js"></script>
 
   <script>
+function populateHistoryDropdown() {
+  const historySelect = document.getElementById("historySelect");
+  LOG_HISTORY.forEach((entry, idx) => {
+    //console.log(entry.name);
+    const opt = document.createElement("option");
+    opt.value = idx;
+    opt.textContent = entry.name;
+    historySelect.appendChild(opt);
+  });
+}
+
+document.getElementById("historySelect").addEventListener("change", (ev) => {
+  const idx = ev.target.value;
+  if (idx === "") return;
+  const entry = LOG_HISTORY[idx];
+  document.getElementById("logArea").value = entry.trace;
+  alert("Đã tải log " + entry.name + " vào textarea. Click Parse & Prepare.");
+});
+
+populateHistoryDropdown();
+
     // ------------------- CONFIG -------------------
     let showRouting = false;
     let showHeatmap = false;
