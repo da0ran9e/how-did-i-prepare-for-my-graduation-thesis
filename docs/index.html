@@ -370,8 +370,10 @@
             style="max-height:200px; overflow-y:auto; font-size:12px; border-top:1px solid #ccc; padding-top:4px;">
           </div>
         </div>
-
-
+        <div id="energyChart">
+          <h3>Energy Distribution</h3>
+          <svg id="energySvg" width="360" height="200"></svg>
+        </div>
       </div>
 
     </div>
@@ -466,6 +468,11 @@
       const routeLayer = mainLayer.append("g").attr("class", "route-layer");
       const labelLayer = mainLayer.append("g").attr("class", "label-layer");
       const heatmapLayer = mainLayer.append("g").attr("class", "heatmap-layer");
+
+      let nodeEnergy = {}; // id -> phần trăm năng lượng còn lại
+      const ENERGY_START = 100;
+      const COST_SEND = 0.5;  // % tiêu hao khi gửi
+      const COST_RECV = 0.2;  // % tiêu hao khi nhận
 
 
       const tooltip = d3.select("#tooltip");
@@ -594,6 +601,15 @@
         }
         tMin = d3.min(rawEvents, d => d.t);
         tMax = d3.max(rawEvents, d => d.t);
+
+        // sau khi parse xong rawEvents
+        nodeEnergy = {};
+        rawEvents.forEach(ev => {
+          if (ev.type === "NODE") {
+            nodeEnergy[ev.data.id] = ENERGY_START;  // 100%
+          }
+        });
+
       }
       let eventPinsData = []; // {type, time, frame}
 
@@ -692,6 +708,14 @@
         leaderNodes = new Set();
         chNodes = new Set();
         cellColors = new Map();
+
+        nodeEnergy = {};
+        rawEvents.forEach(ev => {
+          if (ev.type === "NODE") {
+            nodeEnergy[ev.data.id] = ENERGY_START;
+          }
+        });
+
 
         // build grid cells (base coordinates, not scaled)
         buildGridCells();
@@ -797,6 +821,53 @@
 
         })
       }
+      function drawEnergyChart() {
+        const svg = d3.select("#energySvg");
+        svg.selectAll("*").remove();
+
+        // Gom năng lượng thành các bin (ví dụ: 0-10%, 10-20%, ... 100%)
+        const bins = d3.bin()
+          .domain([0, 100])
+          .thresholds(d3.range(0, 101, 10))(Object.values(nodeEnergy));
+
+        const counts = bins.map(b => b.length);
+
+        const W = +svg.attr("width");
+        const H = +svg.attr("height");
+        const margin = { top: 10, right: 10, bottom: 30, left: 30 };
+
+        const x = d3.scaleBand()
+          .domain(bins.map((b, i) => `${b.x0}-${b.x1}%`))
+          .range([margin.left, W - margin.right])
+          .padding(0.1);
+
+        const y = d3.scaleLinear()
+          .domain([0, d3.max(counts) || 1])
+          .nice()
+          .range([H - margin.bottom, margin.top]);
+
+        svg.append("g")
+          .selectAll("rect")
+          .data(bins)
+          .join("rect")
+          .attr("x", d => x(`${d.x0}-${d.x1}%`))
+          .attr("y", d => y(d.length))
+          .attr("height", d => y(0) - y(d.length))
+          .attr("width", x.bandwidth())
+          .attr("fill", "steelblue");
+
+        svg.append("g")
+          .attr("transform", `translate(0,${H - margin.bottom})`)
+          .call(d3.axisBottom(x).tickSizeOuter(0))
+          .selectAll("text")
+          .attr("transform", "rotate(-30)")
+          .style("text-anchor", "end");
+
+        svg.append("g")
+          .attr("transform", `translate(${margin.left},0)`)
+          .call(d3.axisLeft(y));
+      }
+
 
       function updateFrame(frameIdx) {
         if (!rawEvents || rawEvents.length === 0) return;
@@ -817,6 +888,24 @@
 
         clusterAssignments = {};
         clusterColors = {};
+        // reset năng lượng cho mọi node đã biết
+        nodeEnergy = {};
+        rawEvents.forEach(ev => {
+          if (ev.type === "NODE") {
+            nodeEnergy[ev.data.id] = ENERGY_START;
+          }
+        });
+
+        // trừ năng lượng dựa trên tất cả events trước currentTime
+        rawEvents.forEach(ev => {
+          if (ev.t <= currentTime) {
+            if (ev.type === "CELL_MESSAGE" || ev.type === "SENSOR_DATA") {
+              const { src, dst } = ev.data;
+              if (nodeEnergy[src] !== undefined) nodeEnergy[src] = Math.max(0, nodeEnergy[src] - COST_SEND);
+              if (nodeEnergy[dst] !== undefined) nodeEnergy[dst] = Math.max(0, nodeEnergy[dst] - COST_RECV);
+            }
+          }
+        });
 
         rawEvents.forEach(ev => {
           if (ev.t <= currentTime) {
@@ -1326,6 +1415,8 @@
         // update title/time and slider
         d3.select("#timeLabel").text(`Time: ${currentTime.toFixed(2)}`);
         d3.select("#frameSlider").property("value", frameIdx);
+
+        drawEnergyChart();
       }
 
       // ------------------- Playback -------------------
