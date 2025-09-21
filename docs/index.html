@@ -373,7 +373,12 @@
         <div id="energyChart">
           <h3>Energy Distribution</h3>
           <svg id="energySvg" width="360" height="200"></svg>
+          <div style="margin-top:6px;">
+            <button id="saveEnergyCsv" class="btn small">Save Energy CSV</button>
+          </div>
+
         </div>
+
       </div>
 
     </div>
@@ -471,9 +476,9 @@
 
       let nodeEnergy = {}; // id -> phần trăm năng lượng còn lại
       const ENERGY_START = 100;
-      const COST_SEND = 0.000047*100;  // % tiêu hao khi gửi
-      const COST_RECV = 0.000042*10000;  // % tiêu hao khi nhận
-
+      const COST_SEND = 0.000047 * 100;  // % tiêu hao khi gửi
+      const COST_RECV = 0.000042 * 10000;  // % tiêu hao khi nhận
+      let energyHistory = []; // mỗi phần tử: { time, energies: {nodeId: energy} }
 
       const tooltip = d3.select("#tooltip");
 
@@ -1417,6 +1422,11 @@
         d3.select("#frameSlider").property("value", frameIdx);
 
         drawEnergyChart();
+        energyHistory.push({
+          time: currentTime,
+          energies: { ...nodeEnergy }
+        });
+
       }
 
       // ------------------- Playback -------------------
@@ -1498,6 +1508,39 @@
         URL.revokeObjectURL(url);
       }
 
+      function saveEnergyCSV() {
+        if (energyHistory.length === 0) {
+          alert("Chưa có dữ liệu để lưu!");
+          return;
+        }
+
+        // lấy tất cả nodeId
+        const allNodes = Object.keys(nodeEnergy).sort((a, b) => +a - +b);
+
+        // header
+        let csv = "simtime," + allNodes.map(id => "node" + id).join(",") + "\n";
+
+        // dữ liệu từng frame
+        energyHistory.forEach(frame => {
+          const row = [frame.time.toFixed(2)];
+          allNodes.forEach(id => {
+            row.push(frame.energies[id] !== undefined ? frame.energies[id].toFixed(2) : "");
+          });
+          csv += row.join(",") + "\n";
+        });
+
+        // tạo file và tải
+        const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "energy_distribution.csv";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }
+      document.getElementById("saveEnergyCsv").addEventListener("click", saveEnergyCSV);
 
       // ------------------- UI hooks -------------------
       document.getElementById("btnLoad").addEventListener("click", () => {
