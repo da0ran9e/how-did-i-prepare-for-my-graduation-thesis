@@ -635,41 +635,55 @@
         const eventList = document.getElementById("eventList");
         eventList.innerHTML = "";
 
-        rawEvents.forEach((ev, idx) => {
-          let text = "";
-          if (ev.type === "CELL_MESSAGE") {
-            text = `Node ${ev.data.src} gửi CELL_MESSAGE tới Node ${ev.data.dst}`;
-          } else if (ev.type === "SENSOR_DATA") {
-            text = `Node ${ev.data.src} gửi SENSOR_DATA tới Node ${ev.data.dst}`;
-          } else if (ev.type === "CL_ANNOUNCEMENT") {
-            text = `Node ${ev.data.src} gửi CL_ANNOUNCEMENT tới Node ${ev.data.dst}`;
-          } else if (ev.type === "CL_CONFIRMATION") {
-            text = `Node ${ev.data.src} xác nhận CL_CONFIRMATION tới Node ${ev.data.dst}`;
-          } else if (ev.type === "HELLO") {
-            text = `Node ${ev.data.id} broadcast HELLO message`;
-          } else if (ev.type === "CH_SELECTION") {
-            text = `Node ${ev.data.node} chọn Cluster Head là Node ${ev.data.ch}`;
-          } else if (ev.type === "ROUTING_TABLE") {
-            text = `Node ${ev.data.src} từ Cell ${ev.data.cell1} muốn đến Cell ${ev.data.cell2} qua Node ${ev.data.nextHop}`;
-          } else if (ev.type === "NEIGHBOR") {
-            text = `Node ${ev.data.id} kết nối với Node ${ev.data.nbr}`;
-          } else if (ev.type === "CELL_COLOR") {
-            text = `Node ${ev.data.id} thuộc Cell ${ev.data.cid}`;
-          } else if (ev.type === "CELL_LEADER") {
-            text = `Node ${ev.data} trở thành Cluster Leader`;
-          } else if (ev.type === "CH") {
-            text = `Node ${ev.data} trở thành Cluster Head`;
+        eventPinsData.forEach(ev => {
+          let description = "";
+          switch (ev.type) {
+            case "CELL_MESSAGE":
+              description = "The first time a node sends a control message to its cluster.";
+              break;
+            case "SENSOR_DATA":
+              description = "The first time a node transmits its sensed data to another node.";
+              break;
+            case "CL_ANNOUNCEMENT":
+              description = "The first time a node announces itself as a potential cluster leader.";
+              break;
+            case "CL_CONFIRMATION":
+              description = "The first time another node confirms a cluster leader.";
+              break;
+            case "HELLO":
+              description = "The first time a node broadcasts a hello message to its neighbors.";
+              break;
+            case "CH_SELECTION":
+              description = "The first time a node selects a cluster head to join.";
+              break;
+            case "ROUTING_TABLE":
+              description = "The first time routing information is established between cells.";
+              break;
+            case "NEIGHBOR":
+              description = "The first time a node discovers a direct neighbor connection.";
+              break;
+            case "CELL_COLOR":
+              description = "The first time a node is assigned to a specific cell region.";
+              break;
+            case "CELL_LEADER":
+              description = "The first time a node becomes the leader of its cell.";
+              break;
+            case "CH":
+              description = "The first time a node is designated as a cluster head.";
+              break;
           }
 
-          if (text) {
+          if (description) {
             const p = document.createElement("div");
             p.className = "event-line";
-            p.dataset.time = ev.t; // lưu time để dễ highlight
-            p.textContent = `[${ev.t.toFixed(2)}] ${text}`;
+            p.dataset.time = ev.time;
+            p.textContent = `[${ev.time.toFixed(2)}] ${description}`;
             eventList.appendChild(p);
           }
         });
       }
+
+
 
       function highlightEvents(currentTime, windowStart) {
         const eventList = document.getElementById("eventList");
