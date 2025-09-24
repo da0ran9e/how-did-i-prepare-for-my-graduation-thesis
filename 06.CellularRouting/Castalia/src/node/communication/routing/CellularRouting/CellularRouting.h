@@ -122,6 +122,24 @@ class CellularRouting : public VirtualRouting {
     double clElectionDelayInterval;
     double cellRadius;
     int grid_offset;
+    int traceMode = 0;
+
+    int numberOfNodes;
+
+    int numberHelloIntervals;
+    int sensingDuration;
+    int clCalculationTime;
+    int routingTableUpdateTime;
+    int state1Time;
+    int sensingStageTime;
+    int reconfigurationTime;
+    int clConfirmationTime;
+    int maxNeighborNumber;
+    int maxHopCount;
+
+    double colorTimeSlot;
+
+    int sensorDataDub;
 
     int myCellId;
     int myColor;
@@ -142,7 +160,7 @@ class CellularRouting : public VirtualRouting {
     int gatewayTowardsCH = -1;
     int myNextHopId = -1;
 
-    int neighborCells[7] = {-1, -1, -1, -1, -1, -1}; 
+    int neighborCells[7] = {-1, -1, -1, -1, -1, -1};
     int cellGateways[6] = {-1, -1, -1, -1, -1, -1};
     int neighborCellGateways[6] = {-1, -1, -1, -1, -1, -1};
 
