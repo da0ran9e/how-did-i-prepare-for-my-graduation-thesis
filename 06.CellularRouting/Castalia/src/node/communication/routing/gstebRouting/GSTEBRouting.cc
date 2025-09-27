@@ -4,38 +4,14 @@ Define_Module(GSTEBRouting);
 
 void GSTEBRouting::startup()
 {
-// A
+	if (isSink) {
+		setTimer(BS_BROADCAST, 1);
+		setTimer(PHRASE_B, 2000);
+	}
 
-	// CH bắt đầu boardcast thông tinstart_time, slot_length, N (số node).
-	
-	// Mỗi node i tính EL_i = floor(ResidEnergy_i, E_unit) hoặc một hàm tỉ lệ
 
-	// Neighbor discovery (time-slot per node): trong slot của node i, node i broadcast gói chứa {ID=i, coords, EL}; các node nhận lưu vào Table I (neighbors). 
 
-	// Exchange neighbors-of-neighbors
 
-// B
-
-	// BS thu/chuẩn bị dữ liệu đầu vào
-
-	// EL1 cho mỗi node (EL1 = EL mà BS tính ra / dự đoán).
-
-	// BS xây routing tree
-
-	// chọn các relay node sao cho nodes with larger EL trở thành relay nhiều hơn
-
-	// năng lượng tiêu thụ để node i → relay r (E_tx k,d) cộng năng lượng r → BS (hoặc r → parent tiếp theo)
-
-	// BS schedule TDMA (một slot cho từng “level” / leaf) và gói điều khiển
-
-	// BS gửi CTRL_PKT tuần tự
-
-// C
-// Node i bật radio vào slot của nó (do BS chỉ định) và nhận CTRL_PKT: trích xuất parent_ID, my_slot_tx, my_slot_rx, expected_pkt_length (dự tính tổng dữ liệu phải truyền/nhận). 
-
-// Lưu parent/children: node ghi parent = parent_ID; thêm children nếu BS cung cấp hoặc tự tính từ TableI/II bằng cách đối chiếu parent của neighbors (nếu BS không gửi danh sách children đầy đủ).
-
-// Chuẩn bị năng lượng: node dựa trên expected_pkt_length tính xem nó có đủ năng lượng để thực hiện slot đó; nếu năng lượng hiện tại khác biệt đáng kể so với EL1 (BS tính), node set error_flag để gửi EL2 trong DATA_PKT. 
 
 //D
 	//TDMA theo schedule của BS: BS đã phân slot; trong mỗi slot, node biết khi nào nhận (as parent) và khi nào gửi (as child).
@@ -54,37 +30,152 @@ void GSTEBRouting::startup()
 
 void GSTEBRouting::fromApplicationLayer(cPacket * pkt, const char *destination)
 {
-	GSTEBRoutingPacket *netPacket = new GSTEBRoutingPacket("GSTEBRouting packet", NETWORK_LAYER_PACKET);
-	netPacket->setSource(SELF_NETWORK_ADDRESS);
-	netPacket->setDestination(destination);
-	encapsulatePacket(netPacket, pkt);
-	toMacLayer(netPacket, resolveNetworkAddress(destination));
+
 }
 
 void GSTEBRouting::fromMacLayer(cPacket * pkt, int srcMacAddress, double rssi, double lqi)
 {
-	RoutingPacket *netPacket = dynamic_cast <RoutingPacket*>(pkt);
-	if (netPacket) {
-		string destination(netPacket->getDestination());
-		if (destination.compare(SELF_NETWORK_ADDRESS) == 0 ||
-		    destination.compare(BROADCAST_NETWORK_ADDRESS) == 0)
-			toApplicationLayer(decapsulatePacket(pkt));
-	}
+
 }
 
 void GSTEBRouting::timerFiredCallback(int index)
 {
-	// ch chọn node ngẫu nhiên làm root,  thông báo. ưu tiên node có EL cao
+	switch (index) {
+	case BS_BROADCAST: {
+		bsBroadcast();
+		break;
+	}
 
-	// mỗi node (i) tự chọn cha ưu tiên node có El cao (r)
+	case PHRASE_A: {
+		calculateEnergyLevels();
+		setTimer(NEIGHBOR_DISCOVERY, uniform(0, 200));
+		setTimer(NEIGHBOR_EXCHANGE, uniform(500, 900));
+		setTimer(ACK_BS, 1000);
+		break;
+	}
+	
+	case NEIGHBOR_DISCOVERY: {
+		// neighbor discovery
+		neighborDiscovery();
+		break;
+	}
+	case NEIGHBOR_EXCHANGE: {
+		// exchange neighbors
+		exchangeNeighbors();
+		break;
+	}
 
-	// 
+	case SCHEDULE_RX: {
+		setTimer(SCHEDULE_RX, 2000);
+		// Node i bật radio vào slot của nó (do BS chỉ định) và nhận CTRL_PKT: trích xuất parent_ID, my_slot_tx, my_slot_rx, expected_pkt_length (dự tính tổng dữ liệu phải truyền/nhận). 
+		break;
+	}
 
+	case ACK_BS: {
+		scheduleRx();
+		sendACKToBS();
+		break;
+	}
+
+	case PHRASE_B: {
+		calculateScheduling();
+
+	// BS gửi CTRL_PKT tuần tự
+		setTimer(BS_SEND_CTRL, 500);
+
+		break;
+	}
+
+	case BS_SEND_CTRL: {
+		sendBSBroadcast();
+		break;
+	}
+
+	default:
+		break;
+	}
 }
 
-void GSTEBRouting::beacon()
+void GSTEBRouting::bsBroadcast()
 {
-	// 
+	// BS broadcast thông tin start_time, slot_length, N (số node).
 }
 
-void 
+void GSTEBRouting::sendBSBroadcast()
+{
+	// BS broadcast thông tin start_time, slot_length, N (số node).
+}
+
+void GSTEBRouting::handleBSBroadcast()
+{
+	// Nhận thông tin start_time, slot_length, N (số node).
+	setTimer(PHRASE_I, start_time + self * slot_length);
+}
+
+void GSTEBRouting::calculateEnergyLevels()
+{
+	// Mỗi node i tính EL_i = floor(ResidEnergy_i, E_unit) hoặc một hàm tỉ lệ
+	
+}
+
+void GSTEBRouting::neighborDiscovery()
+{
+	// Neighbor discovery (time-slot per node): trong slot của node i, node i broadcast gói chứa {ID=i, coords, EL}; các node nhận lưu vào Table I (neighbors). 
+
+}
+
+void GSTEBRouting::handleNeighborDiscovery()
+{
+	// Nhận gói từ neighbor, lưu vào Table I (neighbors)
+}
+
+void GSTEBRouting::exchangeNeighbors()
+{
+	// Exchange neighbors-of-neighbors
+	// Mỗi node i gửi danh sách hàng xóm của nó đến BS
+}
+
+void GSTEBRouting::handleNeighborExchange()
+{
+	
+}
+
+void GSTEBRouting::scheduleRx()
+{
+	setTimer(SCHEDULE_RX, 2000);
+}
+
+void GSTEBRouting::sendACKToBS()
+{
+	// Gửi ACK đến BS
+	// Gói ACK chứa {ID=i, EL_i, neighbors-of-neighbors}
+}
+
+void GSTEBRouting::handleACKFromNode()
+{
+	// Nếu là BS: BS thu/chuẩn bị dữ liệu đầu vào
+	// Nếu không phải BS: gửi đến node có neighbor là BS 
+						// nếu không có thì broadcast
+}
+
+void GSTEBRouting::calculateScheduling()
+{
+	// Tính EL1 cho mỗi node (EL1 = EL mà BS tính ra / dự đoán).
+
+	// BS xây routing tree
+
+	// chọn các relay node sao cho nodes with larger EL trở thành relay nhiều hơn
+
+	// năng lượng tiêu thụ để node i → relay r (E_tx k,d) cộng năng lượng r → BS (hoặc r → parent tiếp theo)
+
+	// BS schedule TDMA (một slot cho từng “level” / leaf) và gói điều khiển
+}
+
+void GSTEBRouting::handleBSControlPacket()
+{
+	// Nhận gói CTRL_PKT: trích xuất parent_ID, my_slot_tx, my_slot_rx, expected_pkt_length (dự tính tổng dữ liệu phải truyền/nhận). 
+
+	// Lưu parent/children: node ghi parent = parent_ID; thêm children nếu BS cung cấp hoặc tự tính từ TableI/II bằng cách đối chiếu parent của neighbors (nếu BS không gửi danh sách children đầy đủ).
+
+	// Chuẩn bị năng lượng: node dựa trên expected_pkt_length tính xem nó có đủ năng lượng để thực hiện slot đó; nếu năng lượng hiện tại khác biệt đáng kể so với EL1 (BS tính), node set error_flag để gửi EL2 trong DATA_PKT. 
+}
