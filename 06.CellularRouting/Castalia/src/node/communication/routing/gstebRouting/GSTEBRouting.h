@@ -7,15 +7,14 @@
 using namespace std;
 
 enum GSTEBRoutingTimers {
-	BS_BROADCAST = 0,
-	PHRASE_A,
-	NEIGHBOR_DISCOVERY,
-	NEIGHBOR_EXCHANGE,
-	SCHEDULE_RX,
-	ACK_BS,
-	PHRASE_B,
-	BS_SEND_CTRL,
-	PHRASE_C,
+	INITIAL_PHRASE = 0,
+	BS_BROADCAST,
+	PHRASE_I_TIMESLOT,
+	SENSOR_BROADCAST_TIMEOUT,
+
+	TREE_CONSTRUCTION_PHASE,
+
+	DATA_COLLECTING_PHASE,
 };
 
 class GSTEBRouting: public VirtualRouting {
@@ -26,6 +25,10 @@ class GSTEBRouting: public VirtualRouting {
 	double energy;
 	bool isCH;
 	bool isSink;
+
+	int phaseITimeslot;
+	int sensorBroadcastTimeout;
+	int initialPhraseTimeout; //The length of time slots in Steps 2 and 3 is predefined
  protected:
 	void fromApplicationLayer(cPacket *, const char *);
 	void fromMacLayer(cPacket *, int, double, double);

@@ -4,28 +4,23 @@ Define_Module(GSTEBRouting);
 
 void GSTEBRouting::startup()
 {
+	// Initialize parameters: coordinates, communication interval, routing table, etc.
+	nodeId = self;
+	cModule *parentNode = getParentModule();
+	xCoor = parentNode->getParentModule()->par("xCoor");
+	yCoor = parentNode->getParentModule()->par("yCoor");
+	energy = par("initialEnergy");
+	isCH = par("isCH");
+	isSink = par("isSink");
+
 	if (isSink) {
-		setTimer(BS_BROADCAST, 1);
-		setTimer(PHRASE_B, 2000);
+		trace() << "#SINK " << self;
+	}
+	if (isCH) {
+		trace() << "#CH " << self;
 	}
 
-
-
-
-
-//D
-	//TDMA theo schedule của BS: BS đã phân slot; trong mỗi slot, node biết khi nào nhận (as parent) và khi nào gửi (as child).
-
-	// DATA_PKT kích thước: bài giả định DATA_PKT = 2000 bits (để mô phỏng); 
-
-	// Parent như relay: parent kế thừa dữ liệu các children (không fuse)
-
-	// Node báo EL2 (nếu khác EL1): nếu node phát hiện EL2 ≠ EL1, node gắn error_flag và kèm EL2 vào DATA_PKT; khi BS nhận, BS cập nhật EL1 cho round tiếp theo.
-
-//E 
-// 	EL update: BS dùng EL2 nhận từ DATA_PKT để điều chỉnh topology cho round sau. 
-
-// Node sắp chết / broadcast (Case1 khác Case2): bài mô tả trong Case1 nodes có cơ chế báo dying broadcast; trong Case2 BS điều khiển nhiều hơn, nhưng nếu node chết giữa round, children sẽ detect parent unreachable và có 2 lựa chọn: (a) tạm chọn neighbor khác làm parent theo Table I/II (nếu có), hoặc (b) gửi trực tiếp tới BS (nếu đủ năng lượng). Bài khuyến nghị BS tái cấu trúc ở round tiếp theo.
+	setTimer(INITIAL_PHRASE, 1);
 }
 
 void GSTEBRouting::fromApplicationLayer(cPacket * pkt, const char *destination)
@@ -41,53 +36,72 @@ void GSTEBRouting::fromMacLayer(cPacket * pkt, int srcMacAddress, double rssi, d
 void GSTEBRouting::timerFiredCallback(int index)
 {
 	switch (index) {
+	case INITIAL_PHRASE: {
+		if (isSink) {
+			setTimer(BS_BROADCAST, 1);
+		}
+		break;
+	}
+
 	case BS_BROADCAST: {
-		bsBroadcast();
-		break;
-	}
-
-	case PHRASE_A: {
-		calculateEnergyLevels();
-		setTimer(NEIGHBOR_DISCOVERY, uniform(0, 200));
-		setTimer(NEIGHBOR_EXCHANGE, uniform(500, 900));
-		setTimer(ACK_BS, 1000);
-		break;
-	}
-	
-	case NEIGHBOR_DISCOVERY: {
-		// neighbor discovery
-		neighborDiscovery();
-		break;
-	}
-	case NEIGHBOR_EXCHANGE: {
-		// exchange neighbors
-		exchangeNeighbors();
-		break;
-	}
-
-	case SCHEDULE_RX: {
-		setTimer(SCHEDULE_RX, 2000);
-		// Node i bật radio vào slot của nó (do BS chỉ định) và nhận CTRL_PKT: trích xuất parent_ID, my_slot_tx, my_slot_rx, expected_pkt_length (dự tính tổng dữ liệu phải truyền/nhận). 
-		break;
-	}
-
-	case ACK_BS: {
-		scheduleRx();
-		sendACKToBS();
-		break;
-	}
-
-	case PHRASE_B: {
-		calculateScheduling();
-
-	// BS gửi CTRL_PKT tuần tự
-		setTimer(BS_SEND_CTRL, 500);
-
-		break;
-	}
-
-	case BS_SEND_CTRL: {
+		setTimer(TREE_CONSTRUCTION_PHASE, initialPhraseTimeout); // Broadcast every 10 seconds
 		sendBSBroadcast();
+		break;
+	}
+
+	case PHRASE_I_TIMESLOT: {
+		//setTimer(PHRASE_I_TIMESLOT, phaseITimeslot);
+		sendSensorBroadcast();
+		break;
+	}
+
+	case SENSOR_BROADCAST_TIMEOUT: {
+		// After all nodes send their information, each
+		// node records a table in their memory which contains
+		// the information of all its neighbors
+
+		sendNeighborsTable();
+		break;
+	}
+
+	case TREE_CONSTRUCTION_PHASE: {
+		if (isSink) {
+			// BS always assigns itself as root
+		} else {
+			// Each node tries to select a parent in its neighbors
+			// using EL and coordinates which are recorded in
+  			// Table I. The selection criteria are:
+				// distance between its parent node and the root
+				// should be shorter than that between itself and the
+				// root
+
+				// only the
+				// nodes with the largest EL of all its neighbors
+				// and itself can act as relay nodes
+				// The relay node which causes
+				// minimum consumption will be chosen as the
+				// parent node. 
+
+			// If the sensor node cannot
+			// find a suitable parent node, it will transmit its
+			// data directly to BS.
+
+			setTimer(DATA_COLLECTING_PHASE, 1);
+		}
+		// Because every node chooses the parent from its
+ 		// neighbors and every node records its neighbors’
+		// information in Table II, each node can
+		// know all its neighbors’ parent nodes by computing,
+		// and it can also know all its child nodes. If a node
+		// has no child node, it defines itself as a leaf node,
+		// from which the data transmitting begins.
+		break;
+	}
+
+	case DATA_COLLECTING_PHASE: {
+		// Each node sends its data to its parent node
+		// and finally to BS along the tree constructed
+		// in Step 4.
 		break;
 	}
 
@@ -96,86 +110,55 @@ void GSTEBRouting::timerFiredCallback(int index)
 	}
 }
 
-void GSTEBRouting::bsBroadcast()
-{
-	// BS broadcast thông tin start_time, slot_length, N (số node).
-}
-
 void GSTEBRouting::sendBSBroadcast()
 {
-	// BS broadcast thông tin start_time, slot_length, N (số node).
+	// BS broadcasts a packet to all the nodes to inform them of 
+	// beginning time, the length of time slot and the number of nodes N
 }
 
 void GSTEBRouting::handleBSBroadcast()
 {
-	// Nhận thông tin start_time, slot_length, N (số node).
-	setTimer(PHRASE_I, start_time + self * slot_length);
+	// they will compute their own energy-level (EL) using function
+	// EL(i) = [residual energy(i) / alpha]
+
+		// EL is a parameter for load balance, 
+		// and it is an estimated energy value 
+		// rather than a true one and only used in Case2
+
+		// i is the ID of each node
+
+		// is a constant which reflects the minimum energy unit
+		// and can be changed depending on our demands
+
+	setTimer(PHRASE_I_TIMESLOT, phaseITimeslot);
+	setTimer(SENSOR_BROADCAST_TIMEOUT, sensorBroadcastTimeout);
+	setTimer(TREE_CONSTRUCTION_PHASE, initialPhraseTimeout);
 }
 
-void GSTEBRouting::calculateEnergyLevels()
+void GSTEBRouting::sendSensorBroadcast()
 {
-	// Mỗi node i tính EL_i = floor(ResidEnergy_i, E_unit) hoặc một hàm tỉ lệ
-	
+	// Each node sends its packet in a circle with a certain
+	// radius during its own time slot 
+		// This packet contains a preamble 
+		// and the information such as coordinates and
+		// EL of node i
 }
 
-void GSTEBRouting::neighborDiscovery()
+void GSTEBRouting::handleSensorBroadcast()
 {
-	// Neighbor discovery (time-slot per node): trong slot của node i, node i broadcast gói chứa {ID=i, coords, EL}; các node nhận lưu vào Table I (neighbors). 
-
+	// neighbors of node i, they can receive this packet
+	// and record the information of node i in memory
 }
 
-void GSTEBRouting::handleNeighborDiscovery()
+void GSTEBRouting::sendNeighborsTable()
 {
-	// Nhận gói từ neighbor, lưu vào Table I (neighbors)
+	// Each node sends a packet which contains all its
+	// neighbors’ information during its own time slot
+	// when Step 2 is over.
 }
 
-void GSTEBRouting::exchangeNeighbors()
+void GSTEBRouting::handleNeighborsTable()
 {
-	// Exchange neighbors-of-neighbors
-	// Mỗi node i gửi danh sách hàng xóm của nó đến BS
-}
-
-void GSTEBRouting::handleNeighborExchange()
-{
-	
-}
-
-void GSTEBRouting::scheduleRx()
-{
-	setTimer(SCHEDULE_RX, 2000);
-}
-
-void GSTEBRouting::sendACKToBS()
-{
-	// Gửi ACK đến BS
-	// Gói ACK chứa {ID=i, EL_i, neighbors-of-neighbors}
-}
-
-void GSTEBRouting::handleACKFromNode()
-{
-	// Nếu là BS: BS thu/chuẩn bị dữ liệu đầu vào
-	// Nếu không phải BS: gửi đến node có neighbor là BS 
-						// nếu không có thì broadcast
-}
-
-void GSTEBRouting::calculateScheduling()
-{
-	// Tính EL1 cho mỗi node (EL1 = EL mà BS tính ra / dự đoán).
-
-	// BS xây routing tree
-
-	// chọn các relay node sao cho nodes with larger EL trở thành relay nhiều hơn
-
-	// năng lượng tiêu thụ để node i → relay r (E_tx k,d) cộng năng lượng r → BS (hoặc r → parent tiếp theo)
-
-	// BS schedule TDMA (một slot cho từng “level” / leaf) và gói điều khiển
-}
-
-void GSTEBRouting::handleBSControlPacket()
-{
-	// Nhận gói CTRL_PKT: trích xuất parent_ID, my_slot_tx, my_slot_rx, expected_pkt_length (dự tính tổng dữ liệu phải truyền/nhận). 
-
-	// Lưu parent/children: node ghi parent = parent_ID; thêm children nếu BS cung cấp hoặc tự tính từ TableI/II bằng cách đối chiếu parent của neighbors (nếu BS không gửi danh sách children đầy đủ).
-
-	// Chuẩn bị năng lượng: node dựa trên expected_pkt_length tính xem nó có đủ năng lượng để thực hiện slot đó; nếu năng lượng hiện tại khác biệt đáng kể so với EL1 (BS tính), node set error_flag để gửi EL2 trong DATA_PKT. 
+	// Then its neighbors can receive
+	// this packet and record the information in memory.
 }
