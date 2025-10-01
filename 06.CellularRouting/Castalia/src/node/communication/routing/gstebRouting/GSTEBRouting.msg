@@ -4,6 +4,19 @@ cplusplus {{
 
 class RoutingPacket;
 
-packet BypassRoutingPacket extends RoutingPacket {
+enum GSTEBRoutingPacketType {
+    BS_BROADCAST_PACKET = 0;   
+};
+
+struct BSBroadcastInfo {
+    double timeStart;
+    int numNodes;
+    double timeSlot;
+};
+
+packet GSTEBRoutingPacket extends RoutingPacket {
+    int packetType @enum(GSTEBRoutingPacketType);
+
+    BSBroadcastInfo bSBroadcastData;
 }
 

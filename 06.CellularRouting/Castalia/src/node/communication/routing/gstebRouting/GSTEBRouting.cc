@@ -2,6 +2,19 @@
 
 Define_Module(GSTEBRouting);
 
+struct NodeNeighborInfo {
+	int id;
+	vector<int> neighborsNeighborIds;
+};
+struct NodeInfo {
+	int id;
+	int x;
+	int y;
+	double el;
+	vector<NodeNeighborInfo> neighbors;
+};
+static vector<NodeInfo> nodesInfo;
+
 void GSTEBRouting::startup()
 {
 	// Initialize parameters: coordinates, communication interval, routing table, etc.
@@ -10,14 +23,16 @@ void GSTEBRouting::startup()
 	xCoor = parentNode->getParentModule()->par("xCoor");
 	yCoor = parentNode->getParentModule()->par("yCoor");
 	energy = par("initialEnergy");
-	isCH = par("isCH");
 	isSink = par("isSink");
+	NodeInfo nodeInfo;
+	nodeInfo.id = nodeId;
+	nodeInfo.x = xCoor;
+	nodeInfo.y = yCoor;
+	nodeInfo.el = energy;
+	nodesInfo.push_back(nodeInfo);
 
 	if (isSink) {
 		trace() << "#SINK " << self;
-	}
-	if (isCH) {
-		trace() << "#CH " << self;
 	}
 
 	setTimer(INITIAL_PHRASE, 1);
@@ -71,11 +86,11 @@ void GSTEBRouting::timerFiredCallback(int index)
 			// Each node tries to select a parent in its neighbors
 			// using EL and coordinates which are recorded in
   			// Table I. The selection criteria are:
-				// distance between its parent node and the root
+				// 1. distance between its parent node and the root
 				// should be shorter than that between itself and the
 				// root
 
-				// only the
+				// 2. only the
 				// nodes with the largest EL of all its neighbors
 				// and itself can act as relay nodes
 				// The relay node which causes
@@ -114,6 +129,34 @@ void GSTEBRouting::sendBSBroadcast()
 {
 	// BS broadcasts a packet to all the nodes to inform them of 
 	// beginning time, the length of time slot and the number of nodes N
+	GSTEBRoutingPacket *netPacket = new GSTEBRoutingPacket("GSTEBRouting packet", NETWORK_LAYER_PACKET);
+    netPacket->setPacketType(BS_BROADCAST_PACKET);
+        BSBroadcastInfo bSBroadcastData;
+        bSBroadcastData.numNodes = numNodes;
+        bSBroadcastData.timeSlot = timeSlot;
+        bSBroadcastData.timeStart = timeStart;
+        netPacket->setBSBroadcastData(bSBroadcastData);
+        netPacket->setSource(SELF_NETWORK_ADDRESS);
+        netPacket->setDestination(BROADCAST_NETWORK_ADDRESS);
+        sendGSTEBPacket(netPacket, BROADCAST_NETWORK_ADDRESS);
+}
+
+void GSTEBRouting::sendGSTEBPacket(GSTEBRoutingPacket *netPacket, const char *nextHop)
+{
+	if (nextHop == -1){
+		for (auto &neighborNode : neighborTable) {
+			GSTEBRoutingPacket* fwdPkt = netPacket->dup();
+			fwdPkt->setSource(SELF_NETWORK_ADDRESS);
+			std::stringstream dest_addr;
+			dest_addr << neighborNode.id;
+			fwdPkt->setDestination(dest_addr.str().c_str());
+			fwdPkt->setTtl(1);
+			toMacLayer(fwdPkt, neighborNode.id);
+		}
+		return;
+	}
+	//toMacLayer(netPacket, resolveNetworkAddress(nextHop));
+
 }
 
 void GSTEBRouting::handleBSBroadcast()
