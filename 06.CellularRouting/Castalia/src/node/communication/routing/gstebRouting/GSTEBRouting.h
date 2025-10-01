@@ -17,6 +17,21 @@ enum GSTEBRoutingTimers {
 	DATA_COLLECTING_PHASE,
 };
 
+struct GSTEBNeighborsOfNeighbors {
+	int neighborId;
+	int nnId;
+	int nnX;
+	int nnY;
+	int nnEL;
+};
+
+struct GSTEBNeighbors {
+	int nId;
+	int nX;
+	int nY;
+	int nEL;
+};
+
 class GSTEBRouting: public VirtualRouting {
 	private:
 	int nodeId;
@@ -25,6 +40,20 @@ class GSTEBRouting: public VirtualRouting {
 	double energy;
 	bool isCH;
 	bool isSink;
+	double alpha = 0.1;
+	double communicationRadius = 80.0;
+
+	int chId = -1;
+	int chX;
+	int chY;
+	int numNodes;
+	int timeStart;
+	int timeSlot;
+
+	vector<GSTEBNeighbors> tableI;
+	vector<GSTEBNeighborsOfNeighbors> tableII;
+	double myEL;
+	int phase;
 
 	int phaseITimeslot;
 	int sensorBroadcastTimeout;
