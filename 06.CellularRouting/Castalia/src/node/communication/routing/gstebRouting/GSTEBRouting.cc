@@ -85,6 +85,12 @@ void GSTEBRouting::timerFiredCallback(int index)
 	case TREE_CONSTRUCTION_PHASE: {
 		if (isSink) {
 			// BS always assigns itself as root
+			// BS can collect the initial EL and coordinates
+			// information of all the sensor nodes in Initial Phase. For each
+			// round, BS builds the routing tree and the schedule of the
+			// network by using the EL and coordinates information. 
+			calculateRoutingTree();
+			broadcastRoutingTree();
 		} else {
 			// Each node tries to select a parent in its neighbors
 			// using EL and coordinates which are recorded in
@@ -103,8 +109,9 @@ void GSTEBRouting::timerFiredCallback(int index)
 			// If the sensor node cannot
 			// find a suitable parent node, it will transmit its
 			// data directly to BS.
+			sendInfoToBS();
+			setTimer(DATA_COLLECTING_PHASE, 100);
 
-			setTimer(DATA_COLLECTING_PHASE, 1);
 		}
 		// Because every node chooses the parent from its
  		// neighbors and every node records its neighbors’
@@ -205,7 +212,7 @@ void GSTEBRouting::sendSensorBroadcast()
     toMacLayer(netPacket, BROADCAST_NETWORK_ADDRESS);
 }
 
-void GSTEBRouting::handleSensorBroadcast()
+void GSTEBRouting::handleSensorBroadcast(GSTEBRoutingPacket* pkt)
 {
 	// neighbors of node i, they can receive this packet
 	// and record the information of node i in memory
@@ -255,7 +262,7 @@ void GSTEBRouting::sendNeighborsTable()
     toMacLayer(netPacket, BROADCAST_NETWORK_ADDRESS);
 }
 
-void GSTEBRouting::handleNeighborsTable()
+void GSTEBRouting::handleNeighborsTable(GSTEBRoutingPacket* pkt)
 {
 	// Then its neighbors can receive
 	// this packet and record the information in memory.
@@ -272,4 +279,102 @@ void GSTEBRouting::handleNeighborsTable()
 
 		tableII.push_back(nnInfo);
 	}
+}
+
+void GSTEBRouting::sendInfoToBS()
+{
+	GSTEBRoutingPacket *netPacket = new GSTEBRoutingPacket("GSTEBRouting packet", NETWORK_LAYER_PACKET);
+    netPacket->setPacketType(NODE_INFO_PACKET);
+
+    netPacket->setNNumber(tableI.size());
+	netPacket->setNnNumber(tableII.size());
+	for (size_t i = 0; i < tableI.size(); ++i) {
+		netPacket->setNId(i, tableI[i].nId);
+		netPacket->setNXCoor(i, tableI[i].nX);
+		netPacket->setNYCoor(i, tableI[i].nY);
+		netPacket->setNEL(i, tableI[i].nEL);
+	}
+	for (size_t i = 0; i < tableII.size(); ++i) {
+		netPacket->setNnId(i, tableII[i].nnId);
+		netPacket->setNNeighbor(i, tableII[i].neighborId);
+		netPacket->setNnXCoor(i, tableII[i].nnX);
+		netPacket->setNnYCoor(i, tableII[i].nnY);
+		netPacket->setNnEL(i, tableII[i].nnEL);
+	}
+    netPacket->setSource(SELF_NETWORK_ADDRESS);
+	double maxDistance = -1;
+	for (const auto& node : tableI) {
+		double distance = calculateDistance(xCoor, yCoor, node.nX, node.nY);
+		if (distance > maxDistance) {
+			maxDistance = distance;
+		}
+	}
+	std::stringstream dest_addr;
+    dest_addr << chId;
+    netPacket->setDestination(dest_addr.str());
+	netPacket->setTtl(numNodes);
+    toMacLayer(netPacket, chId);
+}
+
+void GSTEBRouting::handleInfoFromNode(GSTEBRoutingPacket* pkt)
+{
+	// BS receives the packets from all the nodes
+	// and records all the information in memory.
+	int senderId = atoi(pkt->getSource());
+	int numberOfNeighbors = pkt->getNNumber();
+	
+	for (int i = 0; i < numberOfNeighbors; ++i) {
+		GSTEBNeighbors newNode;
+		newNode.nId = pkt->getNId(i);
+		newNode.nX = pkt->getNXCoor(i);
+		newNode.nY = pkt->getNYCoor(i);
+		newNode.nEL = pkt->getNEL(i);
+		networkTableI.push_back(make_pair(senderId, newNode));
+	}
+}
+
+void GSTEBRouting::calculateRoutingTree()
+{
+	// BS builds the routing tree and the schedule of the
+	// network by using the EL and coordinates information
+	// collected in Initial Phase.
+	// The routing tree is built in a top-down manner,
+	// starting from BS. BS first selects its child nodes
+	// from all the nodes in the network, then each child
+	// node selects its own child nodes from its neighbors,
+	// and so on and so forth until all the nodes are
+	// included in the tree.
+
+	// The selection criteria are:
+		// 1. distance between its parent node and the root
+		// should be shorter than that between itself and the
+		// root
+
+		// 2. only the
+		// nodes with the largest EL of all its neighbors
+		// and itself can act as relay nodes
+		// The relay node which causes
+		// minimum consumption will be chosen as the
+		// parent node. 
+}
+
+void GSTEBRouting::broadcastRoutingTree()
+{
+	// BS broadcasts the routing tree to all the nodes
+	// in the network.
+	GSTEBRoutingPacket *netPacket = new GSTEBRoutingPacket("GSTEBRouting packet", NETWORK_LAYER_PACKET);
+	netPacket->setPacketType(NODE_CONTROL_PACKET);
+	// set routing tree data
+	netPacket->setSource(SELF_NETWORK_ADDRESS);
+	netPacket->setDestination(BROADCAST_NETWORK_ADDRESS);
+	netPacket->setTtl(numNodes);
+	toMacLayer(netPacket, BROADCAST_NETWORK_ADDRESS);
+}
+
+void GSTEBRouting::handleRoutingTree(GSTEBRoutingPacket* pkt)
+{
+	// each node receives the routing tree
+	// and records its parent node and child nodes
+	// in memory.
+	setTimer(DATA_COLLECTING_PHASE, 100);
 }

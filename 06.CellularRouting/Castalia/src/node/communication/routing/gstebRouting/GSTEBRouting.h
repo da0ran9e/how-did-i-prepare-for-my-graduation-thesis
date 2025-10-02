@@ -55,6 +55,8 @@ class GSTEBRouting: public VirtualRouting {
 	double myEL;
 	int phase;
 
+	vector<pair<int, GSTEBNeighbors>> networkTableI;
+
 	int phaseITimeslot;
 	int sensorBroadcastTimeout;
 	int initialPhraseTimeout; //The length of time slots in Steps 2 and 3 is predefined

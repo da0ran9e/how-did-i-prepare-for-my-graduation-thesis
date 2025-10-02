@@ -8,6 +8,8 @@ enum GSTEBRoutingPacketType {
     BS_BROADCAST_PACKET = 0;   
     SENSOR_BROADCAST_PACKET = 1;
     NEIGHBOR_BROADCAST_PACKET = 2;
+    NODE_INFO_PACKET = 3;
+    NODE_CONTROL_PACKET = 4;
 };
 
 struct BSBroadcastInfo {
@@ -38,7 +40,14 @@ packet GSTEBRoutingPacket extends RoutingPacket {
     BSBroadcastInfo bSBroadcastData;
     SensorBroadcastInfo sensorBroadcastData;
 
+    int nNumber;
+    int nId[500];
+    int nXCoor[500];
+    int nYCoor[500];
+    int nEL[500];
+
     int nnNumber;
+    int nNeighbor[500];
     int nnId[500];
     int nnXCoor[500];
     int nnYCoor[500];
