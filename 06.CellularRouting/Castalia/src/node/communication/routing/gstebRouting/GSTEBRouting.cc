@@ -333,6 +333,21 @@ void GSTEBRouting::handleInfoFromNode(GSTEBRoutingPacket* pkt)
 	}
 }
 
+double GSTEBRouting::calcTxEnergy(int kBits, double distance) {
+    // These params should exist as members or be read from par()
+    // e.g., E_elec = par("E_elec"); eps_fs = par("eps_fs"); ...
+    double E_elec = 50e-9;       // example: 50 nJ/bit
+    double eps_fs  = 10e-12;     // example: 10 pJ/bit/m^2
+    double eps_mp  = 0.0013e-12; // example for mp (you should set real values)
+    double d0 = std::sqrt(eps_fs/eps_mp);
+
+    if (distance < d0) {
+        return kBits * (E_elec + eps_fs * distance * distance);
+    } else {
+        return kBits * (E_elec + eps_mp * pow(distance, 4));
+    }
+}
+
 void GSTEBRouting::calculateRoutingTree()
 {
 	// BS builds the routing tree and the schedule of the
@@ -356,6 +371,217 @@ void GSTEBRouting::calculateRoutingTree()
 		// The relay node which causes
 		// minimum consumption will be chosen as the
 		// parent node. 
+
+	// Because every node chooses the parent from its
+ 		// neighbors and every node records its neighbors’
+		// information in Table II, each node can
+		// know all its neighbors’ parent nodes by computing,
+		// and it can also know all its child nodes. If a node
+		// has no child node, it defines itself as a leaf node,
+		// from which the data transmitting begins.
+
+	std::map<int, NodeInfo> nodeInfoMap;
+    std::map<int, std::set<int>> adjacency; 
+    
+    for (auto &entry : networkTableI) {
+        int sender = entry.first;
+        GSTEBNeighbors nb = entry.second;
+        if (nodeInfoMap.find(nb.nId) == nodeInfoMap.end()) {
+            NodeInfo ni;
+            ni.id = nb.nId;
+            ni.x = nb.nX;
+            ni.y = nb.nY;
+            ni.EL = nb.nEL;
+            ni.dataSize = 2000; //bits
+            nodeInfoMap[nb.nId] = ni;
+        }
+        adjacency[sender].insert(nb.nId);
+        adjacency[nb.nId].insert(sender);
+    }
+    
+    double bsX = xCoor; 
+    double bsY = yCoor;
+    int bsId = self;  
+
+    for (auto &kv : adjacency) {
+        int id = kv.first;
+        if (nodeInfoMap.find(id) == nodeInfoMap.end()) {
+            ni.id = id;
+            ni.x = 0.0;
+            ni.y = 0.0;
+            ni.EL = 0.0;
+            ni.dataSize = 2000;
+            nodeInfoMap[id] = ni;
+        }
+        for (int nb : kv.second) nodeInfoMap[id].neighbors.insert(nb);
+    }
+
+    if (nodeInfoMap.empty()) {
+        return;
+    }
+
+    // --- 1) Data structures for tree building ---
+    std::map<int,int> parentMap;          // node -> parent
+    std::map<int, std::vector<int>> childrenMap;
+    std::set<int> unassigned;             // nodes not yet in tree
+    
+    for (auto &kv : nodeInfoMap) {
+        int id = kv.first;
+        unassigned.insert(id);
+    }
+    // Remove BS from unassigned if it exists as a node
+    if (unassigned.count(bsId)) unassigned.erase(bsId);
+    parentMap[bsId] = bsId; // root points to itself
+
+    // --- 2) Top-down BFS-like construction ---
+    std::queue<int> q;
+    q.push(bsId);
+
+    // convenience lambda: compute cost for i via candidate r
+    auto cost_via = [&](int i, int r) -> double {
+        NodeInfo &ni = nodeInfoMap[i];
+        NodeInfo &nr = nodeInfoMap[r];
+        // For simplicity we use direct r->BS cost (one hop).
+        double dist_i_r = euclidDist(ni.x, ni.y, nr.x, nr.y);
+        double dist_r_bs = euclidDist(nr.x, nr.y, bsX, bsY);
+        double cost1 = calcTxEnergy(ni.dataSize, dist_i_r); // i -> r
+        // r must forward i's data plus its own data (non-fuse)
+        double totalBitsFromR = ni.dataSize + nr.dataSize;
+        double cost2 = calcTxEnergy((int)totalBitsFromR, dist_r_bs); // r -> BS (approx)
+        return cost1 + cost2;
+    };
+
+    while (!q.empty()) {
+        int parent = q.front(); q.pop();
+
+        // candidate nodes for this parent:
+        //  - if parent == bsId, consider all unassigned nodes
+        //  - else consider neighbors of parent that are still unassigned
+        std::vector<int> candidates;
+        if (parent == bsId) {
+            for (int nid : unassigned) candidates.push_back(nid);
+        } else {
+            for (int nid : nodeInfoMap[parent].neighbors) {
+                if (unassigned.count(nid)) candidates.push_back(nid);
+            }
+        }
+
+        // For each candidate node i, test whether this parent is the preferred relay
+        // according to the GSTEB rules:
+        //  1) dist(parent,BS) < dist(i,BS)
+        //  2) parent must be among i's relayCandidates (max EL among neighbors∪self)
+        //  3) parent must yield minimal consumption among i's relayCandidates
+
+        std::vector<int> nodesAssignedThisParent;
+
+        for (int i : candidates) {
+            NodeInfo &ni = nodeInfoMap[i];
+            double distParentToBS = (parent == bsId) ? 0.0 : euclidDist(nodeInfoMap[parent].x, nodeInfoMap[parent].y, bsX, bsY);
+            double distIToBS = euclidDist(ni.x, ni.y, bsX, bsY);
+            if (!(distParentToBS < distIToBS)) {
+                // criterion 1 fail
+                continue;
+            }
+
+            // find EL_max among i ∪ neighbors(i)
+            double elMax = ni.EL;
+            for (int nb : ni.neighbors) {
+                elMax = std::max(elMax, nodeInfoMap[nb].EL);
+            }
+
+            // build relayCandidates: those with EL == elMax among (i ∪ neighbors)
+            std::vector<int> relayCandidates;
+            if (ni.EL >= elMax - 1e-12) relayCandidates.push_back(i);
+            for (int nb : ni.neighbors) {
+                if (fabs(nodeInfoMap[nb].EL - elMax) < 1e-12) relayCandidates.push_back(nb);
+            }
+
+            // if parent is not one of relay candidates, skip
+            bool parentIsRelayCandidate = false;
+            for (int r : relayCandidates) if (r == parent) parentIsRelayCandidate = true;
+            if (!parentIsRelayCandidate) continue;
+
+            // compute minimal cost among relayCandidates
+            double bestCost = std::numeric_limits<double>::infinity();
+            int bestR = -1;
+            for (int r : relayCandidates) {
+                // ensure r exists in nodeInfoMap
+                if (nodeInfoMap.find(r) == nodeInfoMap.end()) continue;
+                double c = cost_via(i, r);
+                if (c < bestCost) { bestCost = c; bestR = r; }
+            }
+
+            // If this parent is the best relay for i, assign
+            if (bestR == parent) {
+                parentMap[i] = parent;
+                nodesAssignedThisParent.push_back(i);
+            }
+        } // end for candidates
+
+        // Mark assigned nodes and push them to queue
+        for (int n : nodesAssignedThisParent) {
+            unassigned.erase(n);
+            childrenMap[parent].push_back(n);
+            q.push(n);
+            trace() << "assigned parent of node " << n << " = " << parent;
+        }
+    } // end while q
+
+    // Any remaining unassigned nodes -> attach directly to BS (fallback)
+    for (int nid : std::vector<int>(unassigned.begin(), unassigned.end())) {
+        parentMap[nid] = bsId;
+        childrenMap[bsId].push_back(nid);
+        unassigned.erase(nid);
+        trace() << "fallback: attach node " << nid << " directly to BS";
+    }
+
+    // Store parentMap/childrenMap in class members for later use (scheduling, etc.)
+    this->parentTable.clear();
+    this->childrenTable.clear();
+    for (auto &kv : parentMap) {
+        this->parentTable[kv.first] = kv.second;
+    }
+    for (auto &kv : childrenMap) {
+        this->childrenTable[kv.first] = kv.second;
+    }
+
+    // --- 3) Create simple TDMA schedule: BFS order -> slot numbers ---
+    std::map<int,int> slotMap;
+    int slotCounter = 1;
+    // BFS from BS over parentMap to assign increasing slots.
+    std::queue<int> q2;
+    q2.push(bsId);
+    std::set<int> visited;
+    visited.insert(bsId);
+    while (!q2.empty()) {
+        int p = q2.front(); q2.pop();
+        for (int c : childrenMap[p]) {
+            if (!visited.count(c)) {
+                slotMap[c] = slotCounter++;
+                visited.insert(c);
+                q2.push(c);
+            }
+        }
+    }
+    // store schedule in class member
+    this->tdmaSchedule.clear();
+    for (auto &kv : slotMap) this->tdmaSchedule[kv.first] = kv.second;
+
+    // Debug print final tree
+    trace() << "Final routing tree (parent -> [children]):";
+    for (auto &kv : childrenMap) {
+        int p = kv.first;
+        std::ostringstream oss;
+        oss << p << " -> [";
+        for (size_t i=0;i<kv.second.size();++i) {
+            if (i) oss << ",";
+            oss << kv.second[i];
+        }
+        oss << "]";
+        trace() << oss.str();
+    }
+    trace() << "TDMA slots assigned to nodes (node:slot):";
+    for (auto &kv : this->tdmaSchedule) trace() << kv.first << ":" << kv.second;
 }
 
 void GSTEBRouting::broadcastRoutingTree()

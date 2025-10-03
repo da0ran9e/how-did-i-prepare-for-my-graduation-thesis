@@ -1,6 +1,11 @@
 #ifndef _GSTEBROUTING_H_
 #define _GSTEBROUTING_H_
 
+#include <map>
+#include <set>
+#include <queue>
+#include <limits>
+#include <cmath>
 #include "node/communication/routing/VirtualRouting.h"
 #include "node/communication/routing/gstebRouting/GSTEBRoutingPacket_m.h"
 
@@ -15,6 +20,16 @@ enum GSTEBRoutingTimers {
 	TREE_CONSTRUCTION_PHASE,
 
 	DATA_COLLECTING_PHASE,
+};
+
+struct NodeInfo {
+    int id;
+    double x;
+    double y;
+    double EL;         // estimated energy-level
+    int dataSize;      // expected data size in bits (e.g. 2000)
+    std::set<int> neighbors; // neighbor IDs
+    bool assigned = false;   // whether this node is attached to the tree
 };
 
 struct GSTEBNeighborsOfNeighbors {
@@ -56,6 +71,7 @@ class GSTEBRouting: public VirtualRouting {
 	int phase;
 
 	vector<pair<int, GSTEBNeighbors>> networkTableI;
+	map<int, int> networkParentTable;
 
 	int phaseITimeslot;
 	int sensorBroadcastTimeout;
