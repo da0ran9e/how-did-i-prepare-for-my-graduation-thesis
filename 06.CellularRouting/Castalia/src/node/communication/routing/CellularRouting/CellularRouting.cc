@@ -1,3 +1,4 @@
+
 #include "node/communication/routing/cellularRouting/CellularRouting.h"
 
 Define_Module(CellularRouting);
@@ -173,7 +174,7 @@ void CellularRouting::timerFiredCallback(int index)
 
         case SENSING_STATE:
             sendSensorDataPacket();
-            setTimer(SENSING_STATE, sensingDuration);
+            //setTimer(SENSING_STATE, 3000); //uniform(9000,10000));
             break;
 
         case RECONFIGURATION_TIMER:
@@ -1126,9 +1127,9 @@ void CellularRouting::handleRoutingTableAnnouncementPacket(CellularRoutingPacket
     for (int i=0; i<7; i++) {
         routingUpdateInfo[i] = pkt->getRoutingUpdateData(i);
         neighborCells[i] = routingUpdateInfo[i].toCell;
-        if (routingUpdateInfo[i].fromCell == myCellId && (routingUpdateInfo[i].nextHop != 0 && myCellId != 0)) {
+        if (routingUpdateInfo[i].fromCell == myCellId) {
             intraCellRoutingTable[routingUpdateInfo[i].nodeId][routingUpdateInfo[i].toCell] = routingUpdateInfo[i].nextHop;
-            if (traceMode == 0) trace() << "#ROUTING_TABLE " << self << " (" << routingUpdateInfo[i].fromCell << ") -> " << routingUpdateInfo[i].nextHop << " (" << routingUpdateInfo[i].toCell << ")";
+            trace() << "#ROUTING_TABLE " << self << " (" << routingUpdateInfo[i].fromCell << ") -> " << routingUpdateInfo[i].nextHop << " (" << routingUpdateInfo[i].toCell << ")";
         }
     }
     setTimer(FINALIZE_TIMER, uniform(1, 10));
@@ -1482,7 +1483,7 @@ void CellularRouting::sendSensorDataPacket(){
         CellularRoutingPacket* dupPkt = pkt->dup();
         cellPacketQueue.push({dupPkt, myNextCellHop});
     }
-    setTimer(SEND_CELL_PACKET, uniform(0, 0.1));
+    setTimer(SEND_CELL_PACKET, uniform(0, 1));
 }
 
 void CellularRouting::handleSensorDataPacket(CellularRoutingPacket* pkt){
@@ -1542,5 +1543,5 @@ void CellularRouting::handleSensorDataPacket(CellularRoutingPacket* pkt){
         levelInCell = 0;
     }
     cellPacketQueue.push({dupPkt, nextCell});
-    setTimer(SEND_CELL_PACKET, uniform(0, 0.1));
+    setTimer(SEND_CELL_PACKET, uniform(0, 1));
 }
