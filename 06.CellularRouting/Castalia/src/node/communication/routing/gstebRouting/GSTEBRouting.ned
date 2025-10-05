@@ -8,6 +8,9 @@ simple GSTEBRouting like node.communication.routing.iRouting
 	int maxNetFrameSize = default (0);	// bytes
 	int netDataFrameOverhead = default (10);	// bytes
 	int netBufferSize = default (32);	// number of messages
+	
+	bool isCH = default(false);
+	double alpha = default(0.01);
 
  gates:
 	output toCommunicationModule;

@@ -31,38 +31,38 @@ struct GSTEBNeighborsOfNeighbors {
 };
 
 struct GSTEBNeighbors {
-	int nodeId;
-	int nNumber;
+    int nodeId;
+    int nNumber;
     int nId;
     int nX;
     int nY;
     int nEL;
     int consumption;
 
-	struct SortById {
-		bool operator() (const GSTEBNeighbors& a, const GSTEBNeighbors& b) const {
-			return a.nodeId < b.nodeId;
-		}
-	};
+    struct SortById {
+        bool operator() (const GSTEBNeighbors& a, const GSTEBNeighbors& b) const {
+            return a.nodeId < b.nodeId;
+        }
+    };
 
-	struct SortByConsumption {
-		bool operator() (const GSTEBNeighbors& a, const GSTEBNeighbors& b) const {
-			return a.consumption < b.consumption;
-		}
-	};
+    struct SortByConsumption {
+        bool operator() (const GSTEBNeighbors& a, const GSTEBNeighbors& b) const {
+            return a.consumption < b.consumption;
+        }
+    };
 
-	struct SortByNumber {
-		bool operator() (const GSTEBNeighbors& a, const GSTEBNeighbors& b) const {
-			return a.nNumber > b.nNumber;
-		}
-	};
+    struct SortByNumber {
+        bool operator() (const GSTEBNeighbors& a, const GSTEBNeighbors& b) const {
+            return a.nNumber > b.nNumber;
+        }
+    };
 };
 
 class GSTEBRouting: public VirtualRouting {
     private:
     int nodeId;
-    int xCoor;
-    int yCoor;
+    double xCoor;
+    double yCoor;
     double energy;
     bool isCH;
     bool isSink;
@@ -74,7 +74,7 @@ class GSTEBRouting: public VirtualRouting {
     int chY;
     int numNodes;
     int timeStart;
-    int timeSlot;
+    int timeSlot = 60;
 
     vector<GSTEBNeighbors> tableI;
     vector<GSTEBNeighborsOfNeighbors> tableII;

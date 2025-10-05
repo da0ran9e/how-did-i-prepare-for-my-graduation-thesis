@@ -22,8 +22,9 @@ void GSTEBRouting::startup()
     cModule *parentNode = getParentModule();
     xCoor = parentNode->getParentModule()->par("xCoor");
     yCoor = parentNode->getParentModule()->par("yCoor");
-    energy = par("initialEnergy");
-    isSink = par("isSink");
+    energy = 12000;
+    isCH = par("isCH");
+
     GSTEBNodeInfo nodeInfo;
     nodeInfo.id = nodeId;
     nodeInfo.x = xCoor;
@@ -34,11 +35,7 @@ void GSTEBRouting::startup()
 
     chId = -1;
 
-    if (isSink) {
-        trace() << "#SINK " << self;
-    }
-
-    //setTimer(INITIAL_PHRASE, 1);
+    setTimer(INITIAL_PHRASE, 1);
 }
 
 void GSTEBRouting::fromApplicationLayer(cPacket * pkt, const char *destination)
@@ -83,14 +80,14 @@ void GSTEBRouting::timerFiredCallback(int index)
 {
     switch (index) {
     case INITIAL_PHRASE: {
-        if (isSink) {
+        if (isCH) {
             setTimer(BS_BROADCAST, 1);
         }
         break;
     }
 
     case BS_BROADCAST: {
-        setTimer(TREE_CONSTRUCTION_PHASE, initialPhraseTimeout); // Broadcast every 10 seconds
+        //setTimer(TREE_CONSTRUCTION_PHASE, 4000); //initialPhraseTimeout); // Broadcast every 10 seconds
         sendBSBroadcast();
         break;
     }
@@ -172,7 +169,7 @@ void GSTEBRouting::sendBSBroadcast()
     GSTEBBSBroadcastInfo bSBroadcastData;
     bSBroadcastData.x = xCoor;
     bSBroadcastData.y = yCoor;
-    bSBroadcastData.numNodes = numNodes;
+    bSBroadcastData.numNodes = getParentModule()->getParentModule()->getParentModule()->par("numNodes");;
     bSBroadcastData.timeSlot = timeSlot;
     bSBroadcastData.timeStart = timeStart;
     netPacket->setBSBroadcastData(bSBroadcastData);
@@ -180,6 +177,7 @@ void GSTEBRouting::sendBSBroadcast()
     netPacket->setDestination(BROADCAST_NETWORK_ADDRESS);
     netPacket->setTtl(numNodes);
     toMacLayer(netPacket, -1);
+    trace() << "BS broadcast " << self;
 }
 void GSTEBRouting::handleBSBroadcast(GSTEBRoutingPacket* pkt)
 {
@@ -206,12 +204,13 @@ void GSTEBRouting::handleBSBroadcast(GSTEBRoutingPacket* pkt)
 
     setTimer(PHRASE_I_TIMESLOT, nodeId*timeSlot+10);
     setTimer(SENSOR_BROADCAST_TIMEOUT, (nodeId+numNodes)*timeSlot+10);
-    setTimer(TREE_CONSTRUCTION_PHASE, (nodeId+2*numNodes)*timeSlot+10);
+    //setTimer(TREE_CONSTRUCTION_PHASE, (nodeId+2*numNodes)*timeSlot+10);
 
     GSTEBRoutingPacket *dupPkt = pkt->dup();
     dupPkt->setTtl(pkt->getTtl()-1);
     if (dupPkt->getTtl() > 0) toMacLayer(dupPkt, -1);
-    delete pkt;
+    trace() << "BS broadcast " << self;
+    //delete pkt;
 }
 
 void GSTEBRouting::computeEL()
@@ -263,6 +262,7 @@ void GSTEBRouting::handleSensorBroadcast(GSTEBRoutingPacket* pkt)
     }
 
     tableI.push_back(newNeighbor);
+    trace() << "neighbor " << sourceId;
 }
 
 double GSTEBRouting::calculateDistance(int x1, int y1, int x2, int y2)
@@ -280,6 +280,7 @@ void GSTEBRouting::sendNeighborsTable()
 
     netPacket->setNnNumber(tableI.size());
     for (size_t i = 0; i < tableI.size(); ++i) {
+        netPacket->setNnId(i, tableI[i].nId);
         netPacket->setNnXCoor(i, tableI[i].nX);
         netPacket->setNnYCoor(i, tableI[i].nY);
         netPacket->setNnEL(i, tableI[i].nEL);
@@ -287,7 +288,11 @@ void GSTEBRouting::sendNeighborsTable()
     netPacket->setSource(SELF_NETWORK_ADDRESS);
     netPacket->setDestination(BROADCAST_NETWORK_ADDRESS);
     netPacket->setTtl(1);
-    toMacLayer(netPacket, -1);
+    for (const auto& neighb : tableI){
+        GSTEBRoutingPacket *dupPkt = netPacket->dup();
+        toMacLayer(dupPkt, neighb.nId);
+    }
+//    toMacLayer(netPacket, -1);
 }
 
 void GSTEBRouting::handleNeighborsTable(GSTEBRoutingPacket* pkt)
@@ -304,8 +309,10 @@ void GSTEBRouting::handleNeighborsTable(GSTEBRoutingPacket* pkt)
         nnInfo.nnX = pkt->getNnXCoor(i);
         nnInfo.nnY = pkt->getNnYCoor(i);
         nnInfo.nnEL = pkt->getNnEL(i);
-
+//        int distance = calculateDistance(xCoor, yCoor, nnInfo.nnX, nnInfo.nnY);
+//        if (distance > communicationRadius) return;
         tableII.push_back(nnInfo);
+        trace() << "nn " << nnInfo.nnId;
     }
 }
 
@@ -454,7 +461,6 @@ void GSTEBRouting::handleInfoFromNode(GSTEBRoutingPacket* pkt)
         newNode.nEL = pkt->getNEL(i);
         networkTableI.insert(newNode);
     }
-	numberOfNeighbors.insert(make_pair(senderId, nNumber));
 }
 
 void GSTEBRouting::calculateRoutingTree()
@@ -489,9 +495,9 @@ void GSTEBRouting::calculateRoutingTree()
         // has no child node, it defines itself as a leaf node,
         // from which the data transmitting begins.
     vector<int> calculatedNodeIds;
-	for (const auto& node : networkTableI) {
-		
-	}
+    for (const auto& node : networkTableI) {
+
+    }
 }
 
 void GSTEBRouting::broadcastRoutingTree()
