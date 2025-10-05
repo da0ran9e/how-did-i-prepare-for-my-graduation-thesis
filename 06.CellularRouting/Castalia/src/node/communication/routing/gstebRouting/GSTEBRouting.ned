@@ -1,6 +1,6 @@
 package node.communication.routing.gstebRouting;
 
-simple BypassRouting like node.communication.routing.iRouting
+simple GSTEBRouting like node.communication.routing.iRouting
 
 {
  parameters:

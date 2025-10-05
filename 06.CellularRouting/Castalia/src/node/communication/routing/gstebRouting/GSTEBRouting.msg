@@ -12,7 +12,7 @@ enum GSTEBRoutingPacketType {
     NODE_CONTROL_PACKET = 4;
 };
 
-struct BSBroadcastInfo {
+struct GSTEBBSBroadcastInfo {
     int x;
     int y;
     double timeStart;
@@ -20,16 +20,10 @@ struct BSBroadcastInfo {
     double timeSlot;
 };
 
-struct SensorBroadcastInfo {
+struct GSTEBSensorBroadcastInfo {
     int nX;
     int nY;
     double nEL;
-};
-
-struct BSBroadcastInfo {
-    double timeStart;
-    int numNodes;
-    double timeSlot;
 };
 
 packet GSTEBRoutingPacket extends RoutingPacket {
@@ -37,8 +31,8 @@ packet GSTEBRoutingPacket extends RoutingPacket {
 
     int ttl;
 
-    BSBroadcastInfo bSBroadcastData;
-    SensorBroadcastInfo sensorBroadcastData;
+    GSTEBBSBroadcastInfo bSBroadcastData;
+    GSTEBSensorBroadcastInfo sensorBroadcastData;
 
     int nNumber;
     int nId[500];

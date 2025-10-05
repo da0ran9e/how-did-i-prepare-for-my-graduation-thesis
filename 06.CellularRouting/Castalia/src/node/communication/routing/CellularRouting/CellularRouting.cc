@@ -160,7 +160,7 @@ void CellularRouting::timerFiredCallback(int index)
 
         case SEND_CELL_PACKET:
             sendCellPacket();
-            setTimer(SEND_CELL_PACKET, uniform(0, 0.1));
+            setTimer(SEND_CELL_PACKET, uniform(0, 1));
             break;
 
         case SEND_ANNOUNCEMENT_QUEUE:
