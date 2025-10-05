@@ -31,11 +31,31 @@ struct GSTEBNeighborsOfNeighbors {
 };
 
 struct GSTEBNeighbors {
+	int nodeId;
+	int nNumber;
     int nId;
     int nX;
     int nY;
     int nEL;
     int consumption;
+
+	struct SortById {
+		bool operator() (const GSTEBNeighbors& a, const GSTEBNeighbors& b) const {
+			return a.nodeId < b.nodeId;
+		}
+	};
+
+	struct SortByConsumption {
+		bool operator() (const GSTEBNeighbors& a, const GSTEBNeighbors& b) const {
+			return a.consumption < b.consumption;
+		}
+	};
+
+	struct SortByNumber {
+		bool operator() (const GSTEBNeighbors& a, const GSTEBNeighbors& b) const {
+			return a.nNumber > b.nNumber;
+		}
+	};
 };
 
 class GSTEBRouting: public VirtualRouting {
@@ -61,7 +81,7 @@ class GSTEBRouting: public VirtualRouting {
     double myEL;
     int phase;
 
-    vector<pair<int, GSTEBNeighbors>> networkTableI;
+    set<GSTEBNeighbors, GSTEBNeighbors::SortByNumber> networkTableI;
     map<int, int> networkParentTable;
 
     vector<GSTEBNeighbors> relayCandidates;
@@ -88,6 +108,11 @@ class GSTEBRouting: public VirtualRouting {
     double calcTxEnergy(int kBits, double distance);
     void chooseRelayNode();
     void chooseParentNode();
+    void sendInfoToBS();
+    void handleInfoFromNode(GSTEBRoutingPacket* pkt);
+    void calculateRoutingTree();
+    void broadcastRoutingTree();
+    void handleRoutingTree(GSTEBRoutingPacket* pkt);
 };
 
 #endif              //BYPASSROUTINGMODULE
