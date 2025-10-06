@@ -13,6 +13,8 @@ enum GSTEBRoutingPacketType {
 };
 
 struct GSTEBBSBroadcastInfo {
+    int senderX;
+    int senderY;
     int x;
     int y;
     double timeStart;
