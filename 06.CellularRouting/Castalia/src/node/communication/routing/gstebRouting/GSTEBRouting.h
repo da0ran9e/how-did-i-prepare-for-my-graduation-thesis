@@ -6,6 +6,7 @@
 #include <queue>
 #include <limits>
 #include <cmath>
+#include <algorithm>
 #include "node/communication/routing/VirtualRouting.h"
 #include "node/communication/routing/gstebRouting/GSTEBRouting_m.h"
 
@@ -31,32 +32,21 @@ struct GSTEBNeighborsOfNeighbors {
 };
 
 struct GSTEBNeighbors {
-    int nodeId;
+    int nodeId; // neighbor of
     int nNumber;
-    int nId;
+    int nId; // this node ID
     int nX;
     int nY;
     int nEL;
     int consumption;
-
-    struct SortById {
-        bool operator() (const GSTEBNeighbors& a, const GSTEBNeighbors& b) const {
-            return a.nodeId < b.nodeId;
-        }
-    };
-
-    struct SortByConsumption {
-        bool operator() (const GSTEBNeighbors& a, const GSTEBNeighbors& b) const {
-            return a.consumption < b.consumption;
-        }
-    };
-
-    struct SortByNumber {
-        bool operator() (const GSTEBNeighbors& a, const GSTEBNeighbors& b) const {
-            return a.nNumber > b.nNumber;
-        }
-    };
 };
+
+struct SortByNumber { //number of neighbor
+        bool operator() (const GSTEBNeighbors& a, const GSTEBNeighbors& b) const {
+            if (a.nNumber != b.nNumber) return a.nNumber < b.nNumber;
+            return a.nId < b.nId;
+        }
+    };
 
 class GSTEBRouting: public VirtualRouting {
     private:
@@ -81,7 +71,7 @@ class GSTEBRouting: public VirtualRouting {
     double myEL;
     int phase;
 
-    set<GSTEBNeighbors, GSTEBNeighbors::SortByNumber> networkTableI;
+    vector<GSTEBNeighbors> networkTableI;
     map<int, int> networkParentTable;
 
     vector<GSTEBNeighbors> relayCandidates;

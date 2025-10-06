@@ -108,13 +108,13 @@ void GSTEBRouting::timerFiredCallback(int index)
     }
 
     case TREE_CONSTRUCTION_PHASE: {
-        if (isSink) {
+        if (isCH) {
             // BS always assigns itself as root
             // BS can collect the initial EL and coordinates
             // information of all the sensor nodes in Initial Phase. For each
             // round, BS builds the routing tree and the schedule of the
             // network by using the EL and coordinates information.
-            //calculateRoutingTree();
+            calculateRoutingTree();
             //broadcastRoutingTree();
         } else {
             // Each node tries to select a parent in its neighbors
@@ -204,7 +204,7 @@ void GSTEBRouting::handleBSBroadcast(GSTEBRoutingPacket* pkt)
 
     setTimer(PHRASE_I_TIMESLOT, nodeId*timeSlot+10);
     setTimer(SENSOR_BROADCAST_TIMEOUT, (nodeId+numNodes)*timeSlot+10);
-    //setTimer(TREE_CONSTRUCTION_PHASE, (nodeId+2*numNodes)*timeSlot+10);
+    setTimer(TREE_CONSTRUCTION_PHASE, (nodeId+2*numNodes)*timeSlot+10);
 
     GSTEBRoutingPacket *dupPkt = pkt->dup();
     dupPkt->setTtl(pkt->getTtl()-1);
@@ -459,7 +459,7 @@ void GSTEBRouting::handleInfoFromNode(GSTEBRoutingPacket* pkt)
         newNode.nX = pkt->getNXCoor(i);
         newNode.nY = pkt->getNYCoor(i);
         newNode.nEL = pkt->getNEL(i);
-        networkTableI.insert(newNode);
+        networkTableI.push_back(newNode);
     }
 }
 
@@ -494,9 +494,91 @@ void GSTEBRouting::calculateRoutingTree()
         // and it can also know all its child nodes. If a node
         // has no child node, it defines itself as a leaf node,
         // from which the data transmitting begins.
+    SortByNumber sortByNumber;
+    std::sort(networkTableI.begin(), networkTableI.end(), sortByNumber);
     vector<int> calculatedNodeIds;
     for (const auto& node : networkTableI) {
+        int calculatingNode = node.nodeId;
+        if (find(calculatedNodeIds.begin(), calculatedNodeIds.end(), calculatingNode) != calculatedNodeIds.end()) continue;
+        calculatedNodeIds.push_back(calculatingNode);
+        vector<GSTEBNeighbors> nRelayCandidates;
+        int nParentId = -1;
+        // find relay candidates
+        for (const auto& curNode : networkTableI){
+            if (curNode.nodeId == calculatingNode){
+                double distToSink = calculateDistance(xCoor, yCoor, curNode.nX, curNode.nY);
+                double nDistToSink = calculateDistance(xCoor, yCoor, node.nX, node.nY);
+                if (distToSink >= nDistToSink) {
+                    continue; // Condition 1 not satisfied
+                }
 
+                bool isRelayCandidate = true;
+                double highestEL = curNode.nEL;
+
+                for (const auto& curNNode : networkTableI) {
+                    if (curNNode.nodeId == curNode.nId) {
+                        if (curNNode.nEL > highestEL) {
+                            isRelayCandidate = false;
+                            highestEL = curNNode.nEL;
+                            break;
+                        }
+                    }
+                }
+
+                if (!isRelayCandidate) {
+                    continue; // Condition 2 not satisfied
+                }
+
+                nRelayCandidates.push_back(curNode);
+            }
+        }
+
+        if (nRelayCandidates.empty()) {
+            // if BS in range, send directly to BS
+            if (calculateDistance(xCoor, yCoor, node.nX, node.nY) <= communicationRadius)
+            {
+                nParentId = chId;
+                return;
+            }
+
+            // else, choose the closest neighbor to BS
+            double minDistToSink = 9999.0;
+            int bestNeighborId = -1;
+            for (const auto& curNode : networkTableI) {
+                if (curNode.nodeId != calculatingNode) continue;
+                double distToSink = calculateDistance(curNode.nX, curNode.nY, xCoor, yCoor);
+                if (distToSink < minDistToSink) {
+                    minDistToSink = distToSink;
+                    bestNeighborId = curNode.nId;
+                }
+            }
+            if (bestNeighborId != -1) {
+                nParentId = bestNeighborId;
+            }
+        } else {
+            // For each relay candidate, calculate the energy consumption
+            // Choose the one with minimum energy consumption as parent node
+            int minConsumption = 9999;
+            int bestParentId = -1;
+
+            for (const auto& curNode : networkTableI) {
+                if (curNode.nodeId != calculatingNode) continue;
+                double distanceToCandidate = calculateDistance(node.nX, node.nY, curNode.nX, curNode.nY);
+                double distanceCandidateToSink = calculateDistance(xCoor, yCoor, curNode.nX, curNode.nY);
+                double consumption = calcTxEnergy(2000, distanceToCandidate) + calcTxEnergy(2000, distanceCandidateToSink); // assuming 2000 bits
+
+                if (consumption < minConsumption) {
+                    minConsumption = consumption;
+                    bestParentId = curNode.nId;
+                }
+            }
+
+            if (bestParentId != -1) {
+                nParentId = bestParentId;
+            }
+        }
+        networkParentTable[calculatingNode] = nParentId;
+        trace() << "parent of " << calculatingNode << ": " << nParentId;
     }
 }
 

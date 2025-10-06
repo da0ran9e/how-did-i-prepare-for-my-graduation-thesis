@@ -17,6 +17,7 @@ struct GSTEBBSBroadcastInfo {
     int y;
     double timeStart;
     int numNodes;
+    int sinkId;
     double timeSlot;
 };
 
