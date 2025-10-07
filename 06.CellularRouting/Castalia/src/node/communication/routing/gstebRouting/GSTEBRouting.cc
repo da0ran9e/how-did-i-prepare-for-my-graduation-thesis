@@ -227,7 +227,8 @@ void GSTEBRouting::handleBSBroadcast(GSTEBRoutingPacket* pkt)
     setTimer(SENSOR_BROADCAST_TIMEOUT, (nodeId+numNodes)*timeSlot+10);
     setTimer(TREE_CONSTRUCTION_PHASE, (nodeId+2*numNodes)*timeSlot+10);
 
-    GSTEBRoutingPacket *dupPkt = pkt->dup();
+    GSTEBRoutingPacket *dupPkt = new GSTEBRoutingPacket("GSTEBRouting packet", NETWORK_LAYER_PACKET);
+    dupPkt->setPacketType(BS_BROADCAST_PACKET);
     dupPkt->setTtl(pkt->getTtl());
     dupPkt->setBSBroadcastData(bSBroadcastData);
     dupPkt->setSource(SELF_NETWORK_ADDRESS);
@@ -301,22 +302,22 @@ void GSTEBRouting::sendNeighborsTable()
     // Each node sends a packet which contains all its
     // neighborsâ€™ information during its own time slot
     // when Step 2 is over.
-    GSTEBRoutingPacket *netPacket = new GSTEBRoutingPacket("GSTEBRouting packet", NETWORK_LAYER_PACKET);
-    netPacket->setPacketType(NEIGHBOR_BROADCAST_PACKET);
 
-    netPacket->setNnNumber(tableI.size());
-    for (size_t i = 0; i < tableI.size(); ++i) {
-        netPacket->setNnId(i, tableI[i].nId);
-        netPacket->setNnXCoor(i, tableI[i].nX);
-        netPacket->setNnYCoor(i, tableI[i].nY);
-        netPacket->setNnEL(i, tableI[i].nEL);
-    }
-    netPacket->setSource(SELF_NETWORK_ADDRESS);
-    netPacket->setDestination(BROADCAST_NETWORK_ADDRESS);
-    netPacket->setTtl(1);
     for (const auto& neighb : tableI){
-        GSTEBRoutingPacket *dupPkt = netPacket->dup();
-        toMacLayer(dupPkt, neighb.nId);
+        GSTEBRoutingPacket *netPacket = new GSTEBRoutingPacket("GSTEBRouting packet", NETWORK_LAYER_PACKET);
+        netPacket->setPacketType(NEIGHBOR_BROADCAST_PACKET);
+
+        netPacket->setNnNumber(tableI.size());
+        for (size_t i = 0; i < tableI.size(); ++i) {
+            netPacket->setNnId(i, tableI[i].nId);
+            netPacket->setNnXCoor(i, tableI[i].nX);
+            netPacket->setNnYCoor(i, tableI[i].nY);
+            netPacket->setNnEL(i, tableI[i].nEL);
+        }
+        netPacket->setSource(SELF_NETWORK_ADDRESS);
+        netPacket->setDestination(BROADCAST_NETWORK_ADDRESS);
+        netPacket->setTtl(1);
+        toMacLayer(netPacket, neighb.nId);
     }
 //    toMacLayer(netPacket, -1);
 }
@@ -619,25 +620,27 @@ void GSTEBRouting::broadcastRoutingTree()
 {
     // BS broadcasts the routing tree to all the nodes
     // in the network.
-    GSTEBRoutingPacket *netPacket = new GSTEBRoutingPacket("GSTEBRouting packet", NETWORK_LAYER_PACKET);
-    netPacket->setPacketType(NODE_CONTROL_PACKET);
-    // set routing tree data
-    for (int i=0; i<numNodes; i++) {
-        netPacket->setRoutingTree(i, networkParentTable[i]);
-    }
-    netPacket->setSource(SELF_NETWORK_ADDRESS);
+
     for (const auto& node : networkTableI){
         int des = node.nId;
         int xCoord = node.nX;
         int yCoord = node.nY;
 
         if (calculateDistance(xCoor, yCoor, xCoord, yCoord) <= communicationRadius){
-            GSTEBRoutingPacket *dupPkt = netPacket->dup();
+            GSTEBRoutingPacket *netPacket = new GSTEBRoutingPacket("GSTEBRouting packet", NETWORK_LAYER_PACKET);
+            netPacket->setPacketType(NODE_CONTROL_PACKET);
+            // set routing tree data
+            for (int i=0; i<numNodes; i++) {
+                netPacket->setRoutingTree(i, networkParentTable[i]);
+            }
+            netPacket->setSource(SELF_NETWORK_ADDRESS);
+
+
             std::stringstream dest_addr;
             dest_addr << des;
-            dupPkt->setDestination(dest_addr.str().c_str());
-            dupPkt->setTtl(numNodes);
-            toMacLayer(dupPkt, des);
+            netPacket->setDestination(dest_addr.str().c_str());
+            netPacket->setTtl(numNodes);
+            toMacLayer(netPacket, des);
         }
     }
 }
@@ -664,7 +667,11 @@ void GSTEBRouting::handleRoutingTree(GSTEBRoutingPacket* pkt)
                     int yCoord = nNode.nY;
 
                     if (calculateDistance(xCoor, yCoor, xCoord, yCoord) <= communicationRadius){
-                        GSTEBRoutingPacket *dupPkt = pkt->dup();
+                        GSTEBRoutingPacket *dupPkt = new GSTEBRoutingPacket("GSTEBRouting packet", NETWORK_LAYER_PACKET);
+                        dupPkt->setPacketType(NODE_CONTROL_PACKET);
+                        for (int i=0; i<numNodes; i++) {
+                            dupPkt->setRoutingTree(i, pkt->getRoutingTree(i));
+                        }
                         std::stringstream dest_addr;
                         dest_addr << des;
                         dupPkt->setDestination(dest_addr.str().c_str());
