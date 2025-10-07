@@ -39,12 +39,20 @@ struct GSTEBNeighbors {
     int nY;
     int nEL;
     int consumption;
+    double distanceToCH;
 };
 
 struct SortByNumber { //number of neighbor
         bool operator() (const GSTEBNeighbors& a, const GSTEBNeighbors& b) const {
             if (a.nNumber != b.nNumber) return a.nNumber < b.nNumber;
             return a.nId < b.nId;
+        }
+    };
+
+struct SortByDistance { //number of neighbor
+        bool operator() (const GSTEBNeighbors& a, const GSTEBNeighbors& b) const {
+            if (a.distanceToCH != b.distanceToCH) return a.distanceToCH < b.distanceToCH;
+            if (a.nId != b.nId) return a.nId < b.nId;
         }
     };
 
@@ -76,6 +84,7 @@ class GSTEBRouting: public VirtualRouting {
 
     vector<GSTEBNeighbors> relayCandidates;
     int parentId = -1;
+    vector<int> myChild;
 
     int phaseITimeslot;
     int sensorBroadcastTimeout;

@@ -126,7 +126,7 @@ void GSTEBRouting::timerFiredCallback(int index)
             // round, BS builds the routing tree and the schedule of the
             // network by using the EL and coordinates information.
             calculateRoutingTree();
-            //broadcastRoutingTree();
+            broadcastRoutingTree();
         } else {
             // Each node tries to select a parent in its neighbors
             // using EL and coordinates which are recorded in
@@ -486,6 +486,7 @@ void GSTEBRouting::handleInfoFromNode(GSTEBRoutingPacket* pkt)
         newNode.nX = pkt->getNXCoor(i);
         newNode.nY = pkt->getNYCoor(i);
         newNode.nEL = pkt->getNEL(i);
+        newNode.distanceToCH = calculateDistance(newNode.nX, newNode.nY, xCoor, yCoor);
         networkTableI.push_back(newNode);
     }
     trace() << "Set of neighbor " << networkTableI.size();
@@ -523,12 +524,12 @@ void GSTEBRouting::calculateRoutingTree()
         // has no child node, it defines itself as a leaf node,
         // from which the data transmitting begins.
     trace() << "*****Start calc routing tree";
-    SortByNumber sortByNumber;
-    std::sort(networkTableI.begin(), networkTableI.end(), sortByNumber);
+    SortByDistance sortByDistance;
+    std::sort(networkTableI.begin(), networkTableI.end(), sortByDistance);
     vector<int> calculatedNodeIds;
     for (const auto& node : networkTableI) {
         //trace() << networkTableI.size();
-        int calculatingNode = node.nodeId;
+        int calculatingNode = node.nId;
         //trace() << "Calc " << calculatingNode;
         if (std::find_if(calculatedNodeIds.begin(), calculatedNodeIds.end(), [calculatingNode](const int m) { return m == calculatingNode; }) != calculatedNodeIds.end()) continue;
         //trace() << "Calc " << calculatingNode;
@@ -593,7 +594,7 @@ void GSTEBRouting::calculateRoutingTree()
             int minConsumption = 9999;
             int bestParentId = -1;
 
-            for (const auto& curNode : networkTableI) {
+            for (const auto& curNode : nRelayCandidates) {
                 if (curNode.nodeId != calculatingNode) continue;
                 double distanceToCandidate = calculateDistance(node.nX, node.nY, curNode.nX, curNode.nY);
                 double distanceCandidateToSink = calculateDistance(xCoor, yCoor, curNode.nX, curNode.nY);
@@ -610,7 +611,7 @@ void GSTEBRouting::calculateRoutingTree()
             }
         }
         networkParentTable[calculatingNode] = nParentId;
-        trace() << "parent of " << calculatingNode << ": " << nParentId;
+        trace() << "#PARENT_OF " << calculatingNode << ": " << nParentId;
     }
 }
 
@@ -621,10 +622,24 @@ void GSTEBRouting::broadcastRoutingTree()
     GSTEBRoutingPacket *netPacket = new GSTEBRoutingPacket("GSTEBRouting packet", NETWORK_LAYER_PACKET);
     netPacket->setPacketType(NODE_CONTROL_PACKET);
     // set routing tree data
+    for (int i=0; i<numNodes; i++) {
+        netPacket->setRoutingTree(i, networkParentTable[i]);
+    }
     netPacket->setSource(SELF_NETWORK_ADDRESS);
-    netPacket->setDestination(BROADCAST_NETWORK_ADDRESS);
-    netPacket->setTtl(numNodes);
-    toMacLayer(netPacket, -1);
+    for (const auto& node : networkTableI){
+        int des = node.nId;
+        int xCoord = node.nX;
+        int yCoord = node.nY;
+
+        if (calculateDistance(xCoor, yCoor, xCoord, yCoord) <= communicationRadius){
+            GSTEBRoutingPacket *dupPkt = netPacket->dup();
+            std::stringstream dest_addr;
+            dest_addr << des;
+            dupPkt->setDestination(dest_addr.str().c_str());
+            dupPkt->setTtl(numNodes);
+            toMacLayer(dupPkt, des);
+        }
+    }
 }
 
 void GSTEBRouting::handleRoutingTree(GSTEBRoutingPacket* pkt)
@@ -632,5 +647,34 @@ void GSTEBRouting::handleRoutingTree(GSTEBRoutingPacket* pkt)
     // each node receives the routing tree
     // and records its parent node and child nodes
     // in memory.
+    //trace() << "routing tree";
+    if (parentId != -1) return;
+
+    parentId = pkt->getRoutingTree(self);
+    trace() << "routing tree" << parentId;
+    for (int i=0; i<numNodes; i++){
+        int nParentId = pkt->getRoutingTree(i);
+        if (nParentId == self){
+            myChild.push_back(i);
+            trace() << "child" << i;
+            for (const auto& nNode : tableI){
+                if (nNode.nId == i){
+                    int des = i;
+                    int xCoord = nNode.nX;
+                    int yCoord = nNode.nY;
+
+                    if (calculateDistance(xCoor, yCoor, xCoord, yCoord) <= communicationRadius){
+                        GSTEBRoutingPacket *dupPkt = pkt->dup();
+                        std::stringstream dest_addr;
+                        dest_addr << des;
+                        dupPkt->setDestination(dest_addr.str().c_str());
+                        dupPkt->setTtl(numNodes);
+                        toMacLayer(dupPkt, des);
+                    }
+                }
+
+            }
+        }
+    }
     setTimer(DATA_COLLECTING_PHASE, 100);
 }

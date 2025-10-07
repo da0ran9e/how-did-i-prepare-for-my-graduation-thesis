@@ -49,5 +49,7 @@ packet GSTEBRoutingPacket extends RoutingPacket {
     int nnXCoor[500];
     int nnYCoor[500];
     int nnEL[500];
+
+    int routingTree[500];
 }
 
