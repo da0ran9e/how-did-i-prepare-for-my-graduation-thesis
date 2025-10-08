@@ -92,7 +92,8 @@ void GSTEBRouting::timerFiredCallback(int index)
     switch (index) {
     case INITIAL_PHRASE: {
         if (isCH) {
-            setTimer(BS_BROADCAST, 1);
+
+            setTimer(BS_BROADCAST, 100 - simTime().dbl());
         }
         break;
     }
