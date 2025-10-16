@@ -14,6 +14,7 @@ struct GSTEBNodeInfo {
     vector<GSTEBNodeNeighborInfo> neighbors;
 };
 static vector<GSTEBNodeInfo> nodesInfo;
+static double g_networkConsumption[100][2]; // [send/receive]
 
 void GSTEBRouting::startup()
 {
@@ -42,6 +43,7 @@ void GSTEBRouting::startup()
     trace() << "#NODE " << self << " (" << xCoor << ", " << yCoor << ")";
 
     setTimer(INITIAL_PHRASE, 20);
+    setTimer(CH_ROTATION, 0);
 }
 
 void GSTEBRouting::fromApplicationLayer(cPacket * pkt, const char *destination)
@@ -55,6 +57,7 @@ void GSTEBRouting::fromMacLayer(cPacket * pkt, int srcMacAddress, double rssi, d
     if (!netPacket) {
         return;
     }
+    g_networkConsumption[self][1] += calcTxEnergy(2000, calculateDistance(atoi(netPacket->getSource())));
     netPacket->setTtl(netPacket->getTtl() - 1);
     switch (netPacket->getPacketType()) {
     case BS_BROADCAST_PACKET: {
@@ -79,6 +82,11 @@ void GSTEBRouting::fromMacLayer(cPacket * pkt, int srcMacAddress, double rssi, d
 
     case NODE_INFO_PACKET: {
         handleInfoFromNode(netPacket);
+        break;
+    }
+
+    case DATA_PACKET: {
+        handleDataPacket(netPacket);
         break;
     }
 
@@ -147,7 +155,7 @@ void GSTEBRouting::timerFiredCallback(int index)
             // find a suitable parent node, it will transmit its
             // data directly to BS.
             sendInfoToBS();
-            setTimer(DATA_COLLECTING_PHASE, 100);
+            //setTimer(DATA_COLLECTING_PHASE, 100);
 
         }
         // Because every node chooses the parent from its
@@ -164,6 +172,13 @@ void GSTEBRouting::timerFiredCallback(int index)
         // Each node sends its data to its parent node
         // and finally to BS along the tree constructed
         // in Step 4.
+        sendDataPacket();
+        setTimer(DATA_COLLECTING_PHASE, 10000); 
+        break;
+    }
+
+    case CH_ROTATION: {
+        setTimer(CH_ROTAION, 260000);
         break;
     }
 
@@ -192,6 +207,7 @@ void GSTEBRouting::sendBSBroadcast()
     netPacket->setSource(SELF_NETWORK_ADDRESS);
     netPacket->setDestination(BROADCAST_NETWORK_ADDRESS);
     netPacket->setTtl(numNodes);
+    //g_networkConsumption[self][0] += calcTxEnergy(2000, calculateDistance());
     toMacLayer(netPacket, BROADCAST_MAC_ADDRESS);
     //trace() << "BS broadcast " << numNodes;
 }
@@ -234,6 +250,7 @@ void GSTEBRouting::handleBSBroadcast(GSTEBRoutingPacket* pkt)
     dupPkt->setBSBroadcastData(bSBroadcastData);
     dupPkt->setSource(SELF_NETWORK_ADDRESS);
     if (dupPkt->getTtl() > 0) {
+        //g_networkConsumption[self][0] += calcTxEnergy(2000, calculateDistance());
         toMacLayer(dupPkt, BROADCAST_MAC_ADDRESS);
         //trace() << "BS broadcast " << self;
     }
@@ -264,6 +281,7 @@ void GSTEBRouting::sendSensorBroadcast()
     netPacket->setSource(SELF_NETWORK_ADDRESS);
     netPacket->setDestination(BROADCAST_NETWORK_ADDRESS);
     netPacket->setTtl(1);
+    //g_networkConsumption[self][0] += calcTxEnergy(2000, calculateDistance());
     toMacLayer(netPacket, BROADCAST_MAC_ADDRESS);
 }
 
@@ -298,6 +316,15 @@ double GSTEBRouting::calculateDistance(int x1, int y1, int x2, int y2)
     return sqrt(pow(x1 - x2, 2) + pow(y1 - y2, 2));
 }
 
+double GSTEBRouting::calculateDistance(int n)
+{
+    for (const auto& nodeI : nodesInfo){
+        if (nodeI.id == n){
+            return calculateDistance(nodeI.x, nodeI.y, xCoor, yCoor);
+        }
+    }
+}
+
 void GSTEBRouting::sendNeighborsTable()
 {
     // Each node sends a packet which contains all its
@@ -318,9 +345,11 @@ void GSTEBRouting::sendNeighborsTable()
         netPacket->setSource(SELF_NETWORK_ADDRESS);
         netPacket->setDestination(BROADCAST_NETWORK_ADDRESS);
         netPacket->setTtl(1);
+        g_networkConsumption[self][0] += calcTxEnergy(2000, calculateDistance(neighb.nId));
         toMacLayer(netPacket, neighb.nId);
     }
-//    toMacLayer(netPacket, -1);
+// g_networkConsumption[self][0] += calcTxEnergy(2000, calculateDistance());   
+// toMacLayer(netPacket, -1);
 }
 
 void GSTEBRouting::handleNeighborsTable(GSTEBRoutingPacket* pkt)
@@ -469,6 +498,7 @@ void GSTEBRouting::sendInfoToBS()
     dest_addr << chId;
     netPacket->setDestination(dest_addr.str().c_str());
     netPacket->setTtl(numNodes);
+    g_networkConsumption[self][0] += calcTxEnergy(2000, calculateDistance(chId));
     toMacLayer(netPacket, chId);
     //trace() << "send info to " << chId;
 }
@@ -641,6 +671,7 @@ void GSTEBRouting::broadcastRoutingTree()
             dest_addr << des;
             netPacket->setDestination(dest_addr.str().c_str());
             netPacket->setTtl(numNodes);
+            g_networkConsumption[self][0] += calcTxEnergy(2000, calculateDistance(des));
             toMacLayer(netPacket, des);
         }
     }
@@ -677,6 +708,7 @@ void GSTEBRouting::handleRoutingTree(GSTEBRoutingPacket* pkt)
                         dest_addr << des;
                         dupPkt->setDestination(dest_addr.str().c_str());
                         dupPkt->setTtl(numNodes);
+                        g_networkConsumption[self][0] += calcTxEnergy(2000, calculateDistance(des));
                         toMacLayer(dupPkt, des);
                     }
                 }
@@ -685,4 +717,55 @@ void GSTEBRouting::handleRoutingTree(GSTEBRoutingPacket* pkt)
         }
     }
     setTimer(DATA_COLLECTING_PHASE, 100);
+}
+
+void GSTEBRouting::sendDataPacket()
+{
+    // If a node has no child node, it defines itself as a leaf node,
+    // from which the data transmitting begins.
+    if (parentId == -1 || parentId == chId) return;
+    GSTEBRoutingPacket *netPacket = new GSTEBRoutingPacket("GSTEBRouting packet", NETWORK_LAYER_PACKET);
+    netPacket->setPacketType(DATA_PACKET);
+    netPacket->setSource(SELF_NETWORK_ADDRESS);
+    std::stringstream dest_addr;
+    dest_addr << parentId;
+    netPacket->setDestination(dest_addr.str().c_str());
+    netPacket->setTtl(numNodes);
+    g_networkConsumption[self][0] += calcTxEnergy(2000, calculateDistance(parentId));
+    toMacLayer(netPacket, parentId);
+}
+
+void GSTEBRouting::handleDataPacket(GSTEBRoutingPacket* pkt)
+{
+    if (parentId == -1 || parentId == chId) return;
+    trace() << "Data packet from " << pkt->getSource() << " to " << parentId;
+    // Create new packet to forward to parent
+    GSTEBRoutingPacket *netPacket = new GSTEBRoutingPacket("GSTEBRouting packet", NETWORK_LAYER_PACKET);
+    netPacket->setPacketType(DATA_PACKET);
+    netPacket->setSource(SELF_NETWORK_ADDRESS);
+    std::stringstream dest_addr;
+    dest_addr << parentId;
+    netPacket->setDestination(dest_addr.str().c_str());
+    netPacket->setTtl(numNodes);
+    g_networkConsumption[self][0] += calcTxEnergy(2000, calculateDistance(parentId));
+    toMacLayer(netPacket, parentId);
+}
+
+void GSTEBRouting::rotationCH()
+{
+    
+
+    if (self == 11) // base station
+    {
+        if (g_networkConsumption[0][0] == -1){
+            for (int i=0; i<numNodes; i++){
+                g_networkConsumption[i][0] = 0;
+                g_networkConsumption[i][1] = 0;
+            }
+            return;
+        }
+        for (int i=0; i<numNodes; i++){
+            trace() << "Node consumption " << i << " sent " << g_networkConsumption[i][0] << " recv " << g_networkConsumption[i][1];
+        }
+    }
 }

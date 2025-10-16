@@ -3,10 +3,12 @@
 
 #include <map>
 #include <set>
+#include <unordered_set>
 #include <queue>
 #include <limits>
 #include <cmath>
 #include <algorithm>
+#include <memory>
 #include "node/communication/routing/VirtualRouting.h"
 #include "node/communication/routing/gstebRouting/GSTEBRouting_m.h"
 
@@ -17,10 +19,12 @@ enum GSTEBRoutingTimers {
     BS_BROADCAST,
     PHRASE_I_TIMESLOT,
     SENSOR_BROADCAST_TIMEOUT,
-
     TREE_CONSTRUCTION_PHASE,
-
     DATA_COLLECTING_PHASE,
+    DATA_PACKET,
+    
+    CH_ROTATION,
+    CLEANUP,
 };
 
 struct GSTEBNeighborsOfNeighbors {
@@ -102,6 +106,7 @@ class GSTEBRouting: public VirtualRouting {
     void sendSensorBroadcast();
     void handleSensorBroadcast(GSTEBRoutingPacket* pkt);
     double calculateDistance(int x1, int y1, int x2, int y2);
+    double calculateDistance(int n);
     void sendNeighborsTable();
     void handleNeighborsTable(GSTEBRoutingPacket* pkt);
     double calcTxEnergy(int kBits, double distance);
@@ -112,6 +117,8 @@ class GSTEBRouting: public VirtualRouting {
     void calculateRoutingTree();
     void broadcastRoutingTree();
     void handleRoutingTree(GSTEBRoutingPacket* pkt);
+    void sendDataPacket();
+    void handleDataPacket(GSTEBRoutingPacket* pkt);
 };
 
 #endif              //BYPASSROUTINGMODULE
