@@ -197,19 +197,529 @@ EXECUTE_ON_STARTUP(
     e->insert(SENSOR_DATA, "SENSOR_DATA");
 )
 
+SSCHAnnouncementInfo::SSCHAnnouncementInfo()
+{
+    this->chId = 0;
+}
+
+void __doPacking(omnetpp::cCommBuffer *b, const SSCHAnnouncementInfo& a)
+{
+    doParsimPacking(b,a.chId);
+}
+
+void __doUnpacking(omnetpp::cCommBuffer *b, SSCHAnnouncementInfo& a)
+{
+    doParsimUnpacking(b,a.chId);
+}
+
+class SSCHAnnouncementInfoDescriptor : public omnetpp::cClassDescriptor
+{
+  private:
+    mutable const char **propertynames;
+  public:
+    SSCHAnnouncementInfoDescriptor();
+    virtual ~SSCHAnnouncementInfoDescriptor();
+
+    virtual bool doesSupport(omnetpp::cObject *obj) const override;
+    virtual const char **getPropertyNames() const override;
+    virtual const char *getProperty(const char *propertyname) const override;
+    virtual int getFieldCount() const override;
+    virtual const char *getFieldName(int field) const override;
+    virtual int findField(const char *fieldName) const override;
+    virtual unsigned int getFieldTypeFlags(int field) const override;
+    virtual const char *getFieldTypeString(int field) const override;
+    virtual const char **getFieldPropertyNames(int field) const override;
+    virtual const char *getFieldProperty(int field, const char *propertyname) const override;
+    virtual int getFieldArraySize(void *object, int field) const override;
+
+    virtual const char *getFieldDynamicTypeString(void *object, int field, int i) const override;
+    virtual std::string getFieldValueAsString(void *object, int field, int i) const override;
+    virtual bool setFieldValueAsString(void *object, int field, int i, const char *value) const override;
+
+    virtual const char *getFieldStructName(int field) const override;
+    virtual void *getFieldStructValuePointer(void *object, int field, int i) const override;
+};
+
+Register_ClassDescriptor(SSCHAnnouncementInfoDescriptor)
+
+SSCHAnnouncementInfoDescriptor::SSCHAnnouncementInfoDescriptor() : omnetpp::cClassDescriptor("SSCHAnnouncementInfo", "")
+{
+    propertynames = nullptr;
+}
+
+SSCHAnnouncementInfoDescriptor::~SSCHAnnouncementInfoDescriptor()
+{
+    delete[] propertynames;
+}
+
+bool SSCHAnnouncementInfoDescriptor::doesSupport(omnetpp::cObject *obj) const
+{
+    return dynamic_cast<SSCHAnnouncementInfo *>(obj)!=nullptr;
+}
+
+const char **SSCHAnnouncementInfoDescriptor::getPropertyNames() const
+{
+    if (!propertynames) {
+        static const char *names[] = {  nullptr };
+        omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
+        const char **basenames = basedesc ? basedesc->getPropertyNames() : nullptr;
+        propertynames = mergeLists(basenames, names);
+    }
+    return propertynames;
+}
+
+const char *SSCHAnnouncementInfoDescriptor::getProperty(const char *propertyname) const
+{
+    omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
+    return basedesc ? basedesc->getProperty(propertyname) : nullptr;
+}
+
+int SSCHAnnouncementInfoDescriptor::getFieldCount() const
+{
+    omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
+    return basedesc ? 1+basedesc->getFieldCount() : 1;
+}
+
+unsigned int SSCHAnnouncementInfoDescriptor::getFieldTypeFlags(int field) const
+{
+    omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
+    if (basedesc) {
+        if (field < basedesc->getFieldCount())
+            return basedesc->getFieldTypeFlags(field);
+        field -= basedesc->getFieldCount();
+    }
+    static unsigned int fieldTypeFlags[] = {
+        FD_ISEDITABLE,
+    };
+    return (field>=0 && field<1) ? fieldTypeFlags[field] : 0;
+}
+
+const char *SSCHAnnouncementInfoDescriptor::getFieldName(int field) const
+{
+    omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
+    if (basedesc) {
+        if (field < basedesc->getFieldCount())
+            return basedesc->getFieldName(field);
+        field -= basedesc->getFieldCount();
+    }
+    static const char *fieldNames[] = {
+        "chId",
+    };
+    return (field>=0 && field<1) ? fieldNames[field] : nullptr;
+}
+
+int SSCHAnnouncementInfoDescriptor::findField(const char *fieldName) const
+{
+    omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
+    int base = basedesc ? basedesc->getFieldCount() : 0;
+    if (fieldName[0]=='c' && strcmp(fieldName, "chId")==0) return base+0;
+    return basedesc ? basedesc->findField(fieldName) : -1;
+}
+
+const char *SSCHAnnouncementInfoDescriptor::getFieldTypeString(int field) const
+{
+    omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
+    if (basedesc) {
+        if (field < basedesc->getFieldCount())
+            return basedesc->getFieldTypeString(field);
+        field -= basedesc->getFieldCount();
+    }
+    static const char *fieldTypeStrings[] = {
+        "int",
+    };
+    return (field>=0 && field<1) ? fieldTypeStrings[field] : nullptr;
+}
+
+const char **SSCHAnnouncementInfoDescriptor::getFieldPropertyNames(int field) const
+{
+    omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
+    if (basedesc) {
+        if (field < basedesc->getFieldCount())
+            return basedesc->getFieldPropertyNames(field);
+        field -= basedesc->getFieldCount();
+    }
+    switch (field) {
+        default: return nullptr;
+    }
+}
+
+const char *SSCHAnnouncementInfoDescriptor::getFieldProperty(int field, const char *propertyname) const
+{
+    omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
+    if (basedesc) {
+        if (field < basedesc->getFieldCount())
+            return basedesc->getFieldProperty(field, propertyname);
+        field -= basedesc->getFieldCount();
+    }
+    switch (field) {
+        default: return nullptr;
+    }
+}
+
+int SSCHAnnouncementInfoDescriptor::getFieldArraySize(void *object, int field) const
+{
+    omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
+    if (basedesc) {
+        if (field < basedesc->getFieldCount())
+            return basedesc->getFieldArraySize(object, field);
+        field -= basedesc->getFieldCount();
+    }
+    SSCHAnnouncementInfo *pp = (SSCHAnnouncementInfo *)object; (void)pp;
+    switch (field) {
+        default: return 0;
+    }
+}
+
+const char *SSCHAnnouncementInfoDescriptor::getFieldDynamicTypeString(void *object, int field, int i) const
+{
+    omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
+    if (basedesc) {
+        if (field < basedesc->getFieldCount())
+            return basedesc->getFieldDynamicTypeString(object,field,i);
+        field -= basedesc->getFieldCount();
+    }
+    SSCHAnnouncementInfo *pp = (SSCHAnnouncementInfo *)object; (void)pp;
+    switch (field) {
+        default: return nullptr;
+    }
+}
+
+std::string SSCHAnnouncementInfoDescriptor::getFieldValueAsString(void *object, int field, int i) const
+{
+    omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
+    if (basedesc) {
+        if (field < basedesc->getFieldCount())
+            return basedesc->getFieldValueAsString(object,field,i);
+        field -= basedesc->getFieldCount();
+    }
+    SSCHAnnouncementInfo *pp = (SSCHAnnouncementInfo *)object; (void)pp;
+    switch (field) {
+        case 0: return long2string(pp->chId);
+        default: return "";
+    }
+}
+
+bool SSCHAnnouncementInfoDescriptor::setFieldValueAsString(void *object, int field, int i, const char *value) const
+{
+    omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
+    if (basedesc) {
+        if (field < basedesc->getFieldCount())
+            return basedesc->setFieldValueAsString(object,field,i,value);
+        field -= basedesc->getFieldCount();
+    }
+    SSCHAnnouncementInfo *pp = (SSCHAnnouncementInfo *)object; (void)pp;
+    switch (field) {
+        case 0: pp->chId = string2long(value); return true;
+        default: return false;
+    }
+}
+
+const char *SSCHAnnouncementInfoDescriptor::getFieldStructName(int field) const
+{
+    omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
+    if (basedesc) {
+        if (field < basedesc->getFieldCount())
+            return basedesc->getFieldStructName(field);
+        field -= basedesc->getFieldCount();
+    }
+    switch (field) {
+        default: return nullptr;
+    };
+}
+
+void *SSCHAnnouncementInfoDescriptor::getFieldStructValuePointer(void *object, int field, int i) const
+{
+    omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
+    if (basedesc) {
+        if (field < basedesc->getFieldCount())
+            return basedesc->getFieldStructValuePointer(object, field, i);
+        field -= basedesc->getFieldCount();
+    }
+    SSCHAnnouncementInfo *pp = (SSCHAnnouncementInfo *)object; (void)pp;
+    switch (field) {
+        default: return nullptr;
+    }
+}
+
+SSCellHopAnnouncementInfo::SSCellHopAnnouncementInfo()
+{
+    this->nextCell = 0;
+    for (unsigned int i=0; i<1000; i++)
+        this->cellPath[i] = 0;
+}
+
+void __doPacking(omnetpp::cCommBuffer *b, const SSCellHopAnnouncementInfo& a)
+{
+    doParsimPacking(b,a.nextCell);
+    doParsimArrayPacking(b,a.cellPath,1000);
+}
+
+void __doUnpacking(omnetpp::cCommBuffer *b, SSCellHopAnnouncementInfo& a)
+{
+    doParsimUnpacking(b,a.nextCell);
+    doParsimArrayUnpacking(b,a.cellPath,1000);
+}
+
+class SSCellHopAnnouncementInfoDescriptor : public omnetpp::cClassDescriptor
+{
+  private:
+    mutable const char **propertynames;
+  public:
+    SSCellHopAnnouncementInfoDescriptor();
+    virtual ~SSCellHopAnnouncementInfoDescriptor();
+
+    virtual bool doesSupport(omnetpp::cObject *obj) const override;
+    virtual const char **getPropertyNames() const override;
+    virtual const char *getProperty(const char *propertyname) const override;
+    virtual int getFieldCount() const override;
+    virtual const char *getFieldName(int field) const override;
+    virtual int findField(const char *fieldName) const override;
+    virtual unsigned int getFieldTypeFlags(int field) const override;
+    virtual const char *getFieldTypeString(int field) const override;
+    virtual const char **getFieldPropertyNames(int field) const override;
+    virtual const char *getFieldProperty(int field, const char *propertyname) const override;
+    virtual int getFieldArraySize(void *object, int field) const override;
+
+    virtual const char *getFieldDynamicTypeString(void *object, int field, int i) const override;
+    virtual std::string getFieldValueAsString(void *object, int field, int i) const override;
+    virtual bool setFieldValueAsString(void *object, int field, int i, const char *value) const override;
+
+    virtual const char *getFieldStructName(int field) const override;
+    virtual void *getFieldStructValuePointer(void *object, int field, int i) const override;
+};
+
+Register_ClassDescriptor(SSCellHopAnnouncementInfoDescriptor)
+
+SSCellHopAnnouncementInfoDescriptor::SSCellHopAnnouncementInfoDescriptor() : omnetpp::cClassDescriptor("SSCellHopAnnouncementInfo", "")
+{
+    propertynames = nullptr;
+}
+
+SSCellHopAnnouncementInfoDescriptor::~SSCellHopAnnouncementInfoDescriptor()
+{
+    delete[] propertynames;
+}
+
+bool SSCellHopAnnouncementInfoDescriptor::doesSupport(omnetpp::cObject *obj) const
+{
+    return dynamic_cast<SSCellHopAnnouncementInfo *>(obj)!=nullptr;
+}
+
+const char **SSCellHopAnnouncementInfoDescriptor::getPropertyNames() const
+{
+    if (!propertynames) {
+        static const char *names[] = {  nullptr };
+        omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
+        const char **basenames = basedesc ? basedesc->getPropertyNames() : nullptr;
+        propertynames = mergeLists(basenames, names);
+    }
+    return propertynames;
+}
+
+const char *SSCellHopAnnouncementInfoDescriptor::getProperty(const char *propertyname) const
+{
+    omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
+    return basedesc ? basedesc->getProperty(propertyname) : nullptr;
+}
+
+int SSCellHopAnnouncementInfoDescriptor::getFieldCount() const
+{
+    omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
+    return basedesc ? 2+basedesc->getFieldCount() : 2;
+}
+
+unsigned int SSCellHopAnnouncementInfoDescriptor::getFieldTypeFlags(int field) const
+{
+    omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
+    if (basedesc) {
+        if (field < basedesc->getFieldCount())
+            return basedesc->getFieldTypeFlags(field);
+        field -= basedesc->getFieldCount();
+    }
+    static unsigned int fieldTypeFlags[] = {
+        FD_ISEDITABLE,
+        FD_ISARRAY | FD_ISEDITABLE,
+    };
+    return (field>=0 && field<2) ? fieldTypeFlags[field] : 0;
+}
+
+const char *SSCellHopAnnouncementInfoDescriptor::getFieldName(int field) const
+{
+    omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
+    if (basedesc) {
+        if (field < basedesc->getFieldCount())
+            return basedesc->getFieldName(field);
+        field -= basedesc->getFieldCount();
+    }
+    static const char *fieldNames[] = {
+        "nextCell",
+        "cellPath",
+    };
+    return (field>=0 && field<2) ? fieldNames[field] : nullptr;
+}
+
+int SSCellHopAnnouncementInfoDescriptor::findField(const char *fieldName) const
+{
+    omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
+    int base = basedesc ? basedesc->getFieldCount() : 0;
+    if (fieldName[0]=='n' && strcmp(fieldName, "nextCell")==0) return base+0;
+    if (fieldName[0]=='c' && strcmp(fieldName, "cellPath")==0) return base+1;
+    return basedesc ? basedesc->findField(fieldName) : -1;
+}
+
+const char *SSCellHopAnnouncementInfoDescriptor::getFieldTypeString(int field) const
+{
+    omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
+    if (basedesc) {
+        if (field < basedesc->getFieldCount())
+            return basedesc->getFieldTypeString(field);
+        field -= basedesc->getFieldCount();
+    }
+    static const char *fieldTypeStrings[] = {
+        "int",
+        "int",
+    };
+    return (field>=0 && field<2) ? fieldTypeStrings[field] : nullptr;
+}
+
+const char **SSCellHopAnnouncementInfoDescriptor::getFieldPropertyNames(int field) const
+{
+    omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
+    if (basedesc) {
+        if (field < basedesc->getFieldCount())
+            return basedesc->getFieldPropertyNames(field);
+        field -= basedesc->getFieldCount();
+    }
+    switch (field) {
+        default: return nullptr;
+    }
+}
+
+const char *SSCellHopAnnouncementInfoDescriptor::getFieldProperty(int field, const char *propertyname) const
+{
+    omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
+    if (basedesc) {
+        if (field < basedesc->getFieldCount())
+            return basedesc->getFieldProperty(field, propertyname);
+        field -= basedesc->getFieldCount();
+    }
+    switch (field) {
+        default: return nullptr;
+    }
+}
+
+int SSCellHopAnnouncementInfoDescriptor::getFieldArraySize(void *object, int field) const
+{
+    omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
+    if (basedesc) {
+        if (field < basedesc->getFieldCount())
+            return basedesc->getFieldArraySize(object, field);
+        field -= basedesc->getFieldCount();
+    }
+    SSCellHopAnnouncementInfo *pp = (SSCellHopAnnouncementInfo *)object; (void)pp;
+    switch (field) {
+        case 1: return 1000;
+        default: return 0;
+    }
+}
+
+const char *SSCellHopAnnouncementInfoDescriptor::getFieldDynamicTypeString(void *object, int field, int i) const
+{
+    omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
+    if (basedesc) {
+        if (field < basedesc->getFieldCount())
+            return basedesc->getFieldDynamicTypeString(object,field,i);
+        field -= basedesc->getFieldCount();
+    }
+    SSCellHopAnnouncementInfo *pp = (SSCellHopAnnouncementInfo *)object; (void)pp;
+    switch (field) {
+        default: return nullptr;
+    }
+}
+
+std::string SSCellHopAnnouncementInfoDescriptor::getFieldValueAsString(void *object, int field, int i) const
+{
+    omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
+    if (basedesc) {
+        if (field < basedesc->getFieldCount())
+            return basedesc->getFieldValueAsString(object,field,i);
+        field -= basedesc->getFieldCount();
+    }
+    SSCellHopAnnouncementInfo *pp = (SSCellHopAnnouncementInfo *)object; (void)pp;
+    switch (field) {
+        case 0: return long2string(pp->nextCell);
+        case 1: if (i>=1000) return "";
+                return long2string(pp->cellPath[i]);
+        default: return "";
+    }
+}
+
+bool SSCellHopAnnouncementInfoDescriptor::setFieldValueAsString(void *object, int field, int i, const char *value) const
+{
+    omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
+    if (basedesc) {
+        if (field < basedesc->getFieldCount())
+            return basedesc->setFieldValueAsString(object,field,i,value);
+        field -= basedesc->getFieldCount();
+    }
+    SSCellHopAnnouncementInfo *pp = (SSCellHopAnnouncementInfo *)object; (void)pp;
+    switch (field) {
+        case 0: pp->nextCell = string2long(value); return true;
+        case 1: if (i>=1000) return false;
+                pp->cellPath[i] = string2long(value); return true;
+        default: return false;
+    }
+}
+
+const char *SSCellHopAnnouncementInfoDescriptor::getFieldStructName(int field) const
+{
+    omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
+    if (basedesc) {
+        if (field < basedesc->getFieldCount())
+            return basedesc->getFieldStructName(field);
+        field -= basedesc->getFieldCount();
+    }
+    switch (field) {
+        default: return nullptr;
+    };
+}
+
+void *SSCellHopAnnouncementInfoDescriptor::getFieldStructValuePointer(void *object, int field, int i) const
+{
+    omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
+    if (basedesc) {
+        if (field < basedesc->getFieldCount())
+            return basedesc->getFieldStructValuePointer(object, field, i);
+        field -= basedesc->getFieldCount();
+    }
+    SSCellHopAnnouncementInfo *pp = (SSCellHopAnnouncementInfo *)object; (void)pp;
+    switch (field) {
+        default: return nullptr;
+    }
+}
+
 SSSensorInfo::SSSensorInfo()
 {
+    this->destinationCH = 0;
     this->dataId = 0;
+    this->sensorId = 0;
+    this->hopCount = 0;
 }
 
 void __doPacking(omnetpp::cCommBuffer *b, const SSSensorInfo& a)
 {
+    doParsimPacking(b,a.destinationCH);
     doParsimPacking(b,a.dataId);
+    doParsimPacking(b,a.sensorId);
+    doParsimPacking(b,a.hopCount);
 }
 
 void __doUnpacking(omnetpp::cCommBuffer *b, SSSensorInfo& a)
 {
+    doParsimUnpacking(b,a.destinationCH);
     doParsimUnpacking(b,a.dataId);
+    doParsimUnpacking(b,a.sensorId);
+    doParsimUnpacking(b,a.hopCount);
 }
 
 class SSSensorInfoDescriptor : public omnetpp::cClassDescriptor
@@ -277,7 +787,7 @@ const char *SSSensorInfoDescriptor::getProperty(const char *propertyname) const
 int SSSensorInfoDescriptor::getFieldCount() const
 {
     omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
-    return basedesc ? 1+basedesc->getFieldCount() : 1;
+    return basedesc ? 4+basedesc->getFieldCount() : 4;
 }
 
 unsigned int SSSensorInfoDescriptor::getFieldTypeFlags(int field) const
@@ -290,8 +800,11 @@ unsigned int SSSensorInfoDescriptor::getFieldTypeFlags(int field) const
     }
     static unsigned int fieldTypeFlags[] = {
         FD_ISEDITABLE,
+        FD_ISEDITABLE,
+        FD_ISEDITABLE,
+        FD_ISEDITABLE,
     };
-    return (field>=0 && field<1) ? fieldTypeFlags[field] : 0;
+    return (field>=0 && field<4) ? fieldTypeFlags[field] : 0;
 }
 
 const char *SSSensorInfoDescriptor::getFieldName(int field) const
@@ -303,16 +816,22 @@ const char *SSSensorInfoDescriptor::getFieldName(int field) const
         field -= basedesc->getFieldCount();
     }
     static const char *fieldNames[] = {
+        "destinationCH",
         "dataId",
+        "sensorId",
+        "hopCount",
     };
-    return (field>=0 && field<1) ? fieldNames[field] : nullptr;
+    return (field>=0 && field<4) ? fieldNames[field] : nullptr;
 }
 
 int SSSensorInfoDescriptor::findField(const char *fieldName) const
 {
     omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
     int base = basedesc ? basedesc->getFieldCount() : 0;
-    if (fieldName[0]=='d' && strcmp(fieldName, "dataId")==0) return base+0;
+    if (fieldName[0]=='d' && strcmp(fieldName, "destinationCH")==0) return base+0;
+    if (fieldName[0]=='d' && strcmp(fieldName, "dataId")==0) return base+1;
+    if (fieldName[0]=='s' && strcmp(fieldName, "sensorId")==0) return base+2;
+    if (fieldName[0]=='h' && strcmp(fieldName, "hopCount")==0) return base+3;
     return basedesc ? basedesc->findField(fieldName) : -1;
 }
 
@@ -326,8 +845,11 @@ const char *SSSensorInfoDescriptor::getFieldTypeString(int field) const
     }
     static const char *fieldTypeStrings[] = {
         "int",
+        "int",
+        "int",
+        "int",
     };
-    return (field>=0 && field<1) ? fieldTypeStrings[field] : nullptr;
+    return (field>=0 && field<4) ? fieldTypeStrings[field] : nullptr;
 }
 
 const char **SSSensorInfoDescriptor::getFieldPropertyNames(int field) const
@@ -394,7 +916,10 @@ std::string SSSensorInfoDescriptor::getFieldValueAsString(void *object, int fiel
     }
     SSSensorInfo *pp = (SSSensorInfo *)object; (void)pp;
     switch (field) {
-        case 0: return long2string(pp->dataId);
+        case 0: return long2string(pp->destinationCH);
+        case 1: return long2string(pp->dataId);
+        case 2: return long2string(pp->sensorId);
+        case 3: return long2string(pp->hopCount);
         default: return "";
     }
 }
@@ -409,7 +934,10 @@ bool SSSensorInfoDescriptor::setFieldValueAsString(void *object, int field, int 
     }
     SSSensorInfo *pp = (SSSensorInfo *)object; (void)pp;
     switch (field) {
-        case 0: pp->dataId = string2long(value); return true;
+        case 0: pp->destinationCH = string2long(value); return true;
+        case 1: pp->dataId = string2long(value); return true;
+        case 2: pp->sensorId = string2long(value); return true;
+        case 3: pp->hopCount = string2long(value); return true;
         default: return false;
     }
 }
@@ -446,6 +974,18 @@ Register_Class(SSCellularRoutingPacket)
 SSCellularRoutingPacket::SSCellularRoutingPacket(const char *name, short kind) : ::RoutingPacket(name,kind)
 {
     this->packetType = 0;
+    this->clusterHead = 0;
+    this->cellSent = 0;
+    this->cellNext = 0;
+    this->cellNextNext = 0;
+    this->cellSource = 0;
+    this->cellDestination = 0;
+    this->cellHopCount = 0;
+    for (unsigned int i=0; i<1000; i++)
+        this->cellPath[i] = 0;
+    for (unsigned int i=0; i<1000; i++)
+        this->cellPathToDestination[i] = 0;
+    this->ttl = 0;
 }
 
 SSCellularRoutingPacket::SSCellularRoutingPacket(const SSCellularRoutingPacket& other) : ::RoutingPacket(other)
@@ -468,21 +1008,59 @@ SSCellularRoutingPacket& SSCellularRoutingPacket::operator=(const SSCellularRout
 void SSCellularRoutingPacket::copy(const SSCellularRoutingPacket& other)
 {
     this->packetType = other.packetType;
+    this->clusterHead = other.clusterHead;
+    this->cellSent = other.cellSent;
+    this->cellNext = other.cellNext;
+    this->cellNextNext = other.cellNextNext;
+    this->cellSource = other.cellSource;
+    this->cellDestination = other.cellDestination;
+    this->cellHopCount = other.cellHopCount;
+    for (unsigned int i=0; i<1000; i++)
+        this->cellPath[i] = other.cellPath[i];
+    for (unsigned int i=0; i<1000; i++)
+        this->cellPathToDestination[i] = other.cellPathToDestination[i];
+    this->ttl = other.ttl;
     this->sensorData = other.sensorData;
+    this->cHAnnouncementData = other.cHAnnouncementData;
+    this->sSCellHopAnnouncementData = other.sSCellHopAnnouncementData;
 }
 
 void SSCellularRoutingPacket::parsimPack(omnetpp::cCommBuffer *b) const
 {
     ::RoutingPacket::parsimPack(b);
     doParsimPacking(b,this->packetType);
+    doParsimPacking(b,this->clusterHead);
+    doParsimPacking(b,this->cellSent);
+    doParsimPacking(b,this->cellNext);
+    doParsimPacking(b,this->cellNextNext);
+    doParsimPacking(b,this->cellSource);
+    doParsimPacking(b,this->cellDestination);
+    doParsimPacking(b,this->cellHopCount);
+    doParsimArrayPacking(b,this->cellPath,1000);
+    doParsimArrayPacking(b,this->cellPathToDestination,1000);
+    doParsimPacking(b,this->ttl);
     doParsimPacking(b,this->sensorData);
+    doParsimPacking(b,this->cHAnnouncementData);
+    doParsimPacking(b,this->sSCellHopAnnouncementData);
 }
 
 void SSCellularRoutingPacket::parsimUnpack(omnetpp::cCommBuffer *b)
 {
     ::RoutingPacket::parsimUnpack(b);
     doParsimUnpacking(b,this->packetType);
+    doParsimUnpacking(b,this->clusterHead);
+    doParsimUnpacking(b,this->cellSent);
+    doParsimUnpacking(b,this->cellNext);
+    doParsimUnpacking(b,this->cellNextNext);
+    doParsimUnpacking(b,this->cellSource);
+    doParsimUnpacking(b,this->cellDestination);
+    doParsimUnpacking(b,this->cellHopCount);
+    doParsimArrayUnpacking(b,this->cellPath,1000);
+    doParsimArrayUnpacking(b,this->cellPathToDestination,1000);
+    doParsimUnpacking(b,this->ttl);
     doParsimUnpacking(b,this->sensorData);
+    doParsimUnpacking(b,this->cHAnnouncementData);
+    doParsimUnpacking(b,this->sSCellHopAnnouncementData);
 }
 
 int SSCellularRoutingPacket::getPacketType() const
@@ -495,6 +1073,120 @@ void SSCellularRoutingPacket::setPacketType(int packetType)
     this->packetType = packetType;
 }
 
+int SSCellularRoutingPacket::getClusterHead() const
+{
+    return this->clusterHead;
+}
+
+void SSCellularRoutingPacket::setClusterHead(int clusterHead)
+{
+    this->clusterHead = clusterHead;
+}
+
+int SSCellularRoutingPacket::getCellSent() const
+{
+    return this->cellSent;
+}
+
+void SSCellularRoutingPacket::setCellSent(int cellSent)
+{
+    this->cellSent = cellSent;
+}
+
+int SSCellularRoutingPacket::getCellNext() const
+{
+    return this->cellNext;
+}
+
+void SSCellularRoutingPacket::setCellNext(int cellNext)
+{
+    this->cellNext = cellNext;
+}
+
+int SSCellularRoutingPacket::getCellNextNext() const
+{
+    return this->cellNextNext;
+}
+
+void SSCellularRoutingPacket::setCellNextNext(int cellNextNext)
+{
+    this->cellNextNext = cellNextNext;
+}
+
+int SSCellularRoutingPacket::getCellSource() const
+{
+    return this->cellSource;
+}
+
+void SSCellularRoutingPacket::setCellSource(int cellSource)
+{
+    this->cellSource = cellSource;
+}
+
+int SSCellularRoutingPacket::getCellDestination() const
+{
+    return this->cellDestination;
+}
+
+void SSCellularRoutingPacket::setCellDestination(int cellDestination)
+{
+    this->cellDestination = cellDestination;
+}
+
+int SSCellularRoutingPacket::getCellHopCount() const
+{
+    return this->cellHopCount;
+}
+
+void SSCellularRoutingPacket::setCellHopCount(int cellHopCount)
+{
+    this->cellHopCount = cellHopCount;
+}
+
+unsigned int SSCellularRoutingPacket::getCellPathArraySize() const
+{
+    return 1000;
+}
+
+int SSCellularRoutingPacket::getCellPath(unsigned int k) const
+{
+    if (k>=1000) throw omnetpp::cRuntimeError("Array of size 1000 indexed by %lu", (unsigned long)k);
+    return this->cellPath[k];
+}
+
+void SSCellularRoutingPacket::setCellPath(unsigned int k, int cellPath)
+{
+    if (k>=1000) throw omnetpp::cRuntimeError("Array of size 1000 indexed by %lu", (unsigned long)k);
+    this->cellPath[k] = cellPath;
+}
+
+unsigned int SSCellularRoutingPacket::getCellPathToDestinationArraySize() const
+{
+    return 1000;
+}
+
+int SSCellularRoutingPacket::getCellPathToDestination(unsigned int k) const
+{
+    if (k>=1000) throw omnetpp::cRuntimeError("Array of size 1000 indexed by %lu", (unsigned long)k);
+    return this->cellPathToDestination[k];
+}
+
+void SSCellularRoutingPacket::setCellPathToDestination(unsigned int k, int cellPathToDestination)
+{
+    if (k>=1000) throw omnetpp::cRuntimeError("Array of size 1000 indexed by %lu", (unsigned long)k);
+    this->cellPathToDestination[k] = cellPathToDestination;
+}
+
+int SSCellularRoutingPacket::getTtl() const
+{
+    return this->ttl;
+}
+
+void SSCellularRoutingPacket::setTtl(int ttl)
+{
+    this->ttl = ttl;
+}
+
 SSSensorInfo& SSCellularRoutingPacket::getSensorData()
 {
     return this->sensorData;
@@ -503,6 +1195,26 @@ SSSensorInfo& SSCellularRoutingPacket::getSensorData()
 void SSCellularRoutingPacket::setSensorData(const SSSensorInfo& sensorData)
 {
     this->sensorData = sensorData;
+}
+
+SSCHAnnouncementInfo& SSCellularRoutingPacket::getCHAnnouncementData()
+{
+    return this->cHAnnouncementData;
+}
+
+void SSCellularRoutingPacket::setCHAnnouncementData(const SSCHAnnouncementInfo& cHAnnouncementData)
+{
+    this->cHAnnouncementData = cHAnnouncementData;
+}
+
+SSCellHopAnnouncementInfo& SSCellularRoutingPacket::getSSCellHopAnnouncementData()
+{
+    return this->sSCellHopAnnouncementData;
+}
+
+void SSCellularRoutingPacket::setSSCellHopAnnouncementData(const SSCellHopAnnouncementInfo& sSCellHopAnnouncementData)
+{
+    this->sSCellHopAnnouncementData = sSCellHopAnnouncementData;
 }
 
 class SSCellularRoutingPacketDescriptor : public omnetpp::cClassDescriptor
@@ -570,7 +1282,7 @@ const char *SSCellularRoutingPacketDescriptor::getProperty(const char *propertyn
 int SSCellularRoutingPacketDescriptor::getFieldCount() const
 {
     omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
-    return basedesc ? 2+basedesc->getFieldCount() : 2;
+    return basedesc ? 14+basedesc->getFieldCount() : 14;
 }
 
 unsigned int SSCellularRoutingPacketDescriptor::getFieldTypeFlags(int field) const
@@ -583,9 +1295,21 @@ unsigned int SSCellularRoutingPacketDescriptor::getFieldTypeFlags(int field) con
     }
     static unsigned int fieldTypeFlags[] = {
         FD_ISEDITABLE,
+        FD_ISEDITABLE,
+        FD_ISEDITABLE,
+        FD_ISEDITABLE,
+        FD_ISEDITABLE,
+        FD_ISEDITABLE,
+        FD_ISEDITABLE,
+        FD_ISEDITABLE,
+        FD_ISARRAY | FD_ISEDITABLE,
+        FD_ISARRAY | FD_ISEDITABLE,
+        FD_ISEDITABLE,
+        FD_ISCOMPOUND,
+        FD_ISCOMPOUND,
         FD_ISCOMPOUND,
     };
-    return (field>=0 && field<2) ? fieldTypeFlags[field] : 0;
+    return (field>=0 && field<14) ? fieldTypeFlags[field] : 0;
 }
 
 const char *SSCellularRoutingPacketDescriptor::getFieldName(int field) const
@@ -598,9 +1322,21 @@ const char *SSCellularRoutingPacketDescriptor::getFieldName(int field) const
     }
     static const char *fieldNames[] = {
         "packetType",
+        "clusterHead",
+        "cellSent",
+        "cellNext",
+        "cellNextNext",
+        "cellSource",
+        "cellDestination",
+        "cellHopCount",
+        "cellPath",
+        "cellPathToDestination",
+        "ttl",
         "sensorData",
+        "cHAnnouncementData",
+        "sSCellHopAnnouncementData",
     };
-    return (field>=0 && field<2) ? fieldNames[field] : nullptr;
+    return (field>=0 && field<14) ? fieldNames[field] : nullptr;
 }
 
 int SSCellularRoutingPacketDescriptor::findField(const char *fieldName) const
@@ -608,7 +1344,19 @@ int SSCellularRoutingPacketDescriptor::findField(const char *fieldName) const
     omnetpp::cClassDescriptor *basedesc = getBaseClassDescriptor();
     int base = basedesc ? basedesc->getFieldCount() : 0;
     if (fieldName[0]=='p' && strcmp(fieldName, "packetType")==0) return base+0;
-    if (fieldName[0]=='s' && strcmp(fieldName, "sensorData")==0) return base+1;
+    if (fieldName[0]=='c' && strcmp(fieldName, "clusterHead")==0) return base+1;
+    if (fieldName[0]=='c' && strcmp(fieldName, "cellSent")==0) return base+2;
+    if (fieldName[0]=='c' && strcmp(fieldName, "cellNext")==0) return base+3;
+    if (fieldName[0]=='c' && strcmp(fieldName, "cellNextNext")==0) return base+4;
+    if (fieldName[0]=='c' && strcmp(fieldName, "cellSource")==0) return base+5;
+    if (fieldName[0]=='c' && strcmp(fieldName, "cellDestination")==0) return base+6;
+    if (fieldName[0]=='c' && strcmp(fieldName, "cellHopCount")==0) return base+7;
+    if (fieldName[0]=='c' && strcmp(fieldName, "cellPath")==0) return base+8;
+    if (fieldName[0]=='c' && strcmp(fieldName, "cellPathToDestination")==0) return base+9;
+    if (fieldName[0]=='t' && strcmp(fieldName, "ttl")==0) return base+10;
+    if (fieldName[0]=='s' && strcmp(fieldName, "sensorData")==0) return base+11;
+    if (fieldName[0]=='c' && strcmp(fieldName, "cHAnnouncementData")==0) return base+12;
+    if (fieldName[0]=='s' && strcmp(fieldName, "sSCellHopAnnouncementData")==0) return base+13;
     return basedesc ? basedesc->findField(fieldName) : -1;
 }
 
@@ -622,9 +1370,21 @@ const char *SSCellularRoutingPacketDescriptor::getFieldTypeString(int field) con
     }
     static const char *fieldTypeStrings[] = {
         "int",
+        "int",
+        "int",
+        "int",
+        "int",
+        "int",
+        "int",
+        "int",
+        "int",
+        "int",
+        "int",
         "SSSensorInfo",
+        "SSCHAnnouncementInfo",
+        "SSCellHopAnnouncementInfo",
     };
-    return (field>=0 && field<2) ? fieldTypeStrings[field] : nullptr;
+    return (field>=0 && field<14) ? fieldTypeStrings[field] : nullptr;
 }
 
 const char **SSCellularRoutingPacketDescriptor::getFieldPropertyNames(int field) const
@@ -670,6 +1430,8 @@ int SSCellularRoutingPacketDescriptor::getFieldArraySize(void *object, int field
     }
     SSCellularRoutingPacket *pp = (SSCellularRoutingPacket *)object; (void)pp;
     switch (field) {
+        case 8: return 1000;
+        case 9: return 1000;
         default: return 0;
     }
 }
@@ -699,7 +1461,19 @@ std::string SSCellularRoutingPacketDescriptor::getFieldValueAsString(void *objec
     SSCellularRoutingPacket *pp = (SSCellularRoutingPacket *)object; (void)pp;
     switch (field) {
         case 0: return enum2string(pp->getPacketType(), "SSCellularRoutingPacketType");
-        case 1: {std::stringstream out; out << pp->getSensorData(); return out.str();}
+        case 1: return long2string(pp->getClusterHead());
+        case 2: return long2string(pp->getCellSent());
+        case 3: return long2string(pp->getCellNext());
+        case 4: return long2string(pp->getCellNextNext());
+        case 5: return long2string(pp->getCellSource());
+        case 6: return long2string(pp->getCellDestination());
+        case 7: return long2string(pp->getCellHopCount());
+        case 8: return long2string(pp->getCellPath(i));
+        case 9: return long2string(pp->getCellPathToDestination(i));
+        case 10: return long2string(pp->getTtl());
+        case 11: {std::stringstream out; out << pp->getSensorData(); return out.str();}
+        case 12: {std::stringstream out; out << pp->getCHAnnouncementData(); return out.str();}
+        case 13: {std::stringstream out; out << pp->getSSCellHopAnnouncementData(); return out.str();}
         default: return "";
     }
 }
@@ -715,6 +1489,16 @@ bool SSCellularRoutingPacketDescriptor::setFieldValueAsString(void *object, int 
     SSCellularRoutingPacket *pp = (SSCellularRoutingPacket *)object; (void)pp;
     switch (field) {
         case 0: pp->setPacketType((SSCellularRoutingPacketType)string2enum(value, "SSCellularRoutingPacketType")); return true;
+        case 1: pp->setClusterHead(string2long(value)); return true;
+        case 2: pp->setCellSent(string2long(value)); return true;
+        case 3: pp->setCellNext(string2long(value)); return true;
+        case 4: pp->setCellNextNext(string2long(value)); return true;
+        case 5: pp->setCellSource(string2long(value)); return true;
+        case 6: pp->setCellDestination(string2long(value)); return true;
+        case 7: pp->setCellHopCount(string2long(value)); return true;
+        case 8: pp->setCellPath(i,string2long(value)); return true;
+        case 9: pp->setCellPathToDestination(i,string2long(value)); return true;
+        case 10: pp->setTtl(string2long(value)); return true;
         default: return false;
     }
 }
@@ -728,7 +1512,9 @@ const char *SSCellularRoutingPacketDescriptor::getFieldStructName(int field) con
         field -= basedesc->getFieldCount();
     }
     switch (field) {
-        case 1: return omnetpp::opp_typename(typeid(SSSensorInfo));
+        case 11: return omnetpp::opp_typename(typeid(SSSensorInfo));
+        case 12: return omnetpp::opp_typename(typeid(SSCHAnnouncementInfo));
+        case 13: return omnetpp::opp_typename(typeid(SSCellHopAnnouncementInfo));
         default: return nullptr;
     };
 }
@@ -743,7 +1529,9 @@ void *SSCellularRoutingPacketDescriptor::getFieldStructValuePointer(void *object
     }
     SSCellularRoutingPacket *pp = (SSCellularRoutingPacket *)object; (void)pp;
     switch (field) {
-        case 1: return (void *)(&pp->getSensorData()); break;
+        case 11: return (void *)(&pp->getSensorData()); break;
+        case 12: return (void *)(&pp->getCHAnnouncementData()); break;
+        case 13: return (void *)(&pp->getSSCellHopAnnouncementData()); break;
         default: return nullptr;
     }
 }

@@ -3,6 +3,7 @@
 
 #include "node/communication/routing/VirtualRouting.h"
 #include "node/communication/routing/ssCellularRouting/SSCellularRouting_m.h"
+#include <algorithm>
 
 using namespace std;
 
@@ -12,12 +13,16 @@ struct Point {
 };
 
 enum SSCellularRoutingTimers {
-    PRECALCULATE_TIMERS = 0,
+    PRECALCULATE_TIMERS =1,
+    CH_ROTATION_SSCR,
     CH_ADVERTISMENT_TIMER,
     SEND_ANNOUNCEMENT_QUEUE,
+    ANNOUNCE_CELL_HOP_TIMER,
+    COLOR_SCHEDULING_TIMER,
     SENSING_STATE,
     SEND_CELL_PACKET,
 	RECONFIGURATION_TIMER,
+	OVERHEARING_TIMER,
     CLEANUP,
 };
 
@@ -41,13 +46,39 @@ struct SSCRNodeData {
     int color;
     int clId;
     int chId;
+    int numSent;
+    int numRecv;
+    double energyConsumtion;
+    double el;
     vector<int> neighbors;
 };
+
+struct SSCRPacket {
+    int nextHop;
+    int sensorId;
+    int dataId;
+    int desCH;
+    int hopCount;
+    int cellSource;
+    int cellSent;
+    int cellDes;
+    int ttl;
+    int source;
+    vector<int> cellPath;
+};
 static bool g_isPrecalculated = false;
+static bool g_isCHRotation = true;
 static vector<SSCRNodeData> g_ssNodesDataList;
 static vector<SSCRCellData> g_ssCellDataList;
 static map <int, map<int, int>> g_ssRoutingTable; // <node, <next-cell, next-hop>>
 
+static int g_ssSensorData[1000]; // < data>
+static int g_ssSensorDataArr[1000]; // < data>
+static vector<int> g_ssSensorDataSent;
+static vector<int> g_ssSensorDataReceived;
+static int g_ssSensorDataSentCount = 0;
+static int g_ssSensorDataReceivedCount = 0;
+static map<int, vector<SSCRPacket>> g_ssSensorDataOverheared;
 
 class SSCellularRouting: public VirtualRouting {
 private:
@@ -55,11 +86,12 @@ private:
 	int grid_offset = 100;
 	double cellRadius = 80.0;
 	int sensingDuration = 100;
-	int reconfigurationTime = 100;
+	int reconfigurationTime = 10000;
 	double colorTimeSlot = 100.0;
-	int sensorDataDub = 100;
+	int sensorDataDub = 1;
 	int numberOfNodes;
     int maxHopCount;
+    double initEnergy = 2;
 
 	bool isCH;
 	bool isCL;
@@ -75,7 +107,8 @@ private:
 	int neighborCells[7] = {-1, -1, -1, -1, -1, -1};
 	int cellGateways[6] = {-1, -1, -1, -1, -1, -1};
 	int neighborCellGateways[6] = {-1, -1, -1, -1, -1, -1};
-
+	queue<pair<SSCellularRoutingPacket*, int>> announcementQueue;
+	queue<int> boardcastAnnouncementQueue;
 	struct ComparePacketsPriority {
 		bool operator()(const pair<SSCellularRoutingPacket*, int>& a, const pair<SSCellularRoutingPacket*, int>& b) {
 			return a.first->getSensorData().dataId < b.first->getSensorData().dataId;
@@ -83,10 +116,12 @@ private:
 	};
 	priority_queue<pair<SSCellularRoutingPacket*, int>, vector<pair<SSCellularRoutingPacket*, int>>, ComparePacketsPriority> cellPacketQueue;
 	
-	int myCellPathToCH[100] = {-1};
+	int myCellPathToCH[1000] = {-1};
 
 	int levelInCell = -1;
 
+	int ssSentHop = -1;
+	vector<SSCRPacket> ssSentPacket;
 protected:
 	void startup() override;
     void timerFiredCallback(int) override;
@@ -95,9 +130,10 @@ protected:
     double calculateDistance(double x1, double y1, double x2, double y2);
 
     void PrecalculateSimulationResults();
-	SSCRNodeData getNodeData(int nodeId);
-    SSCRCellData getCellData(int cellId);
+	SSCRNodeData* getNodeData(int nodeId);
+    SSCRCellData* getCellData(int cellId);
     bool isNodeInList(int nodeId, const vector<int>& nodeList);
+    void rotationCH();
 
     Point calculateCellCenter(int cell_id);
     void calculateCellInfo();
@@ -130,7 +166,9 @@ protected:
     void handleCellHopAnnouncementPacket(SSCellularRoutingPacket* pkt);
     void sendSensorDataPacket();
     void handleSensorDataPacket(SSCellularRoutingPacket* pkt);
-    double calculateConsumption(int desNode);
+    double calculateConsumption(int desNode, int type);
+    void savePacketCopy(SSCellularRoutingPacket* pkt, int des);
+    void overhearingPacket();
 };
 
 #endif		

@@ -28,11 +28,14 @@ struct SSCHAnnouncementInfo{
 
 struct SSCellHopAnnouncementInfo{
     int nextCell;
-    int cellPath[100];
+    int cellPath[1000];
 };
 
 struct SSSensorInfo{
+    int destinationCH;
     int dataId;
+    int sensorId;
+    int hopCount;
 }
 
 packet SSCellularRoutingPacket extends RoutingPacket {
@@ -44,11 +47,12 @@ packet SSCellularRoutingPacket extends RoutingPacket {
     int cellSource;
     int cellDestination;
     int cellHopCount;
-    int cellPath[100];
-    int cellPathToDestination[100];
+    int cellPath[1000];
+    int cellPathToDestination[1000];
     int ttl;
     
     SSSensorInfo sensorData;
     SSCHAnnouncementInfo cHAnnouncementData;
+    SSCellHopAnnouncementInfo sSCellHopAnnouncementData;
 }
 

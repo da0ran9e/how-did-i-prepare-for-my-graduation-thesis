@@ -18,11 +18,6 @@ void SSCellularRouting::startup()
     isCH = par("isCH");
     maxHopCount = numberOfNodes; 
 
-    if (isCH) {
-        myCHId = self;
-        if (traceMode == 0) trace() << "#CH " << self;
-    }
-
     SSCRNodeData nodeData;
     nodeData.id = self;
     nodeData.x = myX;
@@ -35,6 +30,10 @@ void SSCellularRouting::startup()
     nodeData.color = myColor;
     nodeData.clId = myCLId;
     nodeData.chId = myCHId;
+    nodeData.numSent = 0;
+    nodeData.numRecv = 0;
+    nodeData.energyConsumtion = 0.0;
+    nodeData.el = 100;
     if (traceMode == 0) trace() << "#CELL_COLOR " << self << ": " << myColor;
     g_ssNodesDataList.push_back(nodeData);
         if (!g_isPrecalculated){
@@ -42,7 +41,7 @@ void SSCellularRouting::startup()
             setTimer(PRECALCULATE_TIMERS, 100);
         }
 
-    setTimer(RECONFIGURATION_TIMER, 0);
+    setTimer(RECONFIGURATION_TIMER, 200);
 }
 
 void SSCellularRouting::fromApplicationLayer(cPacket * pkt, const char *destination)
@@ -58,23 +57,28 @@ void SSCellularRouting::fromMacLayer(cPacket * pkt, int srcMacAddress, double rs
 {
     SSCellularRoutingPacket *netPacket = dynamic_cast<SSCellularRoutingPacket*>(pkt);
     if (!netPacket) {
-        trace() << "SSCellularRouting::fromMacLayer() - Error: not a SSCellularRouting packet!";
-        delete pkt;
         return;
     }
+
+    SSCRNodeData* rNode = getNodeData(self);
+    rNode->numRecv++;
+    rNode->energyConsumtion+=calculateConsumption(srcMacAddress, 0);
 
     switch (netPacket->getPacketType()) {
         case CH_ANNOUNCEMENT_PACKET:
             handleCHAnnouncementPacket(netPacket);
             break;
 
+        case ANNOUNCE_CELL_HOP:
+            handleCellHopAnnouncementPacket(netPacket);
+            break;
+
         case SENSOR_DATA:
-            //handleSensorDataPacket(netPacket, srcMacAddress);
+            handleSensorDataPacket(netPacket);
             break;
 
         default:
             trace() << "SSCellularRouting::fromMacLayer() - Error: unknown packet type!";
-            delete netPacket;
             break;
     }
 }
@@ -87,45 +91,67 @@ void SSCellularRouting::timerFiredCallback(int index)
             break;
 
         case CH_ADVERTISMENT_TIMER:
+            g_isCHRotation = false;
             sendCHAnnouncement();
             break;
-
+        case SEND_ANNOUNCEMENT_QUEUE:
+            sendAnnouncementQueue();
+            setTimer(SEND_ANNOUNCEMENT_QUEUE, uniform(0, 10));
+            break;
         case SEND_CELL_PACKET:
-            //sendCellPacket();
-            //setTimer(SEND_CELL_PACKET, uniform(0, 1));
+            sendCellPacket();
+            setTimer(SEND_CELL_PACKET, uniform(0, 1));
+            break;
+        case ANNOUNCE_CELL_HOP_TIMER:
+            sendCellHopAnnouncementPacket();
             break;
 
         case SENSING_STATE:
-            //sendSensorDataPacket();
+            sendSensorDataPacket();
             //setTimer(SENSING_STATE, 3000); //uniform(9000,10000));
             break;
 
         case RECONFIGURATION_TIMER:
-            // cancelTimer(SENSING_STATE);
-            // rotationCH();
-            // if (g_lifetime > 0) {
-            //     if (myCHId == self) {
-            //         myRole = NORMAL_NODE;
-            //     }
-            //     myCHId = -1;
-            //     if (self == g_newCH[g_lifetime][0] || self == g_newCH[g_lifetime][1] || self == g_newCH[g_lifetime][2]) {
-            //         myCHId = self;
-            //         if (traceMode == 0) trace() << "#CH " << self;
-            //     }
-            // }
-            if (getNodeData(self).isCL) {
+            cancelTimer(SENSING_STATE);
+            for (int i = 0; i < maxHopCount; i++) {
+                myCellPathToCH[i] = -1;
+            }
+            myCLId = getCellData(myCellId)->clId;
+            myCHId = -1;
+            if (myCLId == self) {
                 isCL = true;
                 myCLId = self;
-                trace() << "#CL " << self;
-            } 
-            myCLId = getCellData(myCLId).clId;
-            // setTimer(STATE_1, state1Time);
-            setTimer(CH_ADVERTISMENT_TIMER, 200);
-            //setTimer(SENSING_STATE, uniform(1000, 1000 + 100));
-            // setTimer(RECONFIGURATION_TIMER, reconfigurationTime);
-            break;
+                if (traceMode == 0) trace() << "#CELL_LEADER " << myCellId << ": " << self;
+                for (int i=0; i<6; i++){
+                    neighborCells[i] = getCellData(myCellId)->neighbors[i];
+                }
+            }
+            ssSentPacket.clear();
 
+            isCH = false;
+            setTimer(CH_ROTATION_SSCR, 200);
+            setTimer(SENSING_STATE, uniform(1000, 1000 + 100));
+            setTimer(OVERHEARING_TIMER, reconfigurationTime-2000);
+            setTimer(RECONFIGURATION_TIMER, reconfigurationTime);
+            break;
+        case CH_ROTATION_SSCR:
+            if (!g_isCHRotation) {
+                rotationCH();
+                g_ssSensorDataOverheared.clear();
+            }
+            if (isCH || getNodeData(self)->isCH) {
+                isCH = true;
+                myCHId = self;
+                if (traceMode == 0 || traceMode == 1) trace() << "#CH " << self;
+                setTimer(CH_ADVERTISMENT_TIMER, 200);
+            }
+
+            break;
+        case OVERHEARING_TIMER:
+            overhearingPacket();
+            break;
     }
+
 }
 
 double SSCellularRouting::calculateDistance(double x1, double y1, double x2, double y2) {
@@ -134,21 +160,21 @@ double SSCellularRouting::calculateDistance(double x1, double y1, double x2, dou
 
 SSCRNodeData* SSCellularRouting::getNodeData(int nodeId) {
     for (auto& nodeData : g_ssNodesDataList) {
-        if (nodeData.id == nodeId) {
-            return &nodeData;
+            if (nodeData.id == nodeId) {
+                return &nodeData;
+            }
         }
-    }
-    SSCRNodeData* emptyData = new SSCRNodeData();
-    return emptyData;
+        SSCRNodeData* emptyData = new SSCRNodeData();
+        return emptyData;
 }
 
-SSCRCellData SSCellularRouting::getCellData(int cellId) {
-    for (const auto& cellData : g_ssCellDataList) {
+SSCRCellData* SSCellularRouting::getCellData(int cellId) {
+    for (auto& cellData : g_ssCellDataList) {
         if (cellData.cellId == cellId) {
-            return cellData;
+            return &cellData;
         }
     }
-    SSCRCellData emptyData;
+    SSCRCellData* emptyData = new SSCRCellData();
     return emptyData;
 }
 
@@ -163,15 +189,20 @@ bool SSCellularRouting::isNodeInList(int nodeId, const vector<int>& nodeList) {
 
 void SSCellularRouting::PrecalculateSimulationResults()
 {
-    // for (int i=0; i<numberOfNodes; i++) {
-    //     g_sensorData[i] = -1;
-    //     g_sensorDataArr[i] = -1;
-    //     g_networkConsumption[i][0] = 0;
-    //     g_networkConsumption[i][1] = 0;
-    // }
+    g_ssSensorDataSent.clear();
+    g_ssSensorDataReceived.clear();
+    g_ssSensorDataSentCount = 0;
+    g_ssSensorDataReceivedCount = 0;
+     for (int i=0; i<numberOfNodes; i++) {
+         g_ssSensorData[i] = -1;
+         g_ssSensorDataArr[i] = -1;
+//         g_networkConsumption[i][0] = 0;
+//         g_networkConsumption[i][1] = 0;
+     }
+
     for (auto &node : g_ssNodesDataList) {
     node.neighbors.clear();
-    node.clId = -1; 
+    node.clId = -1;
     }
     g_ssCellDataList.clear();
 
@@ -182,6 +213,7 @@ void SSCellularRouting::PrecalculateSimulationResults()
             double distance = calculateDistance(nodeData.x, nodeData.y, otherNodeData.x, otherNodeData.y);
             if (distance <= cellRadius) {
                 nodeData.neighbors.push_back(otherNodeData.id);
+                if (traceMode == 0) trace() << "#NEIGHBOR " << nodeData.id << ": " << otherNodeData.id;
             }
         }
     }
@@ -213,8 +245,8 @@ void SSCellularRouting::PrecalculateSimulationResults()
         for (auto& nodeData : g_ssNodesDataList) { // for each node 
             if (nodeData.cellId == thisCellId) { // in the cell
                 for (const int neighborId : nodeData.neighbors) { // for each neighbor
-                    SSCRNodeData neighbor = getNodeData(neighborId);
-                    int neighborCellId = neighbor.cellId;
+                    SSCRNodeData* neighbor = getNodeData(neighborId);
+                    int neighborCellId = neighbor->cellId;
                     if (neighborCellId != thisCellId) { // if different cell
                         if (!isNodeInList(neighborCellId, cellData.neighbors)) {
                             cellData.neighbors.push_back(neighborCellId);
@@ -231,25 +263,26 @@ void SSCellularRouting::PrecalculateSimulationResults()
         int bestFitness = -1;
         int bestCLId = -1;
         for (int memberId : cellData.members) {
-            SSCRNodeData member = getNodeData(memberId);
+            SSCRNodeData* member = getNodeData(memberId);
             int r = round((double)cellData.cellId / grid_offset);
             int q = cellData.cellId - r * grid_offset;
 
             double centerX = cellRadius * (sqrt(3.0) * q + sqrt(3.0) / 2.0 * r);
             double centerY = cellRadius * (3.0 / 2.0 * r);
 
-            double distance = sqrt(pow(member.x - centerX, 2) + pow(member.y - centerY, 2));
+            double distance = sqrt(pow(member->x - centerX, 2) + pow(member->y - centerY, 2));
 
             int fitnessScore = static_cast<int>(1000 / (1 + distance));
             if (fitnessScore > bestFitness) {
                 bestFitness = fitnessScore;
-                bestCLId = member.id;
+                bestCLId = member->id;
             }
         }
-        cellData.clId = bestCLId;
+        getCellData(cellData.cellId)->clId = bestCLId;
         for (auto& nodeData : g_ssNodesDataList) {
             if (isNodeInList(nodeData.id, cellData.members)) {
                 nodeData.clId = bestCLId;
+
             }
         }
     }
@@ -266,21 +299,21 @@ void SSCellularRouting::PrecalculateSimulationResults()
                     int nodeCellId = nodeData.cellId;
                     if (nodeCellId == cellData.cellId) {
                         for (int neighborNodeId : nodeData.neighbors) {
-                            SSCRNodeData neighborNode = getNodeData(neighborNodeId);
+                            SSCRNodeData* neighborNode = getNodeData(neighborNodeId);
                             //if (cellData.cellId >= neighbor.cellId) continue;
-                            if (neighborNode.cellId == neighborId) {
-                                double linkDistance = sqrt(pow(nodeData.x - neighborNode.x, 2) + pow(nodeData.y - neighborNode.y, 2));
+                            if (neighborNode->cellId == neighborId) {
+                                double linkDistance = sqrt(pow(nodeData.x - neighborNode->x, 2) + pow(nodeData.y - neighborNode->y, 2));
                                 const double EPS = 1e-6;
                                 if (linkDistance < bestDistance) {
                                     bestDistance = linkDistance;
                                     bestCGWId = nodeData.id;
-                                    bestNGWId = neighborNode.id;
+                                    bestNGWId = neighborNode->id;
                                 }
                                 else if (fabs(linkDistance - bestDistance) < EPS) {
                                     // If the distance is equal, prefer the one with lower ID
                                     if (nodeData.id < bestCGWId) {
                                         bestCGWId = nodeData.id;
-                                        bestNGWId = neighborNode.id;
+                                        bestNGWId = neighborNode->id;
                                     }
                                 }
                             }
@@ -290,7 +323,6 @@ void SSCellularRouting::PrecalculateSimulationResults()
 
                 if (bestCGWId != -1 && bestNGWId != -1) {
                     cellData.gateways[neighborId] = bestCGWId;
-                    getCellData(neighborId).gateways[cellData.cellId] = bestNGWId;
                 }
             }
             // update next hop ID for the CGW
@@ -308,20 +340,18 @@ void SSCellularRouting::PrecalculateSimulationResults()
     for (auto& cellData : g_ssCellDataList) {
         for (int neighborId : cellData.neighbors) {
             int gatewayId = cellData.gateways[neighborId];
-            SSCRNodeData neighbor = getNodeData(neighborId);
             if (gatewayId != -1) {
-                SSCRNodeData cellGateway = getNodeData(gatewayId);
+                SSCRNodeData* cellGateway = getNodeData(gatewayId);
                 for (int memberId : cellData.members) {
-                    SSCRNodeData member = getNodeData(memberId);
-                    g_ssRoutingTable[memberId][cellData.cellId] = -1;
+                    SSCRNodeData* member = getNodeData(memberId);
                     bool isGatewayInRange = false;
                     if (memberId != gatewayId) {
-                        for (const int neighborNodeId : member.neighbors) {
-                            SSCRNodeData neighborNode = getNodeData(neighborNodeId);
+                        g_ssRoutingTable[memberId][neighborId] = -1;
+                        for (const int neighborNodeId : member->neighbors) {
                             if (neighborNodeId == gatewayId) {
                                 isGatewayInRange = true;
-                                g_ssRoutingTable[memberId][cellData.cellId] = gatewayId;
-                                if (traceMode == 0) trace() << "#ROUTING_TABLE " << memberId << " (" << member.cellId << ") -> " << g_ssRoutingTable[memberId][cellData.cellId] << " (" << cellData.cellId << ")";
+                                g_ssRoutingTable[memberId][neighborId] = gatewayId;
+                                if (traceMode == 0) trace() << "#ROUTING_TABLE " << memberId << " (" << member->cellId << ") -> " << g_ssRoutingTable[memberId][neighborId] << " (" << neighborId << ")";
                             }
 
                         }
@@ -330,7 +360,7 @@ void SSCellularRouting::PrecalculateSimulationResults()
                             double minDistance = 9999.0;
                             int bestNextHopId = -1;
 
-                            for (const int neighborNodeId : member.neighbors) {
+                            for (const int neighborNodeId : member->neighbors) {
                                 bool isNeighborInRange = false;
                                 // continue if the neighbor is not in range of the gateway
                                 for (const auto& neighborNodeData : g_ssNodesDataList) {
@@ -345,9 +375,9 @@ void SSCellularRouting::PrecalculateSimulationResults()
                                 }
                                 if (isNeighborInRange) {
                                     // save the distance and choose the best next hop based on total distance from this node to neighbor to gateway
-                                    SSCRNodeData neighborNode = getNodeData(neighborNodeId);
-                                    double distanceNodeToNeighbor = sqrt(pow(member.x - neighborNode.x, 2) + pow(member.y - neighborNode.y, 2));
-                                    double distanceNeighborToGateway = sqrt(pow(neighborNode.x - cellGateway.x, 2) + pow(neighborNode.y - cellGateway.y, 2));
+                                    SSCRNodeData* neighborNode = getNodeData(neighborNodeId);
+                                    double distanceNodeToNeighbor = sqrt(pow(member->x - neighborNode->x, 2) + pow(member->y - neighborNode->y, 2));
+                                    double distanceNeighborToGateway = sqrt(pow(neighborNode->x - cellGateway->x, 2) + pow(neighborNode->y - cellGateway->y, 2));
                                     double totalDistance = distanceNodeToNeighbor + distanceNeighborToGateway;
                                     if (totalDistance < minDistance) {
                                         minDistance = totalDistance;
@@ -361,29 +391,30 @@ void SSCellularRouting::PrecalculateSimulationResults()
                                 }
                             }
                             if (bestNextHopId != -1) {
-                                g_ssRoutingTable[member.id][cellData.cellId] = bestNextHopId;
-                                if (traceMode == 0) trace() << "#ROUTING_TABLE " << member.id << " (" << member.cellId << ") -> " << g_ssRoutingTable[member.id][cellData.cellId] << " (" << cellData.cellId << ")";
+                                g_ssRoutingTable[member->id][neighborId] = bestNextHopId;
+                                if (traceMode == 0) trace() << "#ROUTING_TABLE " << member->id << " (" << member->cellId << ") -> " << g_ssRoutingTable[member->id][neighborId] << " (" << neighborId << ")";
                             }
                         }
                     }
                 }
             }
         }
-        ///////////////
+
         // routing table for CL
         for (const int memberId : cellData.members) {
             if (memberId == cellData.clId) {
                 continue;
             }
             g_ssRoutingTable[memberId][cellData.cellId] = -1;
-            SSCRNodeData member = getNodeData(memberId);
-            if (isNodeInList(cellData.clId, member.neighbors)) { // if CL is in range
+            SSCRNodeData* member = getNodeData(memberId);
+            if (isNodeInList(cellData.clId, member->neighbors)) { // if CL is in range
                 g_ssRoutingTable[memberId][cellData.cellId] = cellData.clId;
+                if (traceMode == 0) trace() << "#ROUTING_TABLE " << memberId << " (" << cellData.cellId << ") -> " << g_ssRoutingTable[memberId][cellData.cellId] << " (" << cellData.cellId << ")";
             } else {
                 double minDistance = 9999.0;
                 int bestNextHopId = -1;
 
-                for (const int neighborId : member.neighbors) {
+                for (const int neighborId : member->neighbors) {
                     // Check if the neighbor is in range of the CL
                     bool isNeighborInRange = false;
                     for (const auto& neighborNodeData : g_ssNodesDataList) {
@@ -397,10 +428,10 @@ void SSCellularRouting::PrecalculateSimulationResults()
                         }
                     }
                     if (isNeighborInRange) {
-                        SSCRNodeData clNode = getNodeData(cellData.clId);
-                        SSCRNodeData neighbor = getNodeData(neighborId);
-                        double distanceNodeToNeighbor = sqrt(pow(member.x - neighbor.x, 2) + pow(member.y - neighbor.y, 2));
-                        double distanceNeighborToCL = sqrt(pow(neighbor.x - clNode.x, 2) + pow(neighbor.y - clNode.y, 2));
+                        SSCRNodeData* clNode = getNodeData(cellData.clId);
+                        SSCRNodeData* neighbor = getNodeData(neighborId);
+                        double distanceNodeToNeighbor = sqrt(pow(member->x - neighbor->x, 2) + pow(member->y - neighbor->y, 2));
+                        double distanceNeighborToCL = sqrt(pow(neighbor->x - clNode->x, 2) + pow(neighbor->y - clNode->y, 2));
                         double totalDistance = distanceNodeToNeighbor + distanceNeighborToCL;
                         if (totalDistance < minDistance) {
                             minDistance = totalDistance;
@@ -414,7 +445,8 @@ void SSCellularRouting::PrecalculateSimulationResults()
                     }
                 }
                 if (bestNextHopId != -1) {
-                    g_ssRoutingTable[member.id][cellData.cellId] = bestNextHopId;
+                    g_ssRoutingTable[member->id][cellData.cellId] = bestNextHopId;
+                    if (traceMode == 0) trace() << "#ROUTING_TABLE " << member->id << " (" << cellData.cellId << ") -> " << g_ssRoutingTable[member->id][cellData.cellId] << " (" << cellData.cellId << ")";
                 }
             }
         }
@@ -462,7 +494,8 @@ void SSCellularRouting::sendCHAnnouncement()
 {
     SSCHAnnouncementInfo chInfo;
     chInfo.chId = self;
-    for (const int neighborCellId : getCellData(myCellId).neighbors) {
+
+    for (const int neighborCellId : getCellData(myCellId)->neighbors) {
         SSCellularRoutingPacket* dupPkt = new SSCellularRoutingPacket("CH Announcement", NETWORK_LAYER_PACKET);
         dupPkt->setPacketType(CH_ANNOUNCEMENT_PACKET);
         dupPkt->setCellSource(myCellId);
@@ -474,28 +507,38 @@ void SSCellularRouting::sendCHAnnouncement()
         dupPkt->setCellSent(myCellId);
         dupPkt->setCHAnnouncementData(chInfo);
         dupPkt->setSource(SELF_NETWORK_ADDRESS);
-
+        dupPkt->setCellNext(neighborCellId);
         int nextHopId = g_ssRoutingTable[self][neighborCellId];
         // check if node in range
-        if (isNodeInList(nextHopId, getNodeData(self).neighbors)) {
-            //g_networkConsumption[self][0] += calculateConsumption(nextHopId);
-            toMacLayer(dupPkt, nextHopId);
+        if (isNodeInList(nextHopId, getNodeData(self)->neighbors)) {
+            announcementQueue.push({dupPkt, neighborCellId});
         } else {
             delete dupPkt;
         }
     }
-
+    setTimer(SEND_ANNOUNCEMENT_QUEUE, uniform(1, 10));
     if (isCL) {
         myCHId = self;
         if (traceMode == 0) trace() << "#CH_SELECTION " << self << ": " << myCHId;
-        for (int i = 0; i < maxHopCount; ++i) {
-            myCellPathToCH[i] = -1;
-        }
+
         myCellPathToCH[0] = myCellId;
         selectClusterHead();
+    } else {
+        SSCellularRoutingPacket* dupPkt = new SSCellularRoutingPacket("CH Announcement", NETWORK_LAYER_PACKET);
+        dupPkt->setPacketType(CH_ANNOUNCEMENT_PACKET);
+        dupPkt->setCellSource(myCellId);
+        dupPkt->setCellHopCount(1);
+        dupPkt->setCellDestination(-1);
+        dupPkt->setCellPath(0, myCellId);
+        dupPkt->setCellPath(1, -1);
+        dupPkt->setTtl(maxHopCount);
+        dupPkt->setCellSent(myCellId);
+        dupPkt->setCHAnnouncementData(chInfo);
+        dupPkt->setSource(SELF_NETWORK_ADDRESS);
+        dupPkt->setCellNext(myCellId);
+        announcementQueue.push({dupPkt, myCellId});
     }
 }
-
 
 void SSCellularRouting::handleCHAnnouncementPacket(SSCellularRoutingPacket* pkt)
 {
@@ -537,8 +580,9 @@ void SSCellularRouting::handleCHAnnouncementPacket(SSCellularRoutingPacket* pkt)
                 }
                 SSCellularRoutingPacket* dupPkt = pkt->dup();
                 dupPkt->setCellNext(neighborCells[i]);
-                toMacLayer(dupPkt, g_ssRoutingTable[self][neighborCells[i]]);
+                announcementQueue.push({dupPkt, neighborCells[i]});
             }
+            setTimer(SEND_ANNOUNCEMENT_QUEUE, uniform(1, 10));
         }
         selectClusterHead();
     }
@@ -546,18 +590,516 @@ void SSCellularRouting::handleCHAnnouncementPacket(SSCellularRoutingPacket* pkt)
     if (!isCL) {
         int cellDestination = pkt->getCellDestination();
         int cellNext = pkt->getCellNext();
-        pkt->setSource(SELF_NETWORK_ADDRESS);
-        SSCellularRoutingPacket* dupPkt = pkt->dup();
-        toMacLayer(dupPkt, g_ssRoutingTable[self][cellNext]);
+
+            pkt->setSource(SELF_NETWORK_ADDRESS);
+            SSCellularRoutingPacket* dupPkt = pkt->dup();
+            int des = g_ssRoutingTable[self][cellNext];
+            announcementQueue.push({dupPkt, cellNext});
+            setTimer(SEND_ANNOUNCEMENT_QUEUE, uniform(1, 10));
     }
+}
+
+
+void SSCellularRouting::sendAnnouncementQueue()
+{
+    if (!announcementQueue.empty()) {
+        auto [pkt, nextCellId] = announcementQueue.front();
+        announcementQueue.pop();
+
+        pkt->setTtl(pkt->getTtl() - 1);
+        if (pkt->getTtl() <= 0) {
+            delete pkt;
+            return;
+        }
+        int nextHopId = -1;
+        if (nextCellId != myCellId){
+            nextHopId = g_ssRoutingTable[self][nextCellId];
+        } else {
+            if (!boardcastAnnouncementQueue.empty()){
+                nextHopId = boardcastAnnouncementQueue.front();
+                boardcastAnnouncementQueue.pop();
+            } else {
+                nextHopId = myCLId;
+            }
+        }
+
+        bool isInRange = false;
+        for (int neighborNodeId : getNodeData(self)->neighbors) {
+            if (neighborNodeId == nextHopId) {
+                isInRange = true;
+                break;
+            }
+        }
+
+        if (!isInRange) {
+            delete pkt;
+            return;
+        }
+        SSCRNodeData* sNode = getNodeData(self);
+        sNode->numSent++;
+        sNode->energyConsumtion+=calculateConsumption(nextHopId, 1);
+        toMacLayer(pkt, nextHopId);
+    }
+    setTimer(SEND_ANNOUNCEMENT_QUEUE, uniform(1, 10));
 }
 
 void SSCellularRouting::selectClusterHead()
 {
-    // select the closest CH
-    // Or just let the application layer handle it
     if (traceMode == 0) trace() << "#CH_SELECTION " << self << ": " << myCHId;
-    // Announce members about next cell hop
-    //setTimer(ANNOUNCE_CELL_HOP_TIMER, uniform(1000, 1500));
+    getNodeData(self)->chId = myCHId;
+    setTimer(ANNOUNCE_CELL_HOP_TIMER, uniform(10, 20));
+}
+void SSCellularRouting::sendCellHopAnnouncementPacket()
+    {
+        if (isCL) {
+            for (int i=0; i<maxHopCount; i++){
+                if (myCellPathToCH[i] == myCellId){
+                    SSCellHopAnnouncementInfo pktInfo;
+                    pktInfo.nextCell = myCellPathToCH[i-1];
+
+                    for (int memberId : getCellData(myCellId)->members) {
+                        if (memberId == self) {
+                            continue;
+                        }
+                        SSCellularRoutingPacket* dupPkt = new SSCellularRoutingPacket("CH Announcement", NETWORK_LAYER_PACKET);
+                        dupPkt->setPacketType(ANNOUNCE_CELL_HOP);
+                        dupPkt->setCellSource(myCellId);
+                        dupPkt->setCellDestination(myCellId);
+                        dupPkt->setClusterHead(myCHId);
+                        dupPkt->setTtl(2);
+                        for (int i = 0; i < maxHopCount; ++i) {
+                            dupPkt->setCellPath(i, myCellPathToCH[i]);
+                        }
+                        dupPkt->setSSCellHopAnnouncementData(pktInfo);
+                        dupPkt->setSource(SELF_NETWORK_ADDRESS);
+                        dupPkt->setDestination(std::to_string(memberId).c_str());
+//                        announcementQueue.push({dupPkt, myCellId});
+//                        boardcastAnnouncementQueue.push(memberId);
+                        SSCRNodeData* sNode = getNodeData(self);
+                        sNode->numSent++;
+                        sNode->energyConsumtion+=calculateConsumption(memberId, 1);
+                        toMacLayer(dupPkt, memberId);
+                    }
+                }
+            }
+            setTimer(SEND_ANNOUNCEMENT_QUEUE, uniform(1, 10));
+        }
+    }
+
+void SSCellularRouting::handleCellHopAnnouncementPacket(SSCellularRoutingPacket* pkt)
+    {
+        SSCellHopAnnouncementInfo pktInfo = pkt->getSSCellHopAnnouncementData();
+        int nextCell = pktInfo.nextCell;
+        if (nextCell != -1) {
+
+
+            for (int i = 0; i < maxHopCount; ++i) {
+                myCellPathToCH[i] = pkt->getCellPath(i);
+            }
+
+            myCHId = pkt->getClusterHead();
+
+            if (traceMode == 0) trace() << "#CH_SELECTION " << self << ": " << myCHId;
+
+            setTimer(COLOR_SCHEDULING_TIMER, colorTimeSlot*myColor);
+        }
+    }
+
+void SSCellularRouting::sendSensorDataPacket(){
+    SSSensorInfo sensorData;
+    sensorData.dataId = simTime().dbl();
+
+    g_ssSensorData[self] = sensorData.dataId;
+    g_ssSensorDataSent.push_back((sensorData.dataId*100 + self));
+    g_ssSensorDataSentCount ++;
+
+    sensorData.sensorId = self;
+    sensorData.hopCount = 0;
+    sensorData.destinationCH = myCHId;
+
+    for (int i=0; i<sensorDataDub; i++) {
+        SSCellularRoutingPacket* pkt = new SSCellularRoutingPacket("Sensing State 1", NETWORK_LAYER_PACKET);
+        for (int i = 0; i < maxHopCount; ++i) {
+           pkt->setCellPath(i, myCellPathToCH[i]);
+           if (myCellPathToCH[i] == myCellId){
+               pkt->setCellNext(myCellPathToCH[i-1]);
+           }
+        }
+            pkt->setPacketType(SENSOR_DATA);
+            pkt->setCellSource(myCellId);
+            pkt->setCellSent(myCellId);
+            pkt->setCellDestination(myCellPathToCH[0]);
+            pkt->setTtl(maxHopCount);
+            pkt->setSensorData(sensorData);
+            pkt->setSource(SELF_NETWORK_ADDRESS);
+        cellPacketQueue.push({pkt, pkt->getCellNext()});
+    }
+    setTimer(SEND_CELL_PACKET, uniform(0, 1));
 }
 
+void SSCellularRouting::handleSensorDataPacket(SSCellularRoutingPacket* pkt){
+    SSSensorInfo sensorData = pkt->getSensorData();
+    if (myCHId == self && myCellId == pkt->getCellDestination()) {
+        if (traceMode == 0) trace() << "Processing sensor data from  " << sensorData.sensorId << " hop count " << sensorData.hopCount;
+        if (g_ssSensorData[sensorData.sensorId] == sensorData.dataId) {
+            g_ssSensorDataArr[sensorData.sensorId] = sensorData.dataId;
+        }
+        g_ssSensorDataReceivedCount++;
+        g_ssSensorDataReceived.push_back(sensorData.dataId*100 + sensorData.sensorId);
+        savePacketCopy(pkt, -1);
+        if (traceMode == 0) trace() << "Received " << g_ssSensorDataReceivedCount << "/" << g_ssSensorDataSentCount << " sensor data pkts";
+        return;
+    }
+
+    sensorData.hopCount++;
+
+   SSCellularRoutingPacket* dupPkt = new SSCellularRoutingPacket("Sensing State 2", NETWORK_LAYER_PACKET);
+
+    int prevCell = pkt->getCellSent();
+
+    dupPkt->setCellSent(myCellId);
+    dupPkt->setPacketType(SENSOR_DATA);
+    dupPkt->setCellSource(pkt->getCellSource());
+    dupPkt->setCellNext(pkt->getCellNext());
+    dupPkt->setCellDestination(pkt->getCellDestination());
+    dupPkt->setTtl(pkt->getTtl());
+    for (int i = 0; i < maxHopCount; ++i) {
+         dupPkt->setCellPath(i, pkt->getCellPath(i));
+    }
+    dupPkt->setCellNextNext(pkt->getCellNext());
+
+    if (sensorData.destinationCH == -1) {
+        for (int i = 0; i < maxHopCount; ++i) {
+            dupPkt->setCellPath(i, myCellPathToCH[i]);
+        }
+        sensorData.destinationCH = myCHId;
+    }
+
+    dupPkt->setSensorData(sensorData);
+
+    int nextCell = -1;
+    for (int i = 0; i < maxHopCount; ++i) {
+        int T = dupPkt->getCellPath(i);
+        if (T == myCellId && i > 0) {
+            nextCell = dupPkt->getCellPath(i-1);
+            break;
+        }
+    }
+
+    if (myCellId == nextCell || nextCell == -1) {
+        if (prevCell == myCellId) {
+            levelInCell = 1;
+        } else {
+            levelInCell = 2;
+        }
+    } else {
+        levelInCell = 0;
+    }
+    cellPacketQueue.push({dupPkt, nextCell});
+    setTimer(SEND_CELL_PACKET, uniform(0, 1));
+}
+
+void SSCellularRouting::sendCellPacket()
+{
+    if (!cellPacketQueue.empty()) {
+        auto [pkt, nextCellId] = cellPacketQueue.top();
+        if (pkt->getPacketType() == SENSOR_DATA) {
+
+            double timeNow = simTime().dbl();
+            double timeSlot = 600.0;
+            double subTimeSlot = 60.0;
+            double cycle = timeSlot * 3;
+            double subCycle = subTimeSlot * 2;
+            double phase = fmod(timeNow, cycle);
+            double timeWithinSlot = phase - (myColor * timeSlot);
+            double subPhase = fmod(timeWithinSlot, subCycle);
+
+            bool isInTimeSlot = (phase >= myColor * timeSlot) && (phase < (myColor+1) * timeSlot);
+
+            bool isInSubTimeSlot;
+            switch (levelInCell) {
+            case 0:
+            case 2:
+                if (subPhase < subTimeSlot) {
+                    isInSubTimeSlot = true;
+                }
+                break;
+
+            case 1:
+                if (subPhase >= subTimeSlot) {
+                    isInSubTimeSlot = true;
+                }
+                break;
+        }
+
+            if (!isInTimeSlot) {
+                double nextStart = myColor * timeSlot;
+                if (phase >= nextStart) {
+                    nextStart += cycle;
+                }
+                double delay = nextStart - phase;
+
+                setTimer(SEND_CELL_PACKET, delay);
+                return;
+            }
+
+            if (!isInSubTimeSlot) {
+                double delay = fmod(timeWithinSlot, subCycle);
+
+                setTimer(SEND_CELL_PACKET, delay);
+                return;
+            }
+
+            SSCellularRoutingPacket* dupPkt = new SSCellularRoutingPacket("Sensing State 3", NETWORK_LAYER_PACKET);
+                        dupPkt->setPacketType(pkt->getPacketType());
+                        dupPkt->setCellSource(pkt->getCellSource());
+                        dupPkt->setCellSent(pkt->getCellSent());
+                        dupPkt->setCellNext(pkt->getCellNext());
+                        dupPkt->setCellDestination(pkt->getCellDestination());
+                        for (int i = 0; i < maxHopCount; ++i) {
+                            dupPkt->setCellPath(i, pkt->getCellPath(i));
+                        }
+                        dupPkt->setTtl(pkt->getTtl());
+                        dupPkt->setSensorData(pkt->getSensorData());
+
+            if (nextCellId == -1 || nextCellId == myCellId) {
+                cellPacketQueue.pop();
+
+                if (myCHId != -1) {
+                    bool chInRange = false;
+                    for (int neighborNodeId : getNodeData(self)->neighbors) {
+                        if (neighborNodeId == myCHId) {
+                            chInRange = true;
+                            break;
+                        }
+                    }
+
+                    if (chInRange) {
+                        SSCRNodeData* sNode = getNodeData(self);
+                        sNode->numSent++;
+                        sNode->energyConsumtion+=calculateConsumption(myCHId, 1);
+                        toMacLayer(dupPkt, myCHId);
+                        savePacketCopy(dupPkt, myCHId);
+                        if (traceMode == 0) trace() << "#SENSOR_DATA: " << self << " -> " << myCHId;
+                    } else {
+                        SSCRNodeData* sNode = getNodeData(self);
+                        sNode->numSent++;
+                        sNode->energyConsumtion+=calculateConsumption(myCLId, 1);
+                        toMacLayer(dupPkt, myCLId);
+                        savePacketCopy(dupPkt, myCLId);
+                        if (traceMode == 0) trace() << "#SENSOR_DATA: " << self << " -> " << myCLId;
+                    }
+                }
+                delete pkt;
+                return;
+            }
+
+            cellPacketQueue.pop();
+
+            dupPkt->setTtl(pkt->getTtl() - 1);
+            dupPkt->setSource(SELF_NETWORK_ADDRESS);
+            if (dupPkt->getTtl() <= 0) {
+                delete dupPkt;
+                delete pkt;
+                return;
+            }
+
+            int nextHopId = g_ssRoutingTable[self][nextCellId];
+            // check if node in range
+            bool isInRange = false;
+            bool isInMyCell = true;
+            for (int neighborNodeId : getNodeData(self)->neighbors) {
+                if (neighborNodeId == nextHopId) {
+                    isInRange = true;
+                    //isInMyCell = (neighborNode.cellId == myCellId);
+                    break;
+                }
+            }
+
+            if (isInRange) {
+                if (traceMode == 0) trace() << "#SENSOR_DATA: " << self << " -> " << nextHopId;
+                SSCRNodeData* sNode = getNodeData(self);
+                sNode->numSent++;
+                sNode->energyConsumtion+=calculateConsumption(nextHopId, 1);
+                toMacLayer(dupPkt, nextHopId);
+                savePacketCopy(dupPkt, nextHopId);
+                delete pkt;
+            } else {
+                for (int neighborNodeId : getNodeData(self)->neighbors) {
+                    if (getNodeData(neighborNodeId)->cellId == myCellId) {
+                        SSCRNodeData* sNode = getNodeData(self);
+                        sNode->numSent++;
+                        sNode->energyConsumtion+=calculateConsumption(neighborNodeId, 1);
+                        toMacLayer(dupPkt, neighborNodeId);
+                        savePacketCopy(dupPkt, neighborNodeId);
+                        delete pkt;
+                        break;
+                    }
+                }
+            }
+        }
+        setTimer(SEND_CELL_PACKET, uniform(0, 1));
+    }
+}
+
+void SSCellularRouting::rotationCH(){
+    g_isCHRotation = true;
+    double top1 = -1, top2 = -1, top3 = -1;
+    int id1 = -1, id2 = -1, id3 = -1;
+    double low1 = 999999, low2 = 999999, low3 = 999999;
+    int lid1 = -1, lid2 = -1, lid3 = -1;
+    double totalEnergy = 0.0;
+    int n = 3;
+
+    for (auto& ssNode : g_ssNodesDataList){
+        ssNode.isCH = false;
+        double eLeft = (initEnergy - ssNode.energyConsumtion);
+        ssNode.el = (eLeft/initEnergy)*100;
+        totalEnergy += ssNode.el;
+        if (ssNode.el > top1) {
+                top3 = top2; id3 = id2;
+                top2 = top1; id2 = id1;
+                top1 = ssNode.el;   id1 = ssNode.id;
+            } else if (ssNode.el > top2) {
+                top3 = top2; id3 = id2;
+                top2 = ssNode.el;   id2 = ssNode.id;
+            } else if (ssNode.el > top3) {
+                top3 = ssNode.el;   id3 = ssNode.id;
+            }
+        if (ssNode.el < low1) {
+                low3 = low2; lid3 = lid2;
+                low2 = low1; lid2 = lid1;
+                low1 = ssNode.el; lid1 = ssNode.id;
+            } else if (ssNode.el < low2) {
+                low3 = low2; lid3 = lid2;
+                low2 = ssNode.el; lid2 = ssNode.id;
+            } else if (ssNode.el < low3) {
+                low3 = ssNode.el; lid3 = ssNode.id;
+            }
+        }
+
+        double avgEnergy = totalEnergy / numberOfNodes;
+
+        std::vector<SSCRNodeData> ss_CHcandidates;
+        for (const auto& node : g_ssNodesDataList) {
+            if (node.el > avgEnergy)
+                ss_CHcandidates.push_back(node);
+        }
+
+        if (ss_CHcandidates.empty()) {
+            getNodeData(id1)->isCH = true;
+            getNodeData(id2)->isCH = true;
+            getNodeData(id3)->isCH = true;
+            return;
+        }
+
+        // Farthest-Point Sampling ---
+        std::vector<int> selectedIds;
+
+        auto first = std::max_element(ss_CHcandidates.begin(), ss_CHcandidates.end(),
+                                      [](const SSCRNodeData& a, const SSCRNodeData& b) {
+                                          return a.el < b.el;
+                                      });
+        selectedIds.push_back(first->id);
+
+        while (selectedIds.size() < static_cast<size_t>(n) && selectedIds.size() < ss_CHcandidates.size()) {
+            double bestMinDist = -1.0;
+            int bestNodeId = -1;
+
+            for (const auto& cand : ss_CHcandidates) {
+                if (std::find(selectedIds.begin(), selectedIds.end(), cand.id) != selectedIds.end())
+                    continue;
+
+                double minDistToSelected = DBL_MAX;
+                for (int selId : selectedIds) {
+                    auto it = std::find_if(ss_CHcandidates.begin(), ss_CHcandidates.end(),
+                                           [selId](const SSCRNodeData& nd){ return nd.id == selId; });
+                    if (it != ss_CHcandidates.end()) {
+                        double d = sqrt(pow(cand.x - it->x, 2) + pow(cand.y - it->y, 2));
+                        if (d < minDistToSelected) minDistToSelected = d;
+                    }
+                }
+
+                // max of (min distance)
+                if (minDistToSelected > bestMinDist) {
+                    bestMinDist = minDistToSelected;
+                    bestNodeId = cand.id;
+                }
+            }
+
+            if (bestNodeId != -1)
+                selectedIds.push_back(bestNodeId);
+            else
+                break;
+        }
+
+
+        for (int id : selectedIds) {
+            const auto it = std::find_if(g_ssNodesDataList.begin(), g_ssNodesDataList.end(),
+                                         [id](const SSCRNodeData& n){ return n.id == id; });
+            if (it != g_ssNodesDataList.end()) {
+                getNodeData(id)->isCH = true;
+                if (traceMode == 1) trace() << "New CHs: " << id
+                          << " | EL: " << std::fixed << std::setprecision(2) << it->el << "%"
+                          << " | Pos(" << it->x << ", " << it->y << ")" << std::endl;
+            }
+        }
+
+
+    if (traceMode == 1) trace() << "Top Nodes: " << id1 << "(" << top1
+            << "), " << id2 << "(" << top2 << "), " << id3 << "(" << top3 << ")";
+    if (traceMode == 1) trace() << "Low Nodes: " << lid1 << "(" << low1
+                << "), " << lid2 << "(" << low2 << "), " << lid3 << "(" << low3 << ")";
+}
+
+double SSCellularRouting::calculateConsumption(int desNode, int type){
+    double distance = sqrt(pow(getNodeData(desNode)->x - myX, 2) + pow(getNodeData(desNode)->y - myY, 2));
+                    int kBits = 500;
+                    if (type) kBits = 2000;
+                    double E_elec = 50e-9;       // 50 nJ/bit
+                    double eps_fs  = 10e-12;     // 10 pJ/bit/m^2
+                    double eps_mp  = 0.0013e-12;
+                    double d0 = std::sqrt(eps_fs/eps_mp);
+
+                    if (distance < d0) {
+                        return kBits * (E_elec + eps_fs * distance * distance);
+                    } else {
+                        return kBits * (E_elec + eps_mp * pow(distance, 4));
+                    }
+}
+
+void SSCellularRouting::savePacketCopy(SSCellularRoutingPacket* pkt, int des){
+    SSCRPacket newSSCRPacket;
+    newSSCRPacket.nextHop = des;
+    SSSensorInfo pktSensorInfo = pkt->getSensorData();
+    newSSCRPacket.sensorId = pktSensorInfo.sensorId;
+    newSSCRPacket.dataId = pktSensorInfo.dataId;
+    newSSCRPacket.desCH = pktSensorInfo.destinationCH;
+    newSSCRPacket.hopCount = pktSensorInfo.hopCount;
+    newSSCRPacket.cellSource = pkt->getCellSource();
+    newSSCRPacket.cellSent = pkt->getCellSent();
+    newSSCRPacket.cellDes = pkt->getCellDestination();
+    newSSCRPacket.ttl = pkt->getTtl();
+    newSSCRPacket.source = atoi(pkt->getSource());
+    for (int i=0; i<maxHopCount; i++){
+        newSSCRPacket.cellPath.push_back(pkt->getCellPath(i));
+    }
+    g_ssSensorDataOverheared[self].push_back(newSSCRPacket);
+    ssSentPacket.push_back(newSSCRPacket);
+}
+
+void SSCellularRouting::overhearingPacket(){
+    for (const auto& sscrPkt:ssSentPacket){
+        int des = sscrPkt.nextHop;
+        if (des == -1) continue;
+        bool foundPkt = false;
+        for (const auto& overhearedPkt:g_ssSensorDataOverheared[des]){
+            //trace() << sscrPkt.dataId << " : " << overhearedPkt.dataId;
+            if (sscrPkt.dataId == overhearedPkt.dataId){
+                foundPkt = true;
+                break;
+            }
+        }
+        if (!foundPkt) trace() << "Pkt lost: " << sscrPkt.dataId << " from " << sscrPkt.sensorId;
+    }
+}

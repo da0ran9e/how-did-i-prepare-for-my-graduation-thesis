@@ -66,10 +66,46 @@ enum SSCellularRoutingPacketType {
 /**
  * Struct generated from node/communication/routing/ssCellularRouting/SSCellularRouting.msg:25 by nedtool.
  */
+struct SSCHAnnouncementInfo
+{
+    SSCHAnnouncementInfo();
+    int chId;
+};
+
+// helpers for local use
+void __doPacking(omnetpp::cCommBuffer *b, const SSCHAnnouncementInfo& a);
+void __doUnpacking(omnetpp::cCommBuffer *b, SSCHAnnouncementInfo& a);
+
+inline void doParsimPacking(omnetpp::cCommBuffer *b, const SSCHAnnouncementInfo& obj) { __doPacking(b, obj); }
+inline void doParsimUnpacking(omnetpp::cCommBuffer *b, SSCHAnnouncementInfo& obj) { __doUnpacking(b, obj); }
+
+/**
+ * Struct generated from node/communication/routing/ssCellularRouting/SSCellularRouting.msg:29 by nedtool.
+ */
+struct SSCellHopAnnouncementInfo
+{
+    SSCellHopAnnouncementInfo();
+    int nextCell;
+    int cellPath[1000];
+};
+
+// helpers for local use
+void __doPacking(omnetpp::cCommBuffer *b, const SSCellHopAnnouncementInfo& a);
+void __doUnpacking(omnetpp::cCommBuffer *b, SSCellHopAnnouncementInfo& a);
+
+inline void doParsimPacking(omnetpp::cCommBuffer *b, const SSCellHopAnnouncementInfo& obj) { __doPacking(b, obj); }
+inline void doParsimUnpacking(omnetpp::cCommBuffer *b, SSCellHopAnnouncementInfo& obj) { __doUnpacking(b, obj); }
+
+/**
+ * Struct generated from node/communication/routing/ssCellularRouting/SSCellularRouting.msg:34 by nedtool.
+ */
 struct SSSensorInfo
 {
     SSSensorInfo();
+    int destinationCH;
     int dataId;
+    int sensorId;
+    int hopCount;
 };
 
 // helpers for local use
@@ -80,13 +116,25 @@ inline void doParsimPacking(omnetpp::cCommBuffer *b, const SSSensorInfo& obj) { 
 inline void doParsimUnpacking(omnetpp::cCommBuffer *b, SSSensorInfo& obj) { __doUnpacking(b, obj); }
 
 /**
- * Class generated from <tt>node/communication/routing/ssCellularRouting/SSCellularRouting.msg:29</tt> by nedtool.
+ * Class generated from <tt>node/communication/routing/ssCellularRouting/SSCellularRouting.msg:41</tt> by nedtool.
  * <pre>
  * packet SSCellularRoutingPacket extends RoutingPacket
  * {
  *     int packetType \@enum(SSCellularRoutingPacketType);
+ *     int clusterHead;
+ *     int cellSent;
+ *     int cellNext;
+ *     int cellNextNext;
+ *     int cellSource;
+ *     int cellDestination;
+ *     int cellHopCount;
+ *     int cellPath[1000];
+ *     int cellPathToDestination[1000];
+ *     int ttl;
  * 
  *     SSSensorInfo sensorData;
+ *     SSCHAnnouncementInfo cHAnnouncementData;
+ *     SSCellHopAnnouncementInfo sSCellHopAnnouncementData;
  * }
  * </pre>
  */
@@ -94,7 +142,19 @@ class SSCellularRoutingPacket : public ::RoutingPacket
 {
   protected:
     int packetType;
+    int clusterHead;
+    int cellSent;
+    int cellNext;
+    int cellNextNext;
+    int cellSource;
+    int cellDestination;
+    int cellHopCount;
+    int cellPath[1000];
+    int cellPathToDestination[1000];
+    int ttl;
     SSSensorInfo sensorData;
+    SSCHAnnouncementInfo cHAnnouncementData;
+    SSCellHopAnnouncementInfo sSCellHopAnnouncementData;
 
   private:
     void copy(const SSCellularRoutingPacket& other);
@@ -115,9 +175,37 @@ class SSCellularRoutingPacket : public ::RoutingPacket
     // field getter/setter methods
     virtual int getPacketType() const;
     virtual void setPacketType(int packetType);
+    virtual int getClusterHead() const;
+    virtual void setClusterHead(int clusterHead);
+    virtual int getCellSent() const;
+    virtual void setCellSent(int cellSent);
+    virtual int getCellNext() const;
+    virtual void setCellNext(int cellNext);
+    virtual int getCellNextNext() const;
+    virtual void setCellNextNext(int cellNextNext);
+    virtual int getCellSource() const;
+    virtual void setCellSource(int cellSource);
+    virtual int getCellDestination() const;
+    virtual void setCellDestination(int cellDestination);
+    virtual int getCellHopCount() const;
+    virtual void setCellHopCount(int cellHopCount);
+    virtual unsigned int getCellPathArraySize() const;
+    virtual int getCellPath(unsigned int k) const;
+    virtual void setCellPath(unsigned int k, int cellPath);
+    virtual unsigned int getCellPathToDestinationArraySize() const;
+    virtual int getCellPathToDestination(unsigned int k) const;
+    virtual void setCellPathToDestination(unsigned int k, int cellPathToDestination);
+    virtual int getTtl() const;
+    virtual void setTtl(int ttl);
     virtual SSSensorInfo& getSensorData();
     virtual const SSSensorInfo& getSensorData() const {return const_cast<SSCellularRoutingPacket*>(this)->getSensorData();}
     virtual void setSensorData(const SSSensorInfo& sensorData);
+    virtual SSCHAnnouncementInfo& getCHAnnouncementData();
+    virtual const SSCHAnnouncementInfo& getCHAnnouncementData() const {return const_cast<SSCellularRoutingPacket*>(this)->getCHAnnouncementData();}
+    virtual void setCHAnnouncementData(const SSCHAnnouncementInfo& cHAnnouncementData);
+    virtual SSCellHopAnnouncementInfo& getSSCellHopAnnouncementData();
+    virtual const SSCellHopAnnouncementInfo& getSSCellHopAnnouncementData() const {return const_cast<SSCellularRoutingPacket*>(this)->getSSCellHopAnnouncementData();}
+    virtual void setSSCellHopAnnouncementData(const SSCellHopAnnouncementInfo& sSCellHopAnnouncementData);
 };
 
 inline void doParsimPacking(omnetpp::cCommBuffer *b, const SSCellularRoutingPacket& obj) {obj.parsimPack(b);}
