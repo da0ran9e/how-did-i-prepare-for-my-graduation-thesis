@@ -14,15 +14,47 @@
 
 using namespace std;
 
+struct GSTEBNodeInfo {
+    int id;
+    int x;
+    int y;
+    bool isCH;
+    int parentId;
+    int chId;
+    double chx;
+    double chy;
+    int numSent;
+    int numRecv;
+    double distanceToCH;
+    double el;
+    double consumtion;
+    vector<int> childrenIds;
+    vector<int> neighborIds;
+    int hopToCH = 0;
+};
+static vector<GSTEBNodeInfo> g_GSTEBNodesInfo;
+static bool g_isCHsRotated = true;
+static bool g_isVariableInitiated = false;
+static vector<int> g_GSTEBPacketSent;
+static vector<int> g_GSTEBPacketRecv;
+static map<int, int> g_GSTEBParentTable;
+static double g_GSTEBTimeNow = 1000;
+static vector<int> g_receivedGSTEBBC;
+
 enum GSTEBRoutingTimers {
     INITIAL_PHRASE = 0,
     BS_BROADCAST,
+    FORWARD_BC_PKT,
     PHRASE_I_TIMESLOT,
     SENSOR_BROADCAST_TIMEOUT,
+
     TREE_CONSTRUCTION_PHASE,
+
+    SELF_CONSTRUCTION_PHASE,
+
     DATA_COLLECTING_PHASE,
     DATA_PACKET,
-    
+
     CH_ROTATION,
     CLEANUP,
 };
@@ -54,20 +86,29 @@ struct SortByNumber { //number of neighbor
     };
 
 struct SortByDistance { //number of neighbor
-        bool operator() (const GSTEBNeighbors& a, const GSTEBNeighbors& b) const {
+        bool operator() (const GSTEBNodeInfo& a, const GSTEBNodeInfo& b) const {
             if (a.distanceToCH != b.distanceToCH) return a.distanceToCH < b.distanceToCH;
-            if (a.nId != b.nId) return a.nId < b.nId;
+            if (a.id != b.id) return a.id < b.id;
+        }
+    };
+
+struct SortByHopCount { //number of neighbor
+        bool operator() (const GSTEBNodeInfo& a, const GSTEBNodeInfo& b) const {
+            return a.hopToCH > b.hopToCH;
         }
     };
 
 class GSTEBRouting: public VirtualRouting {
     private:
+    bool dataFusion = false;
     int nodeId;
     double xCoor;
     double yCoor;
     double energy;
     bool isCH;
     bool isSink;
+    int myCHId;
+    double initEnergy = 2;
     double alpha = 0.1;
     double communicationRadius = 80.0;
 
@@ -76,7 +117,9 @@ class GSTEBRouting: public VirtualRouting {
     int chY;
     int numNodes;
     int timeStart;
-    int timeSlot = 60;
+    int timeSlot = 1;
+
+    int prevHop = -1;
 
     vector<GSTEBNeighbors> tableI;
     vector<GSTEBNeighborsOfNeighbors> tableII;
@@ -89,6 +132,7 @@ class GSTEBRouting: public VirtualRouting {
     vector<GSTEBNeighbors> relayCandidates;
     int parentId = -1;
     vector<int> myChild;
+    GSTEBRoutingPacket* gstebBSPacket;
 
     int phaseITimeslot;
     int sensorBroadcastTimeout;
@@ -99,13 +143,13 @@ class GSTEBRouting: public VirtualRouting {
     void fromApplicationLayer(cPacket *, const char *) override;
     void fromMacLayer(cPacket *, int, double, double) override;
 
-
+    GSTEBNodeInfo* getGSTEBNodeInfo(int nodeId);
     void sendBSBroadcast();
     void handleBSBroadcast(GSTEBRoutingPacket* pkt);
     void computeEL();
     void sendSensorBroadcast();
     void handleSensorBroadcast(GSTEBRoutingPacket* pkt);
-    double calculateDistance(int x1, int y1, int x2, int y2);
+    double calculateDistance(double x1, double y1, double x2, double y2);
     double calculateDistance(int n);
     void sendNeighborsTable();
     void handleNeighborsTable(GSTEBRoutingPacket* pkt);
@@ -119,6 +163,7 @@ class GSTEBRouting: public VirtualRouting {
     void handleRoutingTree(GSTEBRoutingPacket* pkt);
     void sendDataPacket();
     void handleDataPacket(GSTEBRoutingPacket* pkt);
+    void rotationCH();
 };
 
 #endif              //BYPASSROUTINGMODULE
