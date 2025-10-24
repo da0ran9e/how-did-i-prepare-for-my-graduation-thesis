@@ -17,6 +17,7 @@ void SSCellularRouting::startup()
     myY = parentNode->getParentModule()->par("yCoor");
     isCH = par("isCH");
     maxHopCount = numberOfNodes; 
+    resModule = check_and_cast <ResourceManager*>(getParentModule()->getParentModule()->getSubmodule("ResourceManager"));
 
     SSCRNodeData nodeData;
     nodeData.id = self;
@@ -42,11 +43,13 @@ void SSCellularRouting::startup()
         }
 
     setTimer(RECONFIGURATION_TIMER, 200);
+    if (traceMode == 1) trace() << "******************** Round " << g_rotationCount << " ********************";
 }
 
 void SSCellularRouting::fromApplicationLayer(cPacket * pkt, const char *destination)
 {
     SSCellularRoutingPacket *netPacket = new SSCellularRoutingPacket("SSCellularRouting packet", NETWORK_LAYER_PACKET);
+    //netPacket->setByteLength(netPacket->getByteLength()/20);
     netPacket->setSource(SELF_NETWORK_ADDRESS);
     netPacket->setDestination(destination);
     encapsulatePacket(netPacket, pkt);
@@ -59,7 +62,7 @@ void SSCellularRouting::fromMacLayer(cPacket * pkt, int srcMacAddress, double rs
     if (!netPacket) {
         return;
     }
-
+    resModule->consumeEnergy(0.0000001);
     SSCRNodeData* rNode = getNodeData(self);
     rNode->numRecv++;
     rNode->energyConsumtion+=calculateConsumption(srcMacAddress, 0);
@@ -75,6 +78,9 @@ void SSCellularRouting::fromMacLayer(cPacket * pkt, int srcMacAddress, double rs
 
         case SENSOR_DATA:
             handleSensorDataPacket(netPacket);
+            break;
+
+        case FINALIZE_PKT:
             break;
 
         default:
@@ -128,11 +134,15 @@ void SSCellularRouting::timerFiredCallback(int index)
             }
             ssSentPacket.clear();
 
+            //g_ssCastaliaEnergy;
             isCH = false;
             setTimer(CH_ROTATION_SSCR, 200);
             setTimer(SENSING_STATE, uniform(1000, 1000 + 100));
             setTimer(OVERHEARING_TIMER, reconfigurationTime-2000);
             setTimer(RECONFIGURATION_TIMER, reconfigurationTime);
+            break;
+        case OVERHEARING_TIMER:
+            overhearingPacket();
             break;
         case CH_ROTATION_SSCR:
             if (!g_isCHRotation) {
@@ -146,10 +156,11 @@ void SSCellularRouting::timerFiredCallback(int index)
                 setTimer(CH_ADVERTISMENT_TIMER, 200);
             }
 
+            double energy = (resModule->getSpentEnergy());
+            //trace() << "********* " << energy;
+            getNodeData(self)->castaliaConsumtion = energy;
             break;
-        case OVERHEARING_TIMER:
-            overhearingPacket();
-            break;
+
     }
 
 }
@@ -497,6 +508,7 @@ void SSCellularRouting::sendCHAnnouncement()
 
     for (const int neighborCellId : getCellData(myCellId)->neighbors) {
         SSCellularRoutingPacket* dupPkt = new SSCellularRoutingPacket("CH Announcement", NETWORK_LAYER_PACKET);
+        //dupPkt->setByteLength(dupPkt->getByteLength()/20);
         dupPkt->setPacketType(CH_ANNOUNCEMENT_PACKET);
         dupPkt->setCellSource(myCellId);
         dupPkt->setCellHopCount(1);
@@ -525,6 +537,7 @@ void SSCellularRouting::sendCHAnnouncement()
         selectClusterHead();
     } else {
         SSCellularRoutingPacket* dupPkt = new SSCellularRoutingPacket("CH Announcement", NETWORK_LAYER_PACKET);
+        //dupPkt->setByteLength(dupPkt->getByteLength()/20);
         dupPkt->setPacketType(CH_ANNOUNCEMENT_PACKET);
         dupPkt->setCellSource(myCellId);
         dupPkt->setCellHopCount(1);
@@ -662,6 +675,7 @@ void SSCellularRouting::sendCellHopAnnouncementPacket()
                             continue;
                         }
                         SSCellularRoutingPacket* dupPkt = new SSCellularRoutingPacket("CH Announcement", NETWORK_LAYER_PACKET);
+                        //dupPkt->setByteLength(dupPkt->getByteLength()/20);
                         dupPkt->setPacketType(ANNOUNCE_CELL_HOP);
                         dupPkt->setCellSource(myCellId);
                         dupPkt->setCellDestination(myCellId);
@@ -706,6 +720,8 @@ void SSCellularRouting::handleCellHopAnnouncementPacket(SSCellularRoutingPacket*
     }
 
 void SSCellularRouting::sendSensorDataPacket(){
+    getNodeData(self)->controlPacketCount = getNodeData(self)->numSent;
+    getNodeData(self)->controlPacketsConsumtion = resModule->getSpentEnergy() - getNodeData(self)->castaliaConsumtion;
     SSSensorInfo sensorData;
     sensorData.dataId = simTime().dbl();
 
@@ -719,6 +735,7 @@ void SSCellularRouting::sendSensorDataPacket(){
 
     for (int i=0; i<sensorDataDub; i++) {
         SSCellularRoutingPacket* pkt = new SSCellularRoutingPacket("Sensing State 1", NETWORK_LAYER_PACKET);
+        //pkt->setByteLength(13);
         for (int i = 0; i < maxHopCount; ++i) {
            pkt->setCellPath(i, myCellPathToCH[i]);
            if (myCellPathToCH[i] == myCellId){
@@ -747,6 +764,9 @@ void SSCellularRouting::handleSensorDataPacket(SSCellularRoutingPacket* pkt){
         g_ssSensorDataReceivedCount++;
         g_ssSensorDataReceived.push_back(sensorData.dataId*100 + sensorData.sensorId);
         savePacketCopy(pkt, -1);
+        SSCellularRoutingPacket* dupPkt = new SSCellularRoutingPacket("Finalize", NETWORK_LAYER_PACKET);
+        dupPkt->setPacketType(FINALIZE_PKT);
+        toMacLayer(dupPkt, -1);
         if (traceMode == 0) trace() << "Received " << g_ssSensorDataReceivedCount << "/" << g_ssSensorDataSentCount << " sensor data pkts";
         return;
     }
@@ -754,7 +774,7 @@ void SSCellularRouting::handleSensorDataPacket(SSCellularRoutingPacket* pkt){
     sensorData.hopCount++;
 
    SSCellularRoutingPacket* dupPkt = new SSCellularRoutingPacket("Sensing State 2", NETWORK_LAYER_PACKET);
-
+   //dupPkt->setByteLength(dupPkt->getByteLength()/20);
     int prevCell = pkt->getCellSent();
 
     dupPkt->setCellSent(myCellId);
@@ -851,7 +871,8 @@ void SSCellularRouting::sendCellPacket()
             }
 
             SSCellularRoutingPacket* dupPkt = new SSCellularRoutingPacket("Sensing State 3", NETWORK_LAYER_PACKET);
-                        dupPkt->setPacketType(pkt->getPacketType());
+            //dupPkt->setByteLength(250);
+            dupPkt->setPacketType(pkt->getPacketType());
                         dupPkt->setCellSource(pkt->getCellSource());
                         dupPkt->setCellSent(pkt->getCellSent());
                         dupPkt->setCellNext(pkt->getCellNext());
@@ -938,24 +959,43 @@ void SSCellularRouting::sendCellPacket()
                 }
             }
         }
+        if (dataFusion){
+            while (!cellPacketQueue.empty()){
+                auto [opkt, nextCellId] = cellPacketQueue.top();
+                delete opkt;
+                cellPacketQueue.pop();
+            }
+        }
         setTimer(SEND_CELL_PACKET, uniform(0, 1));
     }
 }
 
 void SSCellularRouting::rotationCH(){
+    g_rotationCount++;
     g_isCHRotation = true;
     double top1 = -1, top2 = -1, top3 = -1;
     int id1 = -1, id2 = -1, id3 = -1;
     double low1 = 999999, low2 = 999999, low3 = 999999;
     int lid1 = -1, lid2 = -1, lid3 = -1;
     double totalEnergy = 0.0;
-    int n = 3;
+    double totalCastaliaEnergy = 0.0;
+    int n = numberOfNodes/33;
+    int totalControl = 0;
+                    double totalControlCons = 0.0;
+                    int totalPkt = 0;
+                    double alpha = 0.9;
 
     for (auto& ssNode : g_ssNodesDataList){
         ssNode.isCH = false;
-        double eLeft = (initEnergy - ssNode.energyConsumtion);
+        double eLeft = (initEnergy - ssNode.castaliaConsumtion);
         ssNode.el = (eLeft/initEnergy)*100;
         totalEnergy += ssNode.el;
+        totalCastaliaEnergy += (eLeft/initEnergy)*100;
+        totalControl += ssNode.controlPacketCount;
+        totalControlCons += ssNode.controlPacketsConsumtion;
+        totalPkt += ssNode.numSent;
+        ssNode.numSent = 0;
+
         if (ssNode.el > top1) {
                 top3 = top2; id3 = id2;
                 top2 = top1; id2 = id1;
@@ -979,11 +1019,20 @@ void SSCellularRouting::rotationCH(){
         }
 
         double avgEnergy = totalEnergy / numberOfNodes;
+        double avgCasEn = totalCastaliaEnergy / numberOfNodes;
+        double rctControl = ((double)totalControl / (double)totalPkt)*100;
+        double energyThreshold = alpha * avgEnergy;
 
+        std::vector<int> selectedIds;
         std::vector<SSCRNodeData> ss_CHcandidates;
         for (const auto& node : g_ssNodesDataList) {
-            if (node.el > avgEnergy)
+            if (node.el > avgEnergy){
                 ss_CHcandidates.push_back(node);
+            }
+
+            if (node.isCH && node.el > energyThreshold ) {
+                selectedIds.push_back(node.id);
+            }
         }
 
         if (ss_CHcandidates.empty()) {
@@ -994,7 +1043,7 @@ void SSCellularRouting::rotationCH(){
         }
 
         // Farthest-Point Sampling ---
-        std::vector<int> selectedIds;
+
 
         auto first = std::max_element(ss_CHcandidates.begin(), ss_CHcandidates.end(),
                                       [](const SSCRNodeData& a, const SSCRNodeData& b) {
@@ -1032,6 +1081,7 @@ void SSCellularRouting::rotationCH(){
             else
                 break;
         }
+        if (traceMode == 1) trace() << "******************** Round " << g_rotationCount << " ********************";
 
 
         for (int id : selectedIds) {
@@ -1041,15 +1091,18 @@ void SSCellularRouting::rotationCH(){
                 getNodeData(id)->isCH = true;
                 if (traceMode == 1) trace() << "New CHs: " << id
                           << " | EL: " << std::fixed << std::setprecision(2) << it->el << "%"
-                          << " | Pos(" << it->x << ", " << it->y << ")" << std::endl;
+                          << " | Pos(" << it->x << ", " << it->y << ")";
             }
         }
+        trace () << " ************ " << getNodeData(lid1)->castaliaConsumtion;
+        if ( traceMode == 1 ) trace()  << "MIN: " << lid1 << std::setprecision(5) << "(" << (initEnergy - getNodeData(lid1)->castaliaConsumtion)/initEnergy * 100
+                                << "), AVG: "  << avgCasEn << " reception: " << rctControl << " Control: " << (totalControlCons / totalCastaliaEnergy)*100;
+//    if (traceMode == 1) trace() << "Top Nodes: " << id1 << "(" << top1
+//            << ") consumed " << getNodeData(id1)->energyConsumtion << " actual " << std::setprecision(5) << getNodeData(id1)->castaliaConsumtion << " J";
+//    if (traceMode == 1) trace() << "Low Nodes: " << lid1 << "(" << low1
+//                << "), consumed " << getNodeData(lid1)->energyConsumtion << " actual " << std::setprecision(5) << getNodeData(lid1)->castaliaConsumtion << " J";
+//    trace() << "Max sent: " << getNodeData(lid1)->numSent << " Max recv: " << getNodeData(lid1)->numRecv;
 
-
-    if (traceMode == 1) trace() << "Top Nodes: " << id1 << "(" << top1
-            << "), " << id2 << "(" << top2 << "), " << id3 << "(" << top3 << ")";
-    if (traceMode == 1) trace() << "Low Nodes: " << lid1 << "(" << low1
-                << "), " << lid2 << "(" << low2 << "), " << lid3 << "(" << low3 << ")";
 }
 
 double SSCellularRouting::calculateConsumption(int desNode, int type){
