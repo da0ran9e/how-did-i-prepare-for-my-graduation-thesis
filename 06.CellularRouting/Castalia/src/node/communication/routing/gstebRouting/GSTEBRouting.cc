@@ -13,11 +13,12 @@ void GSTEBRouting::startup()
     cModule *parentNode = getParentModule();
     xCoor = parentNode->getParentModule()->par("xCoor");
     yCoor = parentNode->getParentModule()->par("yCoor");
-    trace() << "#NODE " << self << " (" << xCoor << ", " << yCoor << ")";
+    if ( traceMode == 0 ) trace()  << "#NODE " << self << " (" << xCoor << ", " << yCoor << ")";
     energy = 100;
     isCH = par("isCH");
     alpha = par("alpha").doubleValue();
     numNodes = getParentModule()->getParentModule()->getParentModule()->par("numNodes");
+    resModule = check_and_cast <ResourceManager*>(getParentModule()->getParentModule()->getSubmodule("ResourceManager"));
 
     GSTEBNodeInfo nodeInfo;
     nodeInfo.id = nodeId;
@@ -95,6 +96,12 @@ void GSTEBRouting::fromMacLayer(cPacket * pkt, int srcMacAddress, double rssi, d
         break;
     }
 
+    case TDMA_DATA: {
+        trace() << "&&&&&";
+        sendGSTEBTDMA();
+        break;
+    }
+
     default:
         break;
     }
@@ -105,19 +112,19 @@ void GSTEBRouting::timerFiredCallback(int index)
     // TODO: timer
     switch (index) {
     case INITIAL_PHRASE: {
-        //trace() << "#INITIAL*********";
+        //if ( traceMode == 0 ) trace()  << "#INITIAL*********";
         if (getGSTEBNodeInfo(self)->isCH) {
             isCH = true;
             chId = self;
             getGSTEBNodeInfo(self)->chId = self;
-            trace() << "#CH " << self;
+            if ( traceMode == 0 ) trace()  << "#CH " << self;
             setTimer(BS_BROADCAST, g_GSTEBTimeNow - simTime().dbl());
         }
         break;
     }
 
     case BS_BROADCAST: {
-        setTimer(TREE_CONSTRUCTION_PHASE, numNodes*5*timeSlot); //initialPhraseTimeout); // Broadcast every 10 seconds
+        setTimer(TREE_CONSTRUCTION_PHASE, numNodes*6*timeSlot); //initialPhraseTimeout); // Broadcast every 10 seconds
         sendBSBroadcast();
         break;
     }
@@ -199,8 +206,8 @@ void GSTEBRouting::timerFiredCallback(int index)
     }
 
     case CH_ROTATION: {
-//        /trace() << "#CH_ROTATION****************";
-        setTimer(CH_ROTATION, 21000);
+//        /if ( traceMode == 0 ) trace()  << "#CH_ROTATION****************";
+        setTimer(CH_ROTATION, 10000);
         setTimer(INITIAL_PHRASE, 20);
         if (!g_isCHsRotated) rotationCH();
         myCHId = -1;
@@ -210,6 +217,7 @@ void GSTEBRouting::timerFiredCallback(int index)
         tableII.clear();
         parentId = -1;
         getGSTEBNodeInfo(self)->chId = -1;
+        getGSTEBNodeInfo(self)->castaliaConsumtion = resModule->getSpentEnergy();
         break;
     }
     default:
@@ -255,7 +263,7 @@ void GSTEBRouting::sendBSBroadcast()
                             sentNode->consumtion += calcTxEnergy(2000, 80);
                             sentNode->numSent ++;
     toMacLayer(netPacket, BROADCAST_MAC_ADDRESS);
-    //trace() << "BS broadcast " << numNodes;
+    //if ( traceMode == 0 ) trace()  << "BS broadcast " << numNodes;
 }
 void GSTEBRouting::handleBSBroadcast(GSTEBRoutingPacket* pkt)
 {
@@ -289,12 +297,12 @@ void GSTEBRouting::handleBSBroadcast(GSTEBRoutingPacket* pkt)
     bSBroadcastData.senderX = xCoor;
     bSBroadcastData.senderY = yCoor;
     prevHop = sourcePktId;
-    //trace() << prevHop << " *** " << self;
-    trace() << "#CH_SELECTION " << self << ": " << chId;
+    //if ( traceMode == 0 ) trace()  << prevHop << " *** " << self;
+    if ( traceMode == 0 ) trace()  << "#CH_SELECTION " << self << ": " << chId;
     setTimer(PHRASE_I_TIMESLOT, (self+numNodes)*timeSlot+10);
     setTimer(SENSOR_BROADCAST_TIMEOUT, (self+numNodes*2)*timeSlot+10);
     if (!dataFusion){
-        setTimer(TREE_CONSTRUCTION_PHASE, (nodeId+3*numNodes)*timeSlot+10);
+        setTimer(TREE_CONSTRUCTION_PHASE, (nodeId+3*numNodes)*timeSlot+200);
     } else {
         setTimer(SELF_CONSTRUCTION_PHASE, (nodeId+3*numNodes)*timeSlot+10);
     }
@@ -343,7 +351,7 @@ void GSTEBRouting::sendSensorBroadcast()
             sentNode->consumtion += calcTxEnergy(2000, 80);
             sentNode->numSent ++;
     toMacLayer(netPacket, BROADCAST_MAC_ADDRESS);
-    //trace() << "******";
+    //if ( traceMode == 0 ) trace()  << "******";
 }
 
 void GSTEBRouting::handleSensorBroadcast(GSTEBRoutingPacket* pkt)
@@ -369,7 +377,7 @@ void GSTEBRouting::handleSensorBroadcast(GSTEBRoutingPacket* pkt)
     }
     tableI.push_back(newNeighbor);
     getGSTEBNodeInfo(self)->neighborIds.push_back(sourceId);
-    trace() << "#NEIGHBOR " << self << ": " << sourceId;
+    if ( traceMode == 0 ) trace()  << "#NEIGHBOR " << self << ": " << sourceId;
 }
 
 double GSTEBRouting::calculateDistance(double x1, double y1, double x2, double y2)
@@ -437,7 +445,7 @@ void GSTEBRouting::handleNeighborsTable(GSTEBRoutingPacket* pkt)
         nnInfo.nnY = pkt->getNnYCoor(i);
         nnInfo.nnEL = pkt->getNnEL(i);
         tableII.push_back(nnInfo);
-        trace() << "#NN " << self << ": "<< nnInfo.nnId;
+        if ( traceMode == 0 ) trace()  << "#NN " << self << ": "<< nnInfo.nnId;
     }
 
 }
@@ -453,11 +461,11 @@ double GSTEBRouting::calcTxEnergy(int kBits, double distance) {
 
     if (distance < d0) {
         double cE = kBits * (E_elec + eps_fs * distance * distance);
-        //trace() << "+++++++++++ " << cE;
+        //if ( traceMode == 0 ) trace()  << "+++++++++++ " << cE;
         return cE;
     } else {
         double cE = kBits * (E_elec + eps_mp * pow(distance, 4));
-        //trace() << "+++++++++++ " << cE;
+        //if ( traceMode == 0 ) trace()  << "+++++++++++ " << cE;
         return cE;
     }
 }
@@ -590,7 +598,7 @@ void GSTEBRouting::sendInfoToBS()
     } else {
         toMacLayer(netPacket, chId);
     }
-    //trace() << "send info to " << chId;
+    //if ( traceMode == 0 ) trace()  << "send info to " << chId;
 }
 
 void GSTEBRouting::handleInfoFromNode(GSTEBRoutingPacket* pkt)
@@ -628,7 +636,7 @@ void GSTEBRouting::handleInfoFromNode(GSTEBRoutingPacket* pkt)
             }
     }
 
-    //trace() << "Set of neighbor " << networkTableI.size();
+    //if ( traceMode == 0 ) trace()  << "Set of neighbor " << networkTableI.size();
 }
 
 void GSTEBRouting::calculateRoutingTree()
@@ -663,7 +671,7 @@ void GSTEBRouting::calculateRoutingTree()
         // and it can also know all its child nodes. If a node
         // has no child node, it defines itself as a leaf node,
         // from which the data transmitting begins.
-    trace() << "*****Start calc routing tree";
+    if ( traceMode == 0 ) trace()  << "*****Start calc routing tree";
     for (auto& node : g_GSTEBNodesInfo){
         node.distanceToCH = calculateDistance(node.chx, node.chy, node.x, node.y);
     }
@@ -758,9 +766,9 @@ void GSTEBRouting::calculateRoutingTree()
         networkParentTable[curNode.id] = nParentId;
         g_GSTEBParentTable[curNode.id] = nParentId;
         getGSTEBNodeInfo(curNode.id)->hopToCH = getGSTEBNodeInfo(nParentId)->hopToCH + 1;
-        //trace() << "#PARENT_OF " << curNode.id << ": " << nParentId;
-        trace() << "#ROUTING_TABLE " << curNode.id << " (1) -> " << nParentId << " (0)";
-        trace() << "#HOP_COUNT " << getGSTEBNodeInfo(curNode.id)->hopToCH;
+        //if ( traceMode == 0 ) trace()  << "#PARENT_OF " << curNode.id << ": " << nParentId;
+        if ( traceMode == 0 ) trace()  << "#ROUTING_TABLE " << curNode.id << " (1) -> " << nParentId << " (0)";
+        if ( traceMode == 0 ) trace()  << "#HOP_COUNT " << getGSTEBNodeInfo(curNode.id)->hopToCH;
     }
 }
 
@@ -809,16 +817,16 @@ void GSTEBRouting::handleRoutingTree(GSTEBRoutingPacket* pkt)
     // each node receives the routing tree
     // and records its parent node and child nodes
     // in memory.
-    //trace() << "routing tree";
+    //if ( traceMode == 0 ) trace()  << "routing tree";
     if (parentId != -1) return;
 
     parentId = pkt->getRoutingTree(self);
-    //trace() << "routing tree" << parentId;
+    //if ( traceMode == 0 ) trace()  << "routing tree" << parentId;
     for (int i=0; i<numNodes; i++){
         int nParentId = pkt->getRoutingTree(i);
         if (nParentId == self){
             myChild.push_back(i);
-            //trace() << "child" << i;
+            //if ( traceMode == 0 ) trace()  << "child" << i;
             for (const auto& nNode : tableI){
                 if (nNode.nId == i){
                     int des = i;
@@ -863,6 +871,8 @@ void GSTEBRouting::sendDataPacket()
     if (parentId == -1 || parentId == chId) return;
     GSTEBRoutingPacket *netPacket = new GSTEBRoutingPacket("GSTEBRouting packet", NETWORK_LAYER_PACKET);
     netPacket->setPacketType(DATA_PACKET);
+//    int dataID = simTime().dbl()*1000+self;
+//    netPacket->setGstebDataId = 1;
     netPacket->setSource(SELF_NETWORK_ADDRESS);
     std::stringstream dest_addr;
     dest_addr << parentId;
@@ -878,14 +888,20 @@ void GSTEBRouting::sendDataPacket()
                             GSTEBNodeInfo* sentNode = getGSTEBNodeInfo(self);
                                                     sentNode->consumtion += calcTxEnergy(2000, calculateDistance(parentId));
                                                     sentNode->numSent ++;
-    trace() << "#SENSOR_DATA: " << self << " -> " << parentId;
-                            toMacLayer(netPacket, parentId);
+    //if ( traceMode == 0 ) trace()  << "#SENSOR_DATA: " << self << " -> " << parentId;
+                            //toMacLayer(netPacket, parentId);
+    gstebTDMAQueue.push(netPacket);
+    int myTimeSlot = (getGSTEBNodeInfo(self)->hopToCH % 2 ) + 1;
+    double slotNow = ceil(simTime().dbl()/myTimeSlot);
+    double nextTimeSlot = (slotNow + 1) * myTimeSlot;
+    setTimer(TDMA_DATA, nextTimeSlot-simTime().dbl());
+    //trace() << "*****" << myTimeSlot << " " << slotNow << " " << nextTimeSlot << " " << nextTimeSlot-simTime().dbl();
 }
 
 void GSTEBRouting::handleDataPacket(GSTEBRoutingPacket* pkt)
 {
     if (parentId == -1 || parentId == chId) return;
-    trace() << "Data packet from " << pkt->getSource() << " to " << parentId;
+    if ( traceMode == 0 ) trace()  << "Data packet from " << pkt->getSource() << " to " << parentId;
     // Create new packet to forward to parent
     GSTEBRoutingPacket *netPacket = new GSTEBRoutingPacket("GSTEBRouting packet", NETWORK_LAYER_PACKET);
     netPacket->setPacketType(DATA_PACKET);
@@ -904,8 +920,28 @@ void GSTEBRouting::handleDataPacket(GSTEBRoutingPacket* pkt)
                                 GSTEBNodeInfo* sentNode = getGSTEBNodeInfo(self);
                                                         sentNode->consumtion += calcTxEnergy(2000, calculateDistance(parentId));
                                                         sentNode->numSent ++;
-                                trace() << "#SENSOR_DATA: " << self << " -> " << parentId;
-                                toMacLayer(netPacket, parentId);
+
+                                //toMacLayer(netPacket, parentId);
+                                gstebTDMAQueue.push(netPacket);
+                                int myTimeSlot = (getGSTEBNodeInfo(self)->hopToCH % 2 ) + 1;
+                                double slotNow = ceil(simTime().dbl()/myTimeSlot);
+                                    double nextTimeSlot = (slotNow + 1) * myTimeSlot;
+                                    setTimer(TDMA_DATA, nextTimeSlot-simTime().dbl());
+}
+
+void GSTEBRouting::sendGSTEBTDMA(){
+    trace() << "****";
+    if (!gstebTDMAQueue.empty()) {
+        trace() << "*^^^";
+        GSTEBRoutingPacket* dupPkt =  gstebTDMAQueue.front();
+            gstebTDMAQueue.pop();
+            if ( traceMode == 0 ) trace()  << "#SENSOR_DATA: " << self << " -> " << parentId;
+            toMacLayer(dupPkt, parentId);
+            int myTimeSlot = (getGSTEBNodeInfo(self)->hopToCH % 2 ) + 1;
+                double slotNow = ceil(simTime().dbl()/myTimeSlot);
+                double nextTimeSlot = (slotNow + 1) * myTimeSlot;
+                setTimer(TDMA_DATA, nextTimeSlot-simTime().dbl());
+        }
 }
 
 void GSTEBRouting::rotationCH()
@@ -1011,23 +1047,59 @@ void GSTEBRouting::rotationCH()
                             break;
                     }
 
-
+                    if (traceMode == 1) trace() << "******************** Round " << g_gstebRotationCount << " ********************";
                     for (int id : selectedIds) {
                         const auto it = std::find_if(g_GSTEBNodesInfo.begin(), g_GSTEBNodesInfo.end(),
                                                      [id](const GSTEBNodeInfo& n){ return n.id == id; });
                         if (it != g_GSTEBNodesInfo.end()) {
                             getGSTEBNodeInfo(id)->isCH = true;
-                            trace() << "New CHs: " << id
+                            if ( traceMode == 1 ) trace()  << "New CHs: " << id
                                       << " | EL: " << std::fixed << std::setprecision(2) << it->el << "%"
                                       << " | Pos(" << it->x << ", " << it->y << ")";
                         }
                     }
 
 
-                trace() << "Top Nodes: " << id1 << "(" << top1
-                        << "), " << id2 << "(" << top2 << "), " << id3 << "(" << top3 << ")";
-                trace() << "Low Nodes: " << lid1 << "(" << low1
-                            << "), " << lid2 << "(" << low2 << "), " << lid3 << "(" << low3 << ")";
-                trace() << "Max sent: " << getGSTEBNodeInfo(lid1)->numSent << " Max recv: " << getGSTEBNodeInfo(lid1)->numRecv;
+                if ( traceMode == 1 ) trace()  << "Top Nodes: " << id1 << "(" << top1
+                        << "), " << std::setprecision(5) << getGSTEBNodeInfo(id1)->castaliaConsumtion << " J";
+                if ( traceMode == 1 ) trace()  << "Low Nodes: " << lid1 << "(" << low1
+                            << "), " << std::setprecision(5) << getGSTEBNodeInfo(lid1)->castaliaConsumtion << " J";
+                if ( traceMode == 1 ) trace()  << "Max sent: " << getGSTEBNodeInfo(lid1)->numSent << " Max recv: " << getGSTEBNodeInfo(lid1)->numRecv;
 
+}
+
+void GSTEBRouting::savePacketCopy(GSTEBRoutingPacket* pkt, int des){
+//    SSCRPacket newSSCRPacket;
+//    newSSCRPacket.nextHop = des;
+//    SSSensorInfo pktSensorInfo = pkt->getSensorData();
+//    newSSCRPacket.sensorId = pktSensorInfo.sensorId;
+//    newSSCRPacket.dataId = pktSensorInfo.dataId;
+//    newSSCRPacket.desCH = pktSensorInfo.destinationCH;
+//    newSSCRPacket.hopCount = pktSensorInfo.hopCount;
+//    newSSCRPacket.cellSource = pkt->getCellSource();
+//    newSSCRPacket.cellSent = pkt->getCellSent();
+//    newSSCRPacket.cellDes = pkt->getCellDestination();
+//    newSSCRPacket.ttl = pkt->getTtl();
+//    newSSCRPacket.source = atoi(pkt->getSource());
+//    for (int i=0; i<maxHopCount; i++){
+//        newSSCRPacket.cellPath.push_back(pkt->getCellPath(i));
+//    }
+//    g_ssSensorDataOverheared[self].push_back(newSSCRPacket);
+//    ssSentPacket.push_back(newSSCRPacket);
+}
+
+void GSTEBRouting::overhearingPacket(){
+//    for (const auto& sscrPkt:ssSentPacket){
+//        int des = sscrPkt.nextHop;
+//        if (des == -1) continue;
+//        bool foundPkt = false;
+//        for (const auto& overhearedPkt:g_ssSensorDataOverheared[des]){
+//            //trace() << sscrPkt.dataId << " : " << overhearedPkt.dataId;
+//            if (sscrPkt.dataId == overhearedPkt.dataId){
+//                foundPkt = true;
+//                break;
+//            }
+//        }
+//        if (!foundPkt) trace() << "Pkt lost: " << sscrPkt.dataId << " from " << sscrPkt.sensorId;
+//    }
 }

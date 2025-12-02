@@ -12,7 +12,7 @@
 
 package node;
 
-import node.mobilityManager;
+import node.mobilityManager.*;
 
 // The sensor node module. Connects to the wireless channel in order to communicate 
 // with other nodes. Connects to psysical processes so it can sample them.
