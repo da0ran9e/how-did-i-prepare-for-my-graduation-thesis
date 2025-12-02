@@ -3,6 +3,26 @@
 
 using namespace ns3;
 
+class WsnSim
+{
+public:
+    WsnSim();
+    bool Configure(int argc, char *argv[]);
+    void Run();
+    void Report(std::ostream &os);
+private:
+    std::string m_iniFile;
+    std::string m_traceFile;
+    int size;
+    double step;
+    double totalTime;
+    bool printTrace;
+
+    void CreateNodes();
+    void CreateDevice();
+    void InstallInternetStack();
+}
+
 int main(int argc, char *argv[])
 {
     std::string iniFile = "input.ini";
