@@ -5,16 +5,6 @@ IniParser::IniParser()
     // TODO: initialize anything if needed
 }
 
-void IniParser::setSectionCallback(SectionCallback cb)
-{
-    m_onSection = cb;
-}
-
-void IniParser::setKeyValueCallback(KeyValueCallback cb)
-{
-    m_onKeyValue = cb;
-}
-
 void IniParser::read(const std::string &filename)
 {
     // - call readFile(filename)
