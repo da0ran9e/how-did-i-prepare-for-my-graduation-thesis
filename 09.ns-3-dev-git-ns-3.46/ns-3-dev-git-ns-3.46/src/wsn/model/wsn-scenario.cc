@@ -1,5 +1,7 @@
 #include "wsn-scenario.h"
-  
+namespace ns3 {
+namespace wsn {
+
 void WsnScenario::onSection(const std::string &section)
 {
     m_currentSection = section;
@@ -48,3 +50,5 @@ void WsnScenario::configure(std::string iniFile)
     //   - positions
     //   - MAC/PHY
 }
+} // namespace wsn
+} // namespace ns3

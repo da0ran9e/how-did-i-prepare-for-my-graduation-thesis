@@ -23,7 +23,7 @@ private:
     void createNodes();
     void createDevice();
     void installInternetStack();
-}
+};
 
 int main(int argc, char *argv[])
 {
@@ -58,7 +58,7 @@ bool WsnSim::configure(int argc, char *argv[])
 
     m_scenario = std::make_shared<WsnScenario>();
     m_scenario->configure(m_iniFile);    
-    
+
     // size = m_scenario->GetNumNodes();
     // step = 1.0;          // step can come from INI later
     // totalTime = 10.0;    // same here
