@@ -1,9 +1,5 @@
 #include "wsn-scenario.h"
-namespace ns3 
-{
-namespace wsn
-{ 
-      
+  
 void WsnScenario::onSection(const std::string &section)
 {
     m_currentSection = section;
@@ -55,21 +51,6 @@ void WsnScenario::configure(std::string iniFile)
     // parse file
     iniParser.read(iniFile);
 
-    if (m_traceEnabled)
-    {
-        WsnTrace::Get().Enable(true);
-        WsnTrace::Get().SetTraceFile(m_traceFile);
-
-        WsnTrace::Get().Trace()
-            << "Trace started. numNodes=" << m_numNodes
-            << " field=" << m_fieldX << "x" << m_fieldY
-            << std::endl;
-    }
-    else
-    {
-        WsnTrace::Get().Enable(false);
-    }
-
     // Debug print
     std::cout << "Number of nodes = " << m_numNodes << std::endl;
     std::cout << "Field size = " << m_fieldX << " x " << m_fieldY << std::endl;
@@ -79,5 +60,3 @@ void WsnScenario::configure(std::string iniFile)
     //   - positions
     //   - MAC/PHY
 }
-} // namespace wsn
-} // namespace ns3
