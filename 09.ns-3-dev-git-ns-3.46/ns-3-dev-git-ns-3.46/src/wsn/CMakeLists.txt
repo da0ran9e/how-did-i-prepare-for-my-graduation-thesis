@@ -1,4 +1,6 @@
 set(gsl_libraries)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 if(${GSL_FOUND})
   set(gsl_libraries
       ${GSL_LIBRARIES}

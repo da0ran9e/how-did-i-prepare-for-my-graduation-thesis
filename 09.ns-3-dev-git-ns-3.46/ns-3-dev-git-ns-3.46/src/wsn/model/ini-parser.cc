@@ -1,11 +1,4 @@
 #include "ini-parser.h"
-#include <fstream>
-#include <sstream>
-#include <stdexcept>
-namespace ns3 
-{
-namespace wsn
-{ 
 
 IniParser::IniParser()
 {
@@ -248,6 +241,3 @@ std::string IniParser::trim(const char *start, const char *end)
     // - return substring with left+right spaces removed
     return "";
 }
-
-} // namespace wsn
-} // namespace ns3

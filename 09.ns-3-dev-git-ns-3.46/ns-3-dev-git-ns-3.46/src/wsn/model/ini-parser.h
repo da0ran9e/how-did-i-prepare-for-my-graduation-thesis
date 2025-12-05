@@ -5,6 +5,12 @@
 #include <vector>
 #include <istream>
 #include <functional>
+#include <fstream>
+#include <sstream>
+#include <stdexcept>
+#include <filesystem>   
+#include <set>          
+#include <cstring>      
 
 using SectionCallback = std::function<void(const std::string &section)>;
 using KeyValueCallback = std::function<void(const std::string &key, const std::string &value, const std::string &comment, const std::string &baseDir)>;
