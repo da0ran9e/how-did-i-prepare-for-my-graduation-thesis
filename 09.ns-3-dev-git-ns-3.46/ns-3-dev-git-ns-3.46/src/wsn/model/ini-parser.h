@@ -12,18 +12,23 @@
 #include <set>          
 #include <cstring>      
 
-using SectionCallback = std::function<void(const std::string &section)>;
-using KeyValueCallback = std::function<void(const std::string &key, const std::string &value, const std::string &comment, const std::string &baseDir)>;
-
 class IniParser
 {
+public:
+    class Listener {
+    public:
+        virtual void onSection(const std::string& section) = 0;
+        virtual void onKeyValue(const std::string& key,
+                                const std::string& value,
+                                const std::string& section,
+                                const std::string& baseDir) = 0;
+    };
+
 public:
     IniParser();
     ~IniParser();
 
-    void setSectionCallback(SectionCallback cb);
-    void setKeyValueCallback(KeyValueCallback cb);
-
+    void setListener(Listener* listener) { m_listener = listener; }
     void read(const std::string &filename);
     void readFile(const std::string &filename);
     void readText(const std::string &text, const std::string &filename = "", const std::string &baseDir = "");
@@ -41,9 +46,7 @@ private:
     std::string trim(const char *start, const char *end);
 
 private:
-    SectionCallback m_onSection;
-    KeyValueCallback m_onKeyValue;
-
+    Listener* m_listener = nullptr;
 };
 
 #endif // INI_PARSER_H

@@ -3,7 +3,7 @@
 void WsnScenario::onSection(const std::string &section)
 {
     m_currentSection = section;
-
+    std::cout << "Section: " << section << std::endl;
     if (m_config.find(section) == m_config.end())
         m_config[section] = {};
 }
@@ -35,20 +35,8 @@ void WsnScenario::onKeyValue(const std::string &key,
 void WsnScenario::configure(std::string iniFile)
 {
     IniParser iniParser;
-
-    iniParser.onSection = [this](const std::string &sec) {
-        this->onSection(sec);
-    };
-
-    iniParser.onKeyValue = [this](const std::string &key,
-                              const std::string &value,
-                              const std::string &comment,
-                              const std::string &baseDir)
-    {
-        this->onKeyValue(key, value, comment, baseDir);
-    };
-
-    // parse file
+    iniParser.setListener(this);
+    
     iniParser.read(iniFile);
 
     // Debug print
