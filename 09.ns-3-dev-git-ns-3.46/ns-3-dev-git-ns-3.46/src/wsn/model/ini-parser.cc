@@ -93,7 +93,7 @@ void IniParser::doReadFromStream(std::istream &in,
     //      "key = value"
     // - call callbacks or store results
 
-    if (!m_onSection && !m_onKeyValue) {
+    if (!m_listener) {
         throw std::runtime_error("***IniParser: No callbacks defined");
     }
 
@@ -153,8 +153,7 @@ void IniParser::doReadFromStream(std::istream &in,
             currentSection = sectionName;
 
             // callback section
-            if (m_onSection)
-                m_onSection(sectionName);
+            m_listener->onSection(sectionName);
 
             return;
         }
@@ -182,9 +181,8 @@ void IniParser::doReadFromStream(std::istream &in,
         }
 
         // callback key-value
-        if (m_onKeyValue) {
-            m_onKeyValue(key, value, comment, baseDir);
-        }
+        m_listener->onKeyValue(key, value, comment, baseDir);
+        
     });
 }
 
