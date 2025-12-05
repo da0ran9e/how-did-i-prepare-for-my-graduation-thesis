@@ -7,16 +7,17 @@
 #include <string>
 #include <unordered_map>
 
-class WsnScenario {
+class WsnScenario : public IniParser::Listener 
+{
 public:
     void configure(std::string iniFile);
 private:
     // callbacks
-    void onSection(const std::string &section);
+    void onSection(const std::string &section) override;
     void onKeyValue(const std::string &key,
                     const std::string &value,
                     const std::string &comment,
-                    const std::string &baseDir);
+                    const std::string &baseDir) override;
 
 private:
     std::string m_currentSection;
