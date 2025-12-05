@@ -2,23 +2,38 @@
 #include <fstream>
 #include <sstream>
 #include <stdexcept>
+namespace ns3 
+{
+namespace wsn
+{ 
 
 IniParser::IniParser()
 {
     // TODO: initialize anything if needed
 }
 
+void IniParser::setSectionCallback(SectionCallback cb)
+{
+    m_onSection = cb;
+}
+
+void IniParser::setKeyValueCallback(KeyValueCallback cb)
+{
+    m_onKeyValue = cb;
+}
+
 void IniParser::read(const std::string &filename)
 {
-    // TODO:
     // - call readFile(filename)
+    readFile(filename);
 }
 
 void IniParser::readFile(const std::string &filename)
 {
-    // TODO:
     // - create include stack
     // - call doReadFile(filename, includeStack)
+    std::vector<std::string> includeFileStack;
+    doReadFile(filename, includeFileStack);
 }
 
 void IniParser::readText(const std::string &text,
@@ -42,11 +57,43 @@ void IniParser::readStream(std::istream &in,
 void IniParser::doReadFile(const std::string &filename,
                            std::vector<std::string> &includeStack)
 {
-    // TODO:
     // - detect circular includes
     // - open file stream
     // - compute base directory from filename
     // - call doReadFromStream()
+
+    // Convert to clean absolute path
+    std::filesystem::path absPath = std::filesystem::absolute(filename);
+    std::string absoluteFilename = absPath.lexically_normal().string();
+
+    std::string baseDir = absPath.parent_path().string();
+
+    for (const auto &f : includeStack) {
+        if (f == absoluteFilename) {
+            throw std::runtime_error(
+                "IniParser: Circular include detected: file '" +
+                filename + "' includes itself (directly or indirectly).");
+        }
+    }
+
+    includeStack.push_back(absoluteFilename);
+
+    std::ifstream in(filename);
+    if (!in.is_open()) {
+        throw std::runtime_error("IniParser: Cannot open ini file: " + filename);
+    }
+
+    doReadFromStream(in, filename, includeStack, absoluteFilename, baseDir);
+
+    includeStack.pop_back();
+
+}
+
+inline char firstNonwhitespaceChar(const char *s)
+{
+    for (; *s == ' ' || *s == '\t'; s++)
+        /**/;
+    return *s;
 }
 
 void IniParser::doReadFromStream(std::istream &in,
@@ -55,7 +102,6 @@ void IniParser::doReadFromStream(std::istream &in,
                                  const std::string &absoluteFilename,
                                  const std::string &baseDir)
 {
-    // TODO:
     // - parse stream line by line using forEachJoinedLine
     // - detect:
     //      '#' comment
@@ -63,6 +109,100 @@ void IniParser::doReadFromStream(std::istream &in,
     //      "[section]"
     //      "key = value"
     // - call callbacks or store results
+
+    if (!m_onSection && !m_onKeyValue) {
+        throw std::runtime_error("***IniParser: No callbacks defined");
+    }
+
+    std::string currentSection;
+    std::set<std::string> sectionsInFile;
+    
+    forEachJoinedLine(in, [&](std::string &lineBuf, int lineNumber, int numLines) {
+        std::string line = lineBuf;
+
+        // Trim
+        rtrim(line);
+        if (line.size() == 0)
+            return; // skip blank line
+
+        // Skip comment
+        if (line[0] == '#')
+            return;
+
+        // Handle include
+        if (line.rfind("include ", 0) == 0) {
+            std::string includeFile = line.substr(strlen("include "));
+            rtrim(includeFile);
+
+            // loop
+            if (std::find(includeStack.begin(), includeStack.end(), absoluteFilename) != includeStack.end())
+                throw std::runtime_error("Circular include detected: " + filename);
+
+            includeStack.push_back(absoluteFilename);
+
+            // determine relative path
+            std::string includePath = baseDir + "/" + includeFile;
+
+            doReadFile(includePath, includeStack);
+
+            includeStack.pop_back();
+            return;
+        }
+
+        // [SectionName]
+        if (line[0] == '[') {
+            if (line.back() != ']') {
+                throw std::runtime_error("Syntax error: missing closing ] in section header at "
+                                         + filename + ":" + std::to_string(lineNumber));
+            }
+
+            std::string sectionName = line.substr(1, line.size() - 2);
+            rtrim(sectionName);
+
+            if (sectionName.empty())
+                throw std::runtime_error("Empty section name at " + filename);
+
+            //duplicate section
+            if (sectionsInFile.count(sectionName))
+                throw std::runtime_error("Duplicate section [" + sectionName + "] in file");
+
+            sectionsInFile.insert(sectionName);
+            currentSection = sectionName;
+
+            // callback section
+            if (m_onSection)
+                m_onSection(sectionName);
+
+            return;
+        }
+
+        // key=value
+        auto eq = line.find('=');
+        if (eq == std::string::npos)
+            throw std::runtime_error("Expected key=value format at " + filename);
+
+        std::string key = line.substr(0, eq);
+        std::string value = line.substr(eq + 1);
+
+        // Trim key/value
+        rtrim(key);
+        rtrim(value);
+
+        // detect optional '# comment' after value
+        std::string comment;
+        auto hashPos = value.find('#');
+        if (hashPos != std::string::npos) {
+            comment = value.substr(hashPos + 1);
+            value = value.substr(0, hashPos);
+            rtrim(value);
+            rtrim(comment);
+        }
+
+        // callback key-value
+        if (m_onKeyValue) {
+            m_onKeyValue(key, value, comment, baseDir);
+        }
+    });
 }
 
 void IniParser::forEachJoinedLine(
@@ -90,8 +230,16 @@ const char *IniParser::findEndContent(const char *line,
 
 void IniParser::rtrim(std::string &str)
 {
-    // TODO:
     // - remove trailing spaces/tabs
+    int end = str.size() - 1;
+    while (end >= 0 && std::isspace(static_cast<unsigned char>(str[end])))
+        end--;
+
+    if (end < 0) {
+        str.clear();
+        return;
+    }
+    str.resize(end + 1);
 }
 
 std::string IniParser::trim(const char *start, const char *end)
@@ -101,43 +249,5 @@ std::string IniParser::trim(const char *start, const char *end)
     return "";
 }
 
-// bool IniParser::Load(const std::string &path)
-// {
-//     std::ifstream ifs(path);
-//     if (!ifs.is_open()) return false;
-
-//     std::string line;
-//     while (std::getline(ifs, line))
-//     {
-//         // comment
-//         if (line.size() == 0 || line[0] == '#')
-//             continue;
-
-//         size_t eq = line.find('=');
-//         if (eq == std::string::npos)
-//             continue;
-
-//         std::string key = line.substr(0, eq);
-//         std::string val = line.substr(eq + 1);
-
-//         // whitespace
-//         key.erase(remove_if(key.begin(), key.end(), ::isspace), key.end());
-//         val.erase(val.begin(), find_if(val.begin(), val.end(), [](int c){return !isspace(c);}));  
-
-//         m_values[key] = val;
-//     }
-//     return true;
-// }
-
-// std::string IniParser::Get(const std::string &key, const std::string &defaultVal) const
-// {
-//     auto it = m_values.find(key);
-//     return it == m_values.end() ? defaultVal : it->second;
-// }
-
-// int IniParser::GetInt(const std::string &key, int def) const
-// {
-//     auto v = Get(key, "");
-//     if (v == "") return def;
-//     return std::stoi(v);
-// }
+} // namespace wsn
+} // namespace ns3
