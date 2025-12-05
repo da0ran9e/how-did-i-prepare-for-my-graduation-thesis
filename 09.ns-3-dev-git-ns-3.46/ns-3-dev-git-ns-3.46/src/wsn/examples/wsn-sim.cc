@@ -34,7 +34,7 @@ int main(int argc, char *argv[])
 
     sim.run();
     sim.report(std::cout);
-    std::cout << "INI loaded. Trace written to " << m_traceFile << std::endl;
+    std::cout << "INI loaded. Trace written to trace file" << std::endl;
 
     return 0;
 }
@@ -56,7 +56,7 @@ bool WsnSim::configure(int argc, char *argv[])
     cmd.AddValue("trace", "Trace output file", m_traceFile);
     cmd.Parse(argc, argv);
 
-    m_scenario = std::make_shared<WsnScenario>();
+    m_scenario = std::make_shared<ns3::wsn::WsnScenario>();
     m_scenario->configure(m_iniFile);    
 
     // size = m_scenario->GetNumNodes();
