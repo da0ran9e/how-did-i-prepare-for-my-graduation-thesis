@@ -7,7 +7,7 @@ endif()
 
 set(source_files
     model/ini-parser.cc
-    model/wsn-scencario.cc
+    model/wsn-scenario.cc
 )
 
 set(header_files
