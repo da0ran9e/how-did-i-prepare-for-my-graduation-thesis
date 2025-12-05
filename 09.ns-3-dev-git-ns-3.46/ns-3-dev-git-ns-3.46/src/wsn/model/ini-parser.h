@@ -13,6 +13,9 @@
 #include <set>          
 #include <cstring>      
 
+namespace ns3 {
+namespace wsn {
+
 class IniParser
 {
 public:
@@ -49,5 +52,8 @@ private:
 private:
     Listener* m_listener = nullptr;
 };
+
+} // namespace wsn
+} // namespace ns3
 
 #endif // INI_PARSER_H

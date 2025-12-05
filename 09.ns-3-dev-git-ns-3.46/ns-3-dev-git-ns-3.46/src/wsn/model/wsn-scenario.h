@@ -6,6 +6,8 @@
 //#include "wsn-trace.h"
 #include <string>
 #include <unordered_map>
+namespace ns3 {
+namespace wsn {
 
 class WsnScenario : public IniParser::Listener 
 {
@@ -31,5 +33,8 @@ private:
     double m_fieldX = 0;
     double m_fieldY = 0;
 };
+
+} // namespace wsn
+} // namespace ns3
 
 #endif // WSN_SCENARIO_H
