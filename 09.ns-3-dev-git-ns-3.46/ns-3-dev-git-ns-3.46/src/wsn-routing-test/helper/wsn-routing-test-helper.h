@@ -6,7 +6,7 @@
 namespace ns3
 {
   
-class WsnRoutingTestHelper : public Ipv4RoutingHelper
+class WsnRoutingTestHelper
 {
   public:
     WsnRoutingTestHelper();
