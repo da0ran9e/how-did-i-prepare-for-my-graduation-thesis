@@ -1,0 +1,4 @@
+#ifndef WSN_ROUTING_TEST_H
+#define WSN_ROUTING_TEST_H
+
+#endif /* WSN_ROUTING_TEST_H */
