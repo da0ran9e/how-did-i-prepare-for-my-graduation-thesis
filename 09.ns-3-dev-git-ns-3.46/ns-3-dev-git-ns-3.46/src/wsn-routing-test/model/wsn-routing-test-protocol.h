@@ -21,7 +21,7 @@ class RoutingProtocol
         void setExampleValue(int v);
         int getExampleValue();
         RoutingProtocol();
-        virtual ~RoutingProtocol();
+        ~RoutingProtocol();
 
     private:
         int m_exampleValue;
