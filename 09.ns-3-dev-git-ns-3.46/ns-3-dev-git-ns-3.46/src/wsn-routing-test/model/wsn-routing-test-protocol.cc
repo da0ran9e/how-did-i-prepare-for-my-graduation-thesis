@@ -26,7 +26,7 @@ namespace ns3
 
 namespace wsn_routing_test
 {
-NS_OBJECT_ENSURE_REGISTERED(RoutingProtocol);
+//NS_OBJECT_ENSURE_REGISTERED(RoutingProtocol);
 RoutingProtocol::RoutingProtocol()
     : m_exampleValue(10)
 {
