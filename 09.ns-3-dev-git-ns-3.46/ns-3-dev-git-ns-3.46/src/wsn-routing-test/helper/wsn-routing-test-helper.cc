@@ -4,7 +4,6 @@ namespace ns3
 {
 
 WsnRoutingTestHelper::WsnRoutingTestHelper()
-    : m_testHelperAttribute(0)
 {
 }
 
