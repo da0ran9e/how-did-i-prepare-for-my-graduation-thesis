@@ -8,6 +8,11 @@ IniParser::IniParser()
     // TODO: initialize anything if needed
 }
 
+IniParser::~IniParser()
+{
+
+}
+
 void IniParser::read(const std::string &filename)
 {
     // - call readFile(filename)
