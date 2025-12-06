@@ -1,6 +1,5 @@
 set(libs "${libs_to_build}")
 
-add_subdirectory(wsn)
 add_subdirectory(wsn-test)
 
 # Process the visualizer module first if enabled
