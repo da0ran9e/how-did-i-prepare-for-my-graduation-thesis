@@ -50,13 +50,6 @@ WsnRoutingTestExample::Configure(int argc, char** argv)
 {
     SeedManager::SetSeed(12345);
     CommandLine cmd(__FILE__);
-
-    cmd.AddValue("pcap", "Write PCAP traces.", pcap);
-    cmd.AddValue("printRoutes", "Print routing table dumps.", printRoutes);
-    cmd.AddValue("size", "Number of nodes.", size);
-    cmd.AddValue("time", "Simulation time, s.", totalTime);
-    cmd.AddValue("step", "Grid step, m", step);
-
     cmd.Parse(argc, argv);
     return true;
 }
@@ -64,9 +57,9 @@ WsnRoutingTestExample::Configure(int argc, char** argv)
 void
 WsnRoutingTestExample::Run()
 {
-    std::cout << "Starting simulation for " << totalTime << " s ...\n";
+    std::cout << "Starting simulation";
 
-    Simulator::Stop(Seconds(totalTime));
+    Simulator::Stop(Seconds(10));
     Simulator::Run();
     Simulator::Destroy();
 }
