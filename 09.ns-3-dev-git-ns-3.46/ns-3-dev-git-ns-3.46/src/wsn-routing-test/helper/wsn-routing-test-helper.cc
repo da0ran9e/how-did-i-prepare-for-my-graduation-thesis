@@ -6,7 +6,6 @@ namespace ns3
 WsnRoutingTestHelper::WsnRoutingTestHelper()
     : m_testHelperAttribute(0)
 {
-    std::cout << "WsnRoutingTestHelper created." << std::endl;
 }
 
 void WsnRoutingTestHelper::getTestHelperAttribute()
