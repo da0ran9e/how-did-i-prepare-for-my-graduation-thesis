@@ -62,7 +62,7 @@ WsnRoutingTestExample::Configure(int argc, char** argv)
 }
 
 void
-AodvExample::Run()
+WsnRoutingTestExample::Run()
 {
     std::cout << "Starting simulation for " << totalTime << " s ...\n";
 
@@ -72,6 +72,6 @@ AodvExample::Run()
 }
 
 void
-AodvExample::Report(std::ostream&)
+WsnRoutingTestExample::Report(std::ostream&)
 {
 }
