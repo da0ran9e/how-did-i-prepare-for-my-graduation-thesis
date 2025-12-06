@@ -52,7 +52,7 @@ void WsnSimTest::run()
 
 }
 
-void WsnSim::report(std::ostream &os)
+void WsnSimTest::report(std::ostream &os)
 {
     os << "Simulation completed." << std::endl;
 }
