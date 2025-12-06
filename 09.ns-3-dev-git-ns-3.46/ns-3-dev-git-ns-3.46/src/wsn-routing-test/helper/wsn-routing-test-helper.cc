@@ -4,7 +4,7 @@ namespace ns3
 {
 
 WsnRoutingTestHelper::WsnRoutingTestHelper()
-    : ()m_testHelperAttribute(20)
+    : m_testHelperAttribute(0)
 {
     std::cout << "WsnRoutingTestHelper created." << std::endl;
 }
