@@ -15,7 +15,7 @@ namespace ns3
 namespace wsn_routing_test
 {
 
-class RoutingProtocol : public Ipv4RoutingProtocol
+class RoutingProtocol
 {
     public:
         void setExampleValue(int v);
