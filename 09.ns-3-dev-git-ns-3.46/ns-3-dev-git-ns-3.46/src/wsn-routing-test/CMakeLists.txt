@@ -6,4 +6,6 @@ build_lib(
   HEADER_FILES
     helper/wsn-routing-test-helper.h
     model/wsn-routing-test-protocol.h
+  LIBRARIES_TO_LINK
+    ${libcore}
 )
