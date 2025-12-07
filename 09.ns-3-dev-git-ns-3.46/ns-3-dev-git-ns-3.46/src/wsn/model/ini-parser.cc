@@ -113,7 +113,7 @@ void IniParser::doReadFromStream(std::istream &in,
     std::cout << "IniParser: doReadFromStream: " << filename << std::endl;
     forEachJoinedLine(in, [&](std::string &lineBuf, int lineNumber, int numLines) {
         std::string line = lineBuf;
-
+        // std::cout << "IniParser: Processing line " << lineNumber << ": " << line << std::endl;
         // Trim
         rtrim(line);
         if (line.size() == 0)
@@ -164,6 +164,7 @@ void IniParser::doReadFromStream(std::istream &in,
             currentSection = sectionName;
 
             // callback section
+            std::cout << "IniParser: Section: " << sectionName << std::endl;
             m_listener->onSection(sectionName);
 
             return;
@@ -192,6 +193,7 @@ void IniParser::doReadFromStream(std::istream &in,
         }
 
         // callback key-value
+        std::cout << "IniParser: Key: " << key << " = " << value << std::endl;
         m_listener->onKeyValue(key, value, comment, baseDir);
         
     });
