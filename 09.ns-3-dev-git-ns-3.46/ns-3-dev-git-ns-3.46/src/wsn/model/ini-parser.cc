@@ -112,6 +112,7 @@ void IniParser::doReadFromStream(std::istream &in,
     std::string currentSection;
     std::set<std::string> sectionsInFile;
     std::cout << "IniParser: doReadFromStream: " << filename << std::endl;
+    std::cout << "Contents:" << in.rdbuf() << std::endl;
     forEachJoinedLine(in, [&](std::string &lineBuf, int lineNumber, int numLines) {
         std::string line = lineBuf;
         // std::cout << "IniParser: Processing line " << lineNumber << ": " << line << std::endl;
