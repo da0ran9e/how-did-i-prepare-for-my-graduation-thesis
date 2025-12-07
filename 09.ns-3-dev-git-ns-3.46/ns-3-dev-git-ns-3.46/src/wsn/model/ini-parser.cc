@@ -17,6 +17,7 @@ void IniParser::read(const std::string &filename)
 {
     // - call readFile(filename)
     std::cout << "Reading INI file: " << filename << std::endl;
+    std::cout << "Absolute path: " << std::filesystem::absolute(filename) << std::endl;
     readFile(filename);
 }
 
