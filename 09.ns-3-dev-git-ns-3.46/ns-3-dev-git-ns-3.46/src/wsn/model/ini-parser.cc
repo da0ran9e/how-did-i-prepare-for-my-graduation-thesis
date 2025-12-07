@@ -16,6 +16,7 @@ IniParser::~IniParser()
 void IniParser::read(const std::string &filename)
 {
     // - call readFile(filename)
+    std::cout << "Reading INI file: " << filename << std::endl;
     readFile(filename);
 }
 
@@ -23,6 +24,7 @@ void IniParser::readFile(const std::string &filename)
 {
     // - create include stack
     // - call doReadFile(filename, includeStack)
+    //std::cout << "IniParser: readFile: " << filename << std::endl;
     std::vector<std::string> includeFileStack;
     doReadFile(filename, includeFileStack);
 }
@@ -67,6 +69,7 @@ void IniParser::doReadFile(const std::string &filename,
         }
     }
 
+    std::cout << "IniParser: readFile: " << filename << std::endl;
     includeStack.push_back(absoluteFilename);
 
     std::ifstream in(filename);
@@ -107,7 +110,7 @@ void IniParser::doReadFromStream(std::istream &in,
 
     std::string currentSection;
     std::set<std::string> sectionsInFile;
-    
+    std::cout << "IniParser: doReadFromStream: " << filename << std::endl;
     forEachJoinedLine(in, [&](std::string &lineBuf, int lineNumber, int numLines) {
         std::string line = lineBuf;
 
