@@ -84,6 +84,13 @@ void IniParser::doReadFile(const std::string &filename,
 
 }
 
+inline bool opp_isblank(const char *s)
+{
+    for (; *s == ' ' || *s == '\t'; s++)
+        /**/;
+    return *s == '\0' || *s == '\n' || *s == '\r';
+}
+
 inline char firstNonwhitespaceChar(const char *s)
 {
     for (; *s == ' ' || *s == '\t'; s++)
@@ -112,7 +119,7 @@ void IniParser::doReadFromStream(std::istream &in,
     std::string currentSection;
     std::set<std::string> sectionsInFile;
     std::cout << "IniParser: doReadFromStream: " << filename << std::endl;
-    std::cout << "Contents:" << in.rdbuf() << std::endl;
+    //std::cout << "Contents:" << in.rdbuf() << std::endl;
     forEachJoinedLine(in, [&](std::string &lineBuf, int lineNumber, int numLines) {
         std::string line = lineBuf;
         // std::cout << "IniParser: Processing line " << lineNumber << ": " << line << std::endl;
@@ -210,6 +217,45 @@ void IniParser::forEachJoinedLine(
     //     * join with backslash continuation
     //     * join with indent continuation
     // - for each joined line, call processLine(buffer, lineNumber, numPhysicalLines)
+
+    // join continued lines, and call processLine() for each line
+    std::string concatenatedLine = "";
+    int startLineNumber = -1;
+    int lineNumber = 0;
+    while (true) {
+        lineNumber++;
+        std::string rawLine;
+        if (!std::getline(in, rawLine))
+            break;
+        if (!rawLine.empty() && rawLine.back() == '\r')
+            rawLine.resize(rawLine.size()-1);  // remove trailing CR (for CRLF files on Linux))
+        if (!concatenatedLine.empty() && concatenatedLine.back() == '\\') {
+            // backslash continuation: basically delete the backslash+LF sequence
+            concatenatedLine.resize(concatenatedLine.size()-1);  // remove backslash
+            concatenatedLine += rawLine;
+        }
+        else if (!opp_isblank(concatenatedLine.c_str()) && firstNonwhitespaceChar(concatenatedLine.c_str()) != '#' && // only start appending to non-blank and NON-COMMENT (!) lines
+                 !opp_isblank(rawLine.c_str()) && (rawLine[0] == ' ' || rawLine[0] == '\t')) // only append non-blank, indented lines
+        {
+            concatenatedLine += "\n" + rawLine;
+        }
+        else {
+            if (startLineNumber != -1 && !opp_isblank(concatenatedLine.c_str())) {
+                int numLines = lineNumber - startLineNumber;
+                processLine(concatenatedLine, startLineNumber, numLines);
+            }
+            concatenatedLine = rawLine;
+            startLineNumber = lineNumber;
+        }
+    }
+
+    // last line
+    if (startLineNumber != -1 && !opp_isblank(concatenatedLine.c_str())) {
+        if (!concatenatedLine.empty() && concatenatedLine.back() == '\\')
+            concatenatedLine.resize(concatenatedLine.size()-1);  // remove final stray backslash
+        int numLines = lineNumber - startLineNumber;
+        processLine(concatenatedLine, startLineNumber, numLines);
+    }
 }
 
 const char *IniParser::findEndContent(const char *line,
