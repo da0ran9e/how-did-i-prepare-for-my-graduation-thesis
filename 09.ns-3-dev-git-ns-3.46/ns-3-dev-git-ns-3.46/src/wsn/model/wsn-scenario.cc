@@ -31,35 +31,18 @@ void WsnScenario::onKeyValue(const std::string &key,
         
         std::regex xCoorRegex(R"(SN\.node\[(\d+)\]\.xCoor)");
         std::regex yCoorRegex(R"(SN\.node\[(\d+)\]\.yCoor)");
-
         std::smatch match;
-
-        // parse xCoor
-        if (std::regex_match(key, match, xCoorRegex)) 
-        {
-            int index = std::stoi(match[1].str());
-            double val = std::stod(value);
-
-            if (index >= (int)m_nodeCoords.size())
-                m_nodeCoords.resize(index + 1, {0.0, 0.0});
-
-            m_nodeCoords[index].first = val;
-            return;
+        if (std::regex_match(key, match, xCoorRegex)) {
+            size_t idx = std::stoul(match[1]);
+            if (m_nodeCoords.size() <= idx) m_nodeCoords.resize(idx + 1);
+            m_nodeCoords[idx].first = std::stod(value);
+            std::cout << "Parsed node[" << idx << "] xCoor = " << value << std::endl;
+        } else if (std::regex_match(key, match, yCoorRegex)) {
+            size_t idx = std::stoul(match[1]);
+            if (m_nodeCoords.size() <= idx) m_nodeCoords.resize(idx + 1);
+            m_nodeCoords[idx].second = std::stod(value);
+            std::cout << "Parsed node[" << idx << "] yCoor = " << value << std::endl;
         }
-
-        // parse yCoor
-        if (std::regex_match(key, match, yCoorRegex))
-        {
-            int index = std::stoi(match[1].str());
-            double val = std::stod(value);
-
-            if (index >= (int)m_nodeCoords.size())
-                m_nodeCoords.resize(index + 1, {0.0, 0.0});
-
-            m_nodeCoords[index].second = val;
-            return;
-        }
-
     }
     else if (m_currentSection == "Trace") {
         if (key == "enable")
