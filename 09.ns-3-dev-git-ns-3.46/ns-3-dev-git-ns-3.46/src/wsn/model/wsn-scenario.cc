@@ -22,28 +22,43 @@ void WsnScenario::onKeyValue(const std::string &key,
     //std::cout << "Callback KeyValue: [" << m_currentSection << "] " << key << " = " << value << std::endl;
     m_trace.Trace("KeyValue: [" + m_currentSection + "] " + key + " = " + value);
     if (m_currentSection == "General") {
-        if (key == "SN.numNodes")
+        if (key == "SN.numNodes") {
             m_numNodes = std::stoi(value);
-        else if (key == "SN.field_x")
+            return;
+        }
+        else if (key == "SN.field_x") {
             m_fieldX = std::stod(value);
-        else if (key == "SN.field_y")
-        // parse node coordinates
-        
-        std::regex xCoorRegex(R"(SN\.node\[(\d+)\]\.xCoor)");
-        std::regex yCoorRegex(R"(SN\.node\[(\d+)\]\.yCoor)");
+            return;
+        }
+        else if (key == "SN.field_y") {
+            m_fieldY = std::stod(value);
+            return;
+        }
+
+        static const std::regex xCoorRegex(R"(SN\.node\[(\d+)\]\.xCoor)");
+        static const std::regex yCoorRegex(R"(SN\.node\[(\d+)\]\.yCoor)");
         std::smatch match;
+
         if (std::regex_match(key, match, xCoorRegex)) {
             size_t idx = std::stoul(match[1]);
-            if (m_nodeCoords.size() <= idx) m_nodeCoords.resize(idx + 1);
+            if (m_nodeCoords.size() <= idx)
+                m_nodeCoords.resize(idx + 1);
+
             m_nodeCoords[idx].first = std::stod(value);
             std::cout << "Parsed node[" << idx << "] xCoor = " << value << std::endl;
-        } else if (std::regex_match(key, match, yCoorRegex)) {
+            return;
+        }
+        else if (std::regex_match(key, match, yCoorRegex)) {
             size_t idx = std::stoul(match[1]);
-            if (m_nodeCoords.size() <= idx) m_nodeCoords.resize(idx + 1);
+            if (m_nodeCoords.size() <= idx)
+                m_nodeCoords.resize(idx + 1);
+
             m_nodeCoords[idx].second = std::stod(value);
             std::cout << "Parsed node[" << idx << "] yCoor = " << value << std::endl;
+            return;
         }
     }
+
     else if (m_currentSection == "Trace") {
         if (key == "enable")
             m_traceEnabled = (value == "true" || value == "1");
