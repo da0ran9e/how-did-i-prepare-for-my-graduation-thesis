@@ -33,6 +33,7 @@ private:
     uint32_t m_numNodes = 0;
     double m_fieldX = 0;
     double m_fieldY = 0;
+    std::vector<std::pair<double, double>> m_nodeCoords;
 };
 
 } // namespace wsn
