@@ -40,10 +40,10 @@ void WsnScenario::onKeyValue(const std::string &key,
             int index = std::stoi(match[1].str());
             double val = std::stod(value);
 
-            if (index >= (int)m_nodeCoordinates.size())
-                m_nodeCoordinates.resize(index + 1, {0.0, 0.0});
+            if (index >= (int)m_nodeCoords.size())
+                m_nodeCoords.resize(index + 1, {0.0, 0.0});
 
-            m_nodeCoordinates[index].first = val;
+            m_nodeCoords[index].first = val;
             return;
         }
 
@@ -53,10 +53,10 @@ void WsnScenario::onKeyValue(const std::string &key,
             int index = std::stoi(match[1].str());
             double val = std::stod(value);
 
-            if (index >= (int)m_nodeCoordinates.size())
-                m_nodeCoordinates.resize(index + 1, {0.0, 0.0});
+            if (index >= (int)m_nodeCoords.size())
+                m_nodeCoords.resize(index + 1, {0.0, 0.0});
 
-            m_nodeCoordinates[index].second = val;
+            m_nodeCoords[index].second = val;
             return;
         }
 
