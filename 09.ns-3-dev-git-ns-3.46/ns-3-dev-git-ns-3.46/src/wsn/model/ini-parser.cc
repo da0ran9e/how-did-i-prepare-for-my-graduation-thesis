@@ -16,8 +16,8 @@ IniParser::~IniParser()
 void IniParser::read(const std::string &filename)
 {
     // - call readFile(filename)
-    std::cout << "Reading INI file: " << filename << std::endl;
-    std::cout << "Absolute path: " << std::filesystem::absolute(filename) << std::endl;
+    //std::cout << "Reading INI file: " << filename << std::endl;
+    //std::cout << "Absolute path: " << std::filesystem::absolute(filename) << std::endl;
     readFile(filename);
 }
 
@@ -70,7 +70,7 @@ void IniParser::doReadFile(const std::string &filename,
         }
     }
 
-    std::cout << "IniParser: readFile: " << filename << std::endl;
+    //std::cout << "IniParser: readFile: " << filename << std::endl;
     includeStack.push_back(absoluteFilename);
 
     std::ifstream in(filename);
@@ -118,7 +118,7 @@ void IniParser::doReadFromStream(std::istream &in,
 
     std::string currentSection;
     std::set<std::string> sectionsInFile;
-    std::cout << "IniParser: doReadFromStream: " << filename << std::endl;
+    //std::cout << "IniParser: doReadFromStream: " << filename << std::endl;
     //std::cout << "Contents:" << in.rdbuf() << std::endl;
     forEachJoinedLine(in, [&](std::string &lineBuf, int lineNumber, int numLines) {
         std::string line = lineBuf;
@@ -173,7 +173,7 @@ void IniParser::doReadFromStream(std::istream &in,
             currentSection = sectionName;
 
             // callback section
-            std::cout << "IniParser: Section: " << sectionName << std::endl;
+            // std::cout << "IniParser: Section: " << sectionName << std::endl;
             m_listener->onSection(sectionName);
 
             return;
@@ -202,7 +202,7 @@ void IniParser::doReadFromStream(std::istream &in,
         }
 
         // callback key-value
-        std::cout << "IniParser: Key: " << key << " = " << value << std::endl;
+        //std::cout << "IniParser: Key: " << key << " = " << value << std::endl;
         m_listener->onKeyValue(key, value, comment, baseDir);
         
     });

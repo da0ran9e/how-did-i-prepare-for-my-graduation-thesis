@@ -5,7 +5,8 @@ namespace wsn {
 void WsnScenario::onSection(const std::string &section)
 {
     m_currentSection = section;
-    std::cout << "Section: " << section << std::endl;
+    std::cout << "Callback Section: " << section << std::endl;
+    m_trace.Trace("Section: " + section);
     if (m_config.find(section) == m_config.end())
         m_config[section] = {};
 }
@@ -16,7 +17,8 @@ void WsnScenario::onKeyValue(const std::string &key,
                              const std::string &baseDir)
 {
     m_config[m_currentSection][key] = value;
-
+    std::cout << "Callback KeyValue: [" << m_currentSection << "] " << key << " = " << value << std::endl;
+    m_trace.Trace("KeyValue: [" + m_currentSection + "] " + key + " = " + value);
     if (m_currentSection == "General") {
         if (key == "SN.numNodes")
             m_numNodes = std::stoi(value);
@@ -36,6 +38,7 @@ void WsnScenario::onKeyValue(const std::string &key,
 
 void WsnScenario::configure(std::string iniFile)
 {
+    m_trace.Open(m_traceFile);
     IniParser iniParser;
     iniParser.setListener(this);
     

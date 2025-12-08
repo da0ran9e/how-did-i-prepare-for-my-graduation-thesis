@@ -3,7 +3,7 @@
 
 #pragma once
 #include "ini-parser.h"
-//#include "wsn-trace.h"
+#include "wsn-trace.h"
 #include <string>
 #include <unordered_map>
 namespace ns3 {
@@ -27,6 +27,7 @@ private:
     
     bool m_traceEnabled = false;
     std::string m_traceFile = "wsn-trace.txt";
+    WsnTrace m_trace;
 
     // Parsed parameters
     uint32_t m_numNodes = 0;

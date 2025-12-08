@@ -63,7 +63,7 @@ bool WsnSim::configure(int argc, char *argv[])
     // step = 1.0;          // step can come from INI later
     // totalTime = 10.0;    // same here
     // printTrace = true;
-
+    
     // std::cout << "=== Simulation configured ===" << std::endl;
     // std::cout << "INI file:     " << m_iniFile << std::endl;
     // std::cout << "Trace file:   " << m_traceFile << std::endl;
