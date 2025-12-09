@@ -2,6 +2,7 @@
 #include "ns3/log.h"
 #include "ns3/packet.h"
 #include "ns3/simulator.h"
+#include <iostream>
 
 namespace ns3 {
 namespace wsn {
@@ -87,7 +88,8 @@ WsnRoutingProtocol::ReceiveFromMac(Ptr<NetDevice> dev,
 {
     NS_LOG_INFO("Node " << dev->GetNode()->GetId()
                         << " received packet size=" << p->GetSize());
-
+    std::cout << "Node " << dev->GetNode()->GetId()
+              << " received packet size=" << p->GetSize() << std::endl;
     return true;
 }
 
