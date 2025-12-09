@@ -160,6 +160,7 @@ NodeContainer WsnScenario::createNodesAndStack()
     {
         Ptr<WsnRoutingProtocol> routing = CreateObject<WsnRoutingProtocol>();
         nodes.Get(i)->AggregateObject(routing);
+        routing->Start();
     }
 
     NS_LOG_INFO("Routing (non-IP) installed.");
