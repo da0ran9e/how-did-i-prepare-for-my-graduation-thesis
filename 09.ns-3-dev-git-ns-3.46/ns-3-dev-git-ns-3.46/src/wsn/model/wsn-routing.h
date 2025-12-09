@@ -18,3 +18,5 @@ public:
 };
 } // namespace wsn
 } // namespace ns3
+
+#endif // WSN_ROUTING_H
