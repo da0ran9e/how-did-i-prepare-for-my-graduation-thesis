@@ -176,7 +176,7 @@ NodeContainer WsnScenario::createNodesAndStack()
     }
 
     NS_LOG_INFO("WSN Application installed.");
-
+    std::cout << "WSN Scenario setup completed." << std::endl;
     return nodes;
 }
 
