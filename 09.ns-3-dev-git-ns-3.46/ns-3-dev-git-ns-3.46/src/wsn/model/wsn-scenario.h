@@ -4,6 +4,12 @@
 #pragma once
 #include "ini-parser.h"
 #include "wsn-trace.h"
+#include "ns3/node.h"
+#include "ns3/node-container.h"
+#include "ns3/mobility-helper.h"
+#include "ns3/list-position-allocator.h"
+#include "ns3/vector.h"
+#include "ns3/log.h"
 #include <string>
 #include <unordered_map>
 namespace ns3 {
@@ -13,6 +19,8 @@ class WsnScenario : public IniParser::Listener
 {
 public:
     void configure(std::string iniFile);
+    NodeContainer CreateNodesAndMobility();
+
 private:
     // callbacks
     void onSection(const std::string &section) override;

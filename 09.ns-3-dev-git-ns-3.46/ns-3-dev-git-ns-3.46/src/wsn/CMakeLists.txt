@@ -10,4 +10,8 @@ build_lib(
     model/wsn-trace.h
   LIBRARIES_TO_LINK
     ${libcore}
+    ${libnetwork}
+    ${libmobility}
+    ${libspectrum}
+    ${liblr-wpan}
 )

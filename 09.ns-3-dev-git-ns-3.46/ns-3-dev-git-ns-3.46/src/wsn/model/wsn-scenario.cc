@@ -45,7 +45,7 @@ void WsnScenario::onKeyValue(const std::string &key,
                 m_nodeCoords.resize(idx + 1);
 
             m_nodeCoords[idx].first = std::stod(value);
-            std::cout << "Parsed node[" << idx << "] xCoor = " << value << std::endl;
+            //std::cout << "Parsed node[" << idx << "] xCoor = " << value << std::endl;
             return;
         }
         else if (std::regex_match(key, match, yCoorRegex)) {
@@ -54,7 +54,7 @@ void WsnScenario::onKeyValue(const std::string &key,
                 m_nodeCoords.resize(idx + 1);
 
             m_nodeCoords[idx].second = std::stod(value);
-            std::cout << "Parsed node[" << idx << "] yCoor = " << value << std::endl;
+            //std::cout << "Parsed node[" << idx << "] yCoor = " << value << std::endl;
             return;
         }
     }
@@ -85,5 +85,42 @@ void WsnScenario::configure(std::string iniFile)
     //   - positions
     //   - MAC/PHY
 }
+
+NodeContainer WsnScenario::CreateNodesAndMobility()
+{
+    NS_LOG_INFO("Creating " << m_numNodes << " WSN nodes...");
+
+    // 1. nodes
+    NodeContainer nodes;
+    nodes.Create(m_numNodes);
+
+    // 2. Alloc m_nodeCoords 
+    Ptr<ListPositionAllocator> posAlloc = CreateObject<ListPositionAllocator>();
+
+    if (m_nodeCoords.size() != m_numNodes)
+    {
+        NS_LOG_WARN("Node coordinate list size (" << m_nodeCoords.size()
+                     << ") does not match m_numNodes (" << m_numNodes << ")");
+    }
+
+    for (uint32_t i = 0; i < m_nodeCoords.size(); i++)
+    {
+        double x = m_nodeCoords[i].first;
+        double y = m_nodeCoords[i].second;
+
+        posAlloc->Add(Vector(x, y, 0.0));
+    }
+
+    // 3. Mobility model
+    MobilityHelper mobility;
+    mobility.SetPositionAllocator(posAlloc);
+    mobility.SetMobilityModel("ns3::ConstantPositionMobilityModel");
+    mobility.Install(nodes);
+
+    NS_LOG_INFO("Mobility assigned for all WSN nodes.");
+
+    return nodes;
+}
+
 } // namespace wsn
 } // namespace ns3

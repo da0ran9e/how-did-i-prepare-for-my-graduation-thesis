@@ -57,7 +57,8 @@ bool WsnSim::configure(int argc, char *argv[])
     cmd.Parse(argc, argv);
 
     m_scenario = std::make_shared<ns3::wsn::WsnScenario>();
-    m_scenario->configure(m_iniFile);    
+    m_scenario->configure(m_iniFile); 
+    NodeContainer nodes = scenario->CreateNodesAndMobility();
 
     // size = m_scenario->GetNumNodes();
     // step = 1.0;          // step can come from INI later
