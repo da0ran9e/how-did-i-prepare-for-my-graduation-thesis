@@ -4,6 +4,8 @@
 namespace ns3 {
 namespace wsn {
 
+NS_LOG_COMPONENT_DEFINE ("WsnScenario");
+
 void WsnScenario::onSection(const std::string &section)
 {
     m_currentSection = section;
