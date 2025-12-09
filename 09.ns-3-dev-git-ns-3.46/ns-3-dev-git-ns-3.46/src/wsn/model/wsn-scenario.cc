@@ -142,11 +142,12 @@ NodeContainer WsnScenario::createNodesAndStack()
     lrwpan.SetChannel(channel);
 
     NetDeviceContainer devs = lrwpan.Install(nodes);
+    
 
     // Assign short addresses 0x0001 ... 0xFFFF
     for (uint32_t i = 0; i < devs.GetN(); i++)
     {
-        Ptr<LrWpanNetDevice> dev = DynamicCast<LrWpanNetDevice>(devs.Get(i));
+        Ptr<lrwpan::LrWpanNetDevice> dev = DynamicCast<lrwpan::LrWpanNetDevice>(devs.Get(i));
         dev->GetMac()->SetShortAddress(Mac16Address::Allocate());
     }
 
