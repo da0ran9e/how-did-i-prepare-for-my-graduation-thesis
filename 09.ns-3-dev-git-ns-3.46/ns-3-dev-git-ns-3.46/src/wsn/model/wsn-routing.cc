@@ -83,20 +83,14 @@ bool
 WsnRoutingProtocol::ReceiveFromMac(Ptr<NetDevice> dev,
                                    Ptr<const Packet> p,
                                    uint16_t protocol,
-                                   const Address &from,
-                                   const Address &to)
+                                   const Address &from)
 {
-    NS_LOG_FUNCTION(this << p << from << to);
-
-    if (Mac16Address::ConvertFrom(to).IsBroadcast())
-    {
-        NS_LOG_INFO("Node " << dev->GetNode()->GetId()
-                            << " received BROADCAST packet, size="
-                            << p->GetSize());
-    }
+    NS_LOG_INFO("Node " << dev->GetNode()->GetId()
+                        << " received packet size=" << p->GetSize());
 
     return true;
 }
+
 
 } // namespace wsn
 } // namespace ns3
