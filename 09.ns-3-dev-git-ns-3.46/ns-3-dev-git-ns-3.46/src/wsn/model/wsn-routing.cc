@@ -72,6 +72,9 @@ WsnRoutingProtocol::SendBeacon()
     NS_LOG_INFO("WSN Routing sends BEACON from node "
                 << m_dev->GetNode()->GetId());
 
+    std::cout << "Node " << m_dev->GetNode()->GetId()
+              << " sending BEACON." << std::endl;
+
     Ptr<Packet> p = Create<Packet>(m_beaconSize);
 
     // Broadcast address
