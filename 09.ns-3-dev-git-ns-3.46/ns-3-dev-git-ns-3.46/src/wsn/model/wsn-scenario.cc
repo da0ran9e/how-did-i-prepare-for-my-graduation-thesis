@@ -88,41 +88,97 @@ void WsnScenario::configure(std::string iniFile)
     //   - MAC/PHY
 }
 
-NodeContainer WsnScenario::CreateNodesAndMobility()
+NodeContainer WsnScenario::createNodesAndStack()
 {
     NS_LOG_INFO("Creating " << m_numNodes << " WSN nodes...");
 
-    // 1. nodes
+    // -----------------------------
+    // 1. Create nodes
+    // -----------------------------
     NodeContainer nodes;
     nodes.Create(m_numNodes);
 
-    // 2. Alloc m_nodeCoords 
+    // -----------------------------
+    // 2. Position allocator
+    // -----------------------------
     Ptr<ListPositionAllocator> posAlloc = CreateObject<ListPositionAllocator>();
 
     if (m_nodeCoords.size() != m_numNodes)
     {
         NS_LOG_WARN("Node coordinate list size (" << m_nodeCoords.size()
-                     << ") does not match m_numNodes (" << m_numNodes << ")");
+                     << ") != m_numNodes (" << m_numNodes << ")");
     }
 
-    for (uint32_t i = 0; i < m_nodeCoords.size(); i++)
+    for (auto &xy : m_nodeCoords)
     {
-        double x = m_nodeCoords[i].first;
-        double y = m_nodeCoords[i].second;
-
-        posAlloc->Add(Vector(x, y, 0.0));
+        posAlloc->Add(Vector(xy.first, xy.second, 0.0));
     }
 
+    // -----------------------------
     // 3. Mobility model
+    // -----------------------------
     MobilityHelper mobility;
     mobility.SetPositionAllocator(posAlloc);
     mobility.SetMobilityModel("ns3::ConstantPositionMobilityModel");
     mobility.Install(nodes);
 
-    NS_LOG_INFO("Mobility assigned for all WSN nodes.");
+    NS_LOG_INFO("Mobility assigned.");
+
+    // -----------------------------
+    // 4. Create Spectrum channel
+    // -----------------------------
+    Ptr<SingleModelSpectrumChannel> channel = CreateObject<SingleModelSpectrumChannel>();
+
+    Ptr<LogDistancePropagationLossModel> loss = CreateObject<LogDistancePropagationLossModel>();
+    Ptr<ConstantSpeedPropagationDelayModel> delay = CreateObject<ConstantSpeedPropagationDelayModel>();
+
+    channel->AddPropagationLossModel(loss);
+    channel->SetPropagationDelayModel(delay);
+
+    // -----------------------------
+    // 5. Install LR-WPAN (IEEE 802.15.4)
+    // -----------------------------
+    LrWpanHelper lrwpan;
+    lrwpan.SetChannel(channel);
+
+    NetDeviceContainer devs = lrwpan.Install(nodes);
+
+    // Assign short addresses 0x0001 ... 0xFFFF
+    for (uint32_t i = 0; i < devs.GetN(); i++)
+    {
+        Ptr<LrWpanNetDevice> dev = DynamicCast<LrWpanNetDevice>(devs.Get(i));
+        dev->GetMac()->SetShortAddress(Mac16Address::Allocate());
+    }
+
+    NS_LOG_INFO("LR-WPAN PHY/MAC/NetDevice installed.");
+
+    // -----------------------------
+    // 6. Install WSN routing (non-IP)
+    // -----------------------------
+    for (uint32_t i = 0; i < nodes.GetN(); i++)
+    {
+        Ptr<WsnRoutingProtocol> routing = CreateObject<WsnRoutingProtocol>();
+        nodes.Get(i)->AggregateObject(routing);
+    }
+
+    NS_LOG_INFO("Routing (non-IP) installed.");
+
+    // -----------------------------
+    // 7. Install WSN Application (non-IP)
+    // -----------------------------
+    for (uint32_t i = 0; i < nodes.GetN(); i++)
+    {
+        Ptr<WsnApp> app = CreateObject<WsnApp>();
+        nodes.Get(i)->AddApplication(app);
+        app->SetStartTime(Seconds(1));
+        app->SetStopTime(Seconds(1000));
+    }
+
+    NS_LOG_INFO("WSN Application installed.");
 
     return nodes;
 }
+
 
 } // namespace wsn
 } // namespace ns3

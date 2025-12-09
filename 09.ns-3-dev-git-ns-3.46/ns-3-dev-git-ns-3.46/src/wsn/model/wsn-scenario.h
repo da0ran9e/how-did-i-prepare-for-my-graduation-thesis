@@ -10,6 +10,17 @@
 #include "ns3/position-allocator.h"
 #include "ns3/vector.h"
 #include "ns3/log.h"
+#include "ns3/lr-wpan-module.h"
+#include "ns3/spectrum-module.h"
+#include "ns3/propagation-module.h"
+#include "ns3/mobility-module.h"
+#include "ns3/core-module.h"
+#include "ns3/network-module.h"
+#include "ns3/applications-module.h"
+
+#include "wsn-routing.h"      
+#include "wsn-app.h"          // app non-IP
+
 #include <string>
 #include <unordered_map>
 namespace ns3 {
@@ -19,7 +30,7 @@ class WsnScenario : public IniParser::Listener
 {
 public:
     void configure(std::string iniFile);
-    NodeContainer CreateNodesAndMobility();
+    NodeContainer createNodesAndStack();
 
 private:
     // callbacks

@@ -4,14 +4,19 @@ build_lib(
     model/ini-parser.cc
     model/wsn-scenario.cc
     model/wsn-trace.cc
+    model/wsn-routing.cc
+    model/wsn-app.cc
   HEADER_FILES
     model/ini-parser.h
     model/wsn-scenario.h
     model/wsn-trace.h
+    model/wsn-routing.h
+    model/wsn-app.h
   LIBRARIES_TO_LINK
     ${libcore}
     ${libnetwork}
     ${libmobility}
     ${libspectrum}
     ${liblr-wpan}
+    ${liblrwpan}
 )
