@@ -16,7 +16,7 @@
 #include "ns3/mobility-module.h"
 #include "ns3/core-module.h"
 #include "ns3/network-module.h"
-#include "ns3/applications-module.h"
+#include "ns3/application.h"
 
 #include "wsn-routing.h"      
 #include "wsn-app.h"          // app non-IP
