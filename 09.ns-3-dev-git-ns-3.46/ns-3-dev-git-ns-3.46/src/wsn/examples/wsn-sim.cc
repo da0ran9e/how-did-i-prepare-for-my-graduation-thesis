@@ -80,9 +80,9 @@ void WsnSim::run()
     // createDevice();
     // installInternetStack();
 
-    // Simulator::Stop(Seconds(totalTime));
-    // Simulator::Run();
-    // Simulator::Destroy();
+    Simulator::Stop(Seconds(totalTime));
+    Simulator::Run();
+    Simulator::Destroy();
 }
 
 void WsnSim::report(std::ostream &os)
