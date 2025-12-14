@@ -2,21 +2,31 @@
 #ifndef WSN_APP_H
 #define WSN_APP_H
 
-#include "ns3/application.h"
-#include "ns3/event-id.h"
+#include "wsn-object.h"
+
+#include <string>
 
 namespace ns3 {
 namespace wsn {
-class WsnApp : public Application
+class WsnApp : public ns3::wsn::WsnObject
 {
 public:
-    static TypeId GetTypeId();
-    WsnApp();
+    WsnApp() : WsnObject("WsnApp", ""),
+        applicationID("defaultApp"),
+        priority(0),
+        packetHeaderOverhead(0),
+        constantDataPayload(0),
+        {};
+    ~WsnApp() override = default;
+    bool SetProperty(const std::string &key, const std::string &value) override;
+    void Build() override;
 
 private:
-    virtual void StartApplication();
-    virtual void StopApplication();
-    void GeneratePacket();
+    std::string applicationID;
+	bool collectTraceInfo;
+	int priority;
+	int packetHeaderOverhead;	// in bytes
+	int constantDataPayload;
 };
 } // namespace wsn
 } // namespace ns3

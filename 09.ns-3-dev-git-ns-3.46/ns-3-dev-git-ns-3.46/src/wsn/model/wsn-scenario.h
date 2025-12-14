@@ -4,25 +4,16 @@
 #pragma once
 #include "ini-parser.h"
 #include "wsn-trace.h"
-#include "ns3/node.h"
-#include "ns3/node-container.h"
-#include "ns3/mobility-helper.h"
-#include "ns3/position-allocator.h"
-#include "ns3/vector.h"
-#include "ns3/log.h"
-#include "ns3/lr-wpan-module.h"
-#include "ns3/spectrum-module.h"
-#include "ns3/propagation-module.h"
-#include "ns3/mobility-module.h"
-#include "ns3/core-module.h"
-#include "ns3/network-module.h"
-#include "ns3/application.h"
 
 #include "wsn-routing.h"      
 #include "wsn-app.h"          // app non-IP
 
 #include <string>
+#include <vector>
+#include <sstream>
+#include <iostream>
 #include <unordered_map>
+
 namespace ns3 {
 namespace wsn {
 
@@ -31,7 +22,10 @@ class WsnScenario : public IniParser::Listener
 public:
     void configure(std::string iniFile);
     NodeContainer createNodesAndStack();
-
+    std::vector<std::string> SplitKey(const std::string &key);
+    WsnObject* ResolveObject(const std::vector<std::string> &tokens);
+    WsnObject* GetOrCreateChild(const std::string &token);
+    
 private:
     // callbacks
     void onSection(const std::string &section) override;

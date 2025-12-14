@@ -3,24 +3,41 @@
 namespace ns3 {
 namespace wsn {
     
-NS_OBJECT_ENSURE_REGISTERED(WsnApp);
-
-TypeId WsnApp::GetTypeId()
+bool WsnApp::SetProperty(const std::string &key, const std::string &value)
 {
-    static TypeId tid = TypeId("ns3::wsn::WsnApp")
-        .SetParent<Application>()
-        .SetGroupName("Wsn");
-    return tid;
-}
+    if (key == "applicationID") {
+        applicationID = value;
+    }
+    else if (key == "priority") {
+        priority = std::stoi(value);
+    }
+    else if (key == "packetHeaderOverhead") {
+        packetHeaderOverhead = std::stoi(value);
+    }
+    else if (key == "constantDataPayload") {
+        constantDataPayload = std::stoi(value);
+    }
+    else if (key == "isSink") {
+        isSink = (value == "true" || value == "1");
+    }
+    else if (key == "latencyMax") {
+        latencyMax = std::stod(value);
+    }
+    else if (key == "latencyBuckets") {
+        latencyBuckets = std::stoi(value);
+    }
+    else {
+        return false;
+    }
 
-WsnApp::WsnApp() {}
+    NotifyAttributeChanged(key, value);
+    return true;
+}  
 
-void WsnApp::StartApplication()
+void WsnApp::Build()
 {
-}
-
-void WsnApp::StopApplication()
-{
+    // Implementation of the Build method
+    WsnObject::Build();
 }
 
 } // namespace wsn
