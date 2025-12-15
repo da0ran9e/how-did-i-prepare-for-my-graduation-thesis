@@ -12,7 +12,7 @@ namespace wsn {
 class WirelessChannel : public ns3::wsn::WsnObject
 {
 public:
-    WirelessChannel() : WsnObject("WirelessChannel", ""),
+    explicit WirelessChannel(const std::string& name) : WsnObject("WirelessChannel", name),
         collectTraceInfo(false),
         onlyStaticNodes(true),
         xCellSize(5),
@@ -32,6 +32,8 @@ public:
     
     bool SetProperty(const std::string &key, const std::string &value) override;
     void Build() override;
+    std::string GetTypeName() const override { return "WirelessChannel"; }
+
 private:
     bool collectTraceInfo; // default (false);
 	bool onlyStaticNodes; // default (true);		// if NO mobility, set it to true for greater efficiency 

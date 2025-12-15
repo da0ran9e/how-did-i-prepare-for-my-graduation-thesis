@@ -11,7 +11,7 @@ namespace wsn {
 class ResourceManager : public ns3::wsn::WsnObject
 {   
 public:
-    ResourceManager() : WsnObject("ResourceManager", ""),
+    explicit ResourceManager(const std::string& name) : WsnObject("ResourceManager", name),
         collectTraceInfo(false),
         ramSize(0.0),
         flashSize(0.0),
@@ -27,11 +27,12 @@ public:
         baselineNodePower(6),
         periodicEnergyCalculationInterval(1000) 
     {
-    };
+    }
     ~ResourceManager() override = default;
 
     bool SetProperty(const std::string &key, const std::string &value) override;
     void Build() override;
+    std::string GetTypeName() const override { return "ResourceManager"; }
 private:
     bool collectTraceInfo; // = default (false);
 	double ramSize; // = default (0.0);			//in kB

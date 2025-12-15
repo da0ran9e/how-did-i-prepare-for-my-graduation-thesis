@@ -11,15 +11,18 @@ namespace wsn {
 class WsnMac : public ns3::wsn::WsnObject
 {
 public:
-    WsnMac() : WsnObject("WsnMac", ""),
+    explicit WsnMac(const std::string& name) : WsnObject("WsnMac", name),
         macMaxPacketSize(127),
         macBufferSize(50),
         macPacketOverhead(11)
     {
-    };
+    }
     ~WsnMac() override = default;
+
     bool SetProperty(const std::string &key, const std::string &value) override;
     void Build() override;
+    std::string GetTypeName() const override { return "MAC"; }
+
 private:
 	int macMaxPacketSize;	// in bytes
 	int macBufferSize;		// in number of messages

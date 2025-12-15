@@ -6,17 +6,19 @@
 namespace ns3 {
 namespace wsn {
 
-class WsnRoutingProtocol : public ns3::wsn::WsnObject
+class WsnRouting : public ns3::wsn::WsnObject
 {
 public:
-    WsnRoutingProtocol() : WsnObject("WsnRoutingProtocol", ""),
+    explicit WsnRouting(const std::string& name) : WsnObject("WsnRouting", name),
         collectTraceInfo(false),
         maxNetFrameSize(0),
         netDataFrameOverhead(0),
         netBufferSize(0) {}
-    ~WsnRoutingProtocol() override = default;
+    ~WsnRouting() override = default;
+
     bool SetProperty(const std::string &key, const std::string &value) override;
     void Build() override;
+    std::string GetTypeName() const override { return "WsnRouting"; }
 
 private:
     bool collectTraceInfo;

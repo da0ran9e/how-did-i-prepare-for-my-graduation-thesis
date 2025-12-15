@@ -1,4 +1,4 @@
-#include "node.h"
+#include "wsn-node.h"
 namespace ns3 {
 namespace wsn {
 

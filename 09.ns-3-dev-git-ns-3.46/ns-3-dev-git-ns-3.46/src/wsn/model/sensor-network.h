@@ -16,7 +16,7 @@ namespace wsn {
 class SensorNetwork : public ns3::wsn::WsnObject
 {
 public:
-    SensorNetwork() : WsnObject("SN", ""),
+    explicit SensorNetwork(const std::string& name) : WsnObject("SN", name),
         field_x(30),
         field_y(30),
         field_z(0),
@@ -27,11 +27,12 @@ public:
         wirelessChannelName("WirelessChannel"),
         debugInfoFileName("Castalia-Trace.txt")
     {
-    };
+    }
     ~SensorNetwork() override;
 
     bool SetProperty(const std::string &key, const std::string &value) override;
     void Build() override;
+    std::string GetTypeName() const override { return "SN"; }
 
 private:
     int field_x; // default (30);			// the length of the deployment field

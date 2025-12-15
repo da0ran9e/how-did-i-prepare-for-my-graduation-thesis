@@ -15,6 +15,13 @@ using WsnObjectPtr = std::shared_ptr<WsnObject>;
 using WeakWsnObjectPtr = std::weak_ptr<WsnObject>;
 using FactoryFunc = std::function<WsnObjectPtr(void)>;
 
+static void PrintIndent(std::ostream& os, int indent)
+{
+    for (int i = 0; i < indent; ++i)
+        os << "  ";
+}
+
+
 // Base configurable object for WSN configuration tree
 class WsnObject : public std::enable_shared_from_this<WsnObject>
 {
@@ -31,7 +38,8 @@ public:
     void SetParent(WeakWsnObjectPtr parent);
     WeakWsnObjectPtr GetParent() const;
     std::string GetPath() const; // e.g. "SN.node[3].Communication.MAC"
-
+    virtual std::string GetTypeName() const { return "WsnObject"; }
+    virtual void DebugPrint(std::ostream& os, int indent = 0) const;
     WsnObjectPtr GetChild(const std::string &name, bool createIfMissing = false);
     WsnObjectPtr GetChildIndexed(const std::string &name, size_t idx, bool createIfMissing = false);
     void AddChild(const std::string &name, WsnObjectPtr child);

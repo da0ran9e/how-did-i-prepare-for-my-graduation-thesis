@@ -47,6 +47,29 @@ std::string WsnObject::GetPath() const {
     return oss.str();
 }
 
+void WsnObject::DebugPrint(std::ostream& os, int indent) const
+{
+    PrintIndent(os, indent);
+
+    os << GetPath()
+       << "  [" << GetTypeName() << "]"
+       << std::endl;
+
+    // Print properties
+    for (const auto& [key, value] : m_properties)
+    {
+        PrintIndent(os, indent + 1);
+        os << key << " = " << value << std::endl;
+    }
+
+    // Recurse to children
+    for (const auto& [name, child] : m_children)
+    {
+        child->DebugPrint(os, indent + 1);
+    }
+}
+
+
 WsnObjectPtr WsnObject::GetChild(const std::string &name, bool createIfMissing) {
     std::lock_guard<std::mutex> lock(m_mutex);
     auto it = m_children.find(name);

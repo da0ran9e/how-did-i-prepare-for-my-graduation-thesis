@@ -1,4 +1,4 @@
-#include "mobility.h"
+#include "wsn-mobility.h"
 
 namespace ns3 {
 namespace wsn {

@@ -12,24 +12,26 @@ namespace wsn {
 class Node : public ns3::wsn::WsnObject
 {
 public:
-    Node() : WsnObject("node", ""),
-        xCoor(0.0),
-        yCoor(0.0),
-        zCoor(0.0),
-        phi(0.0),
-        theta(0.0),
-        startupOffset(0.0),
-        startupRandomization(0.05),
-        ApplicationName(""),
-        MACProtocolName(""),
-        RadioProtocolName(""),
-        RoutingProtocolName("")
+    explicit Node(const std::string& name)
+        : WsnObject("node", name),
+          xCoor(0.0),
+          yCoor(0.0),
+          zCoor(0.0),
+          phi(0.0),
+          theta(0.0),
+          startupOffset(0.0),
+          startupRandomization(0.05),
+          ApplicationName(""),
+          MACProtocolName(""),
+          RadioProtocolName(""),
+          RoutingProtocolName("")
     {
-    };
+    }
     ~Node() override = default;
     
     bool SetProperty(const std::string &key, const std::string &value) override;
     void Build() override;
+    std::string GetTypeName() const override { return "Node"; }
 
 private:
     double xCoor; // default (0);

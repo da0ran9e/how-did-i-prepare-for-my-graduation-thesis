@@ -1,10 +1,7 @@
 #include "wsn-scenario.h"
-#include <regex>
-#include <utility>
+
 namespace ns3 {
 namespace wsn {
-
-NS_LOG_COMPONENT_DEFINE ("WsnScenario");
 
 void WsnScenario::onSection(const std::string &section)
 {
@@ -15,93 +12,75 @@ void WsnScenario::onSection(const std::string &section)
         m_config[section] = {};
 }
 
+bool HasWildcard(const std::string& path)
+{
+    return path.find("[*]") != std::string::npos;
+}
+
+
 void WsnScenario::onKeyValue(const std::string &key,
                              const std::string &value,
                              const std::string &comment,
                              const std::string &baseDir)
 {
-     // Bỏ qua các section không cần
     if (m_currentSection != "General")
         return;
 
-    // Tách key thành path tokens
-    auto tokens = SplitKey(key);
-    if (tokens.empty())
-        return;
+    ParsedKey parsed = ParseIniKey(key);
 
-    // Property name là token cuối
-    std::string property = tokens.back();
-    tokens.pop_back();
-
-    // Resolve object theo path
-    WsnObject* target = ResolveObject(tokens);
-    if (!target) {
-        // optional: log warning
+    if (HasWildcard(parsed.objectPath)) {
+        m_registry.AddWildcardRule(parsed.objectPath,
+                                parsed.property,
+                                value);
         return;
     }
 
-    // Gán thuộc tính
-    target->SetProperty(property, value);
-}
+    auto obj = m_registry.ResolveOrCreate(parsed.objectPath);
 
-std::vector<std::string> WsnScenario::SplitKey(const std::string &key)
-{
-    std::vector<std::string> tokens;
-    std::stringstream ss(key);
-    std::string token;
-
-    while (std::getline(ss, token, '.')) {
-        tokens.push_back(token);
+    if (!obj) {
+        //NS_FATAL_ERROR("Cannot resolve object path: " << parsed.objectPath);
+        std::cout << "Cannot resolve object path: " << parsed.objectPath << std::endl;
+        return;
     }
-    return tokens;
-}
 
-WsnObject* WsnScenario::ResolveObject(
-    const std::vector<std::string> &tokens)
-{
-    WsnObject* current = m_root.get();
-
-    for (const auto &t : tokens)
-    {
-        current = current->GetOrCreateChild(t);
-        if (!current)
-            return nullptr;
+    // set property
+    if (!obj->SetProperty(parsed.property, value)) {
+        std::cout << "Warning: Unknown property '" << parsed.property
+                  << "' for object at path '" << parsed.objectPath << "'" << std::endl;
     }
-    return current;
 }
 
-WsnObject* WsnObject::GetOrCreateChild(const std::string &token)
+ParsedKey ParseIniKey(const std::string& key)
 {
-    // token: "node[3]" hoặc "Communication"
+    auto pos = key.rfind('.');
+    if (pos == std::string::npos) {
+        // no dot → property belongs to root object
+        return { "", key };
+    }
 
-    // 1. Tách name + optional index
-    std::string name;
-    int index = -1;
-    ParseIndexedName(token, name, index);
-
-    // 2. Tìm child tương ứng
-    auto child = FindChild(name, index);
-    if (child)
-        return child.get();
-
-    // 3. Chưa có → tạo mới
-    auto newChild = CreateChild(name, index);
-    AddChild(newChild);
-    return newChild.get();
+    ParsedKey result;
+    result.objectPath = key.substr(0, pos);
+    result.property   = key.substr(pos + 1);
+    return result;
 }
 
 
 void WsnScenario::configure(std::string iniFile)
 {
+    RegisterWsnObjects();
     m_trace.Open(m_traceFile);
     IniParser iniParser;
     iniParser.setListener(this);
     
     iniParser.read(iniFile);
 
-    // Debug print
-    std::cout << "Number of nodes = " << m_numNodes << std::endl;
-    std::cout << "Field size = " << m_fieldX << " x " << m_fieldY << std::endl;
+    auto root = m_registry.GetRoot();
+    if (root)
+        root->DebugPrint(os);
+
+    // // Debug print
+    // std::cout << "Number of nodes = " << m_numNodes << std::endl;
+    // std::cout << "Field size = " << m_fieldX << " x " << m_fieldY << std::endl;
 
     // TODO:
     //   - NodeContainer 
@@ -111,10 +90,10 @@ void WsnScenario::configure(std::string iniFile)
 
 NodeContainer WsnScenario::createNodesAndStack()
 {
-    NodeContainer nodes;
-    nodes.Create(m_numNodes);
+    // NodeContainer nodes;
+    // nodes.Create(m_numNodes);
 
-    return nodes;
+    // return nodes;
 }
 
 

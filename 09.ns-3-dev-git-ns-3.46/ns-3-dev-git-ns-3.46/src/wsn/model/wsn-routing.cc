@@ -3,7 +3,7 @@
 namespace ns3 {
 namespace wsn {
 
-bool WsnRoutingProtocol::SetProperty(const std::string &key, const std::string &value)
+bool WsnRouting::SetProperty(const std::string &key, const std::string &value)
 {
     if (key == "collectTraceInfo") {
         collectTraceInfo = (value == "true" || value == "1");
@@ -25,7 +25,7 @@ bool WsnRoutingProtocol::SetProperty(const std::string &key, const std::string &
     return true;
 }
 
-void WsnRoutingProtocol::Build()
+void WsnRouting::Build()
 {
     // Implementation of the Build method
     WsnObject::Build();

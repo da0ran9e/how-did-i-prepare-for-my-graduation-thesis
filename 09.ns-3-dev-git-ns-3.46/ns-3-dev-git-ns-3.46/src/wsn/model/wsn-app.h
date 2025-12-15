@@ -11,15 +11,18 @@ namespace wsn {
 class WsnApp : public ns3::wsn::WsnObject
 {
 public:
-    WsnApp() : WsnObject("WsnApp", ""),
+    explicit WsnApp(const std::string& name) : WsnObject("WsnApp", name),
         applicationID("defaultApp"),
         priority(0),
         packetHeaderOverhead(0),
         constantDataPayload(0),
-        {};
+        {}
+
     ~WsnApp() override = default;
+
     bool SetProperty(const std::string &key, const std::string &value) override;
     void Build() override;
+    std::string GetTypeName() const override { return "WsnApp"; }
 
 private:
     std::string applicationID;
