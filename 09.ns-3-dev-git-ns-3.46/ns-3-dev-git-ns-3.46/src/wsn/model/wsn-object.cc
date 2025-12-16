@@ -65,7 +65,7 @@ void WsnObject::DebugPrint(std::ostream& os, int indent) const
     // Recurse to children
     for (const auto& [name, child] : m_children)
     {
-        child.DebugPrint(os, indent + 1);
+        child->DebugPrint(os, indent + 1);
     }
 }
 
