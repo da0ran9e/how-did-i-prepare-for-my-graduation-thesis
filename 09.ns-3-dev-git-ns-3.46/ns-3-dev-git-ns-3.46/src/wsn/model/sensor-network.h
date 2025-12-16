@@ -21,7 +21,6 @@ public:
         numNodes(0),
         deployment(""),
         numPhysicalProcesses(1),
-        deployment(""),
         wirelessChannelName("WirelessChannel"),
         debugInfoFileName("Trace.txt")
     {
@@ -37,8 +36,6 @@ private:
 	int field_z; // default (0);			// the height of the deployment field (2-D field by default)
 
 	int numNodes;						// the number of nodes
-
-	std::string deployment; // default ("");
 
 	int numPhysicalProcesses; // default (1);
 
