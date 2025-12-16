@@ -18,6 +18,7 @@ namespace wsn {
 class WsnObjectFactory
 {
 public:
+
     using CreatorFunc = std::function<std::shared_ptr<WsnObject>(const std::string& name)>;
 
     static WsnObjectFactory& Instance();
@@ -33,7 +34,6 @@ private:
     WsnObjectFactory() = default;
     ~WsnObjectFactory() = default;
 
-    // singleton: cấm copy
     WsnObjectFactory(const WsnObjectFactory&) = delete;
     WsnObjectFactory& operator=(const WsnObjectFactory&) = delete;
 

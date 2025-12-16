@@ -65,7 +65,9 @@ bool MatchWildcard(const std::string& pattern,
                          suffix) == 0;
 }
 
-WsnObjectRegistry::WsnObjectRegistry() = default;
+WsnObjectRegistry::WsnObjectRegistry() : m_factory(WsnObjectFactory::Instance())
+{
+}
 
 std::shared_ptr<ns3::wsn::WsnObject>
 WsnObjectRegistry::ResolveOrCreate(const std::string& path)

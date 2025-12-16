@@ -77,9 +77,9 @@ public:
     std::shared_ptr<ns3::wsn::WsnObject> GetOrCreateRoot(const PathSegment& seg);
 
     std::unordered_map<std::string, std::shared_ptr<ns3::wsn::WsnObject>> m_roots;
-    WsnObjectFactory m_factory;
     std::vector<WildcardRule> m_wildcardRules;
-
+    private:
+    WsnObjectFactory& m_factory;
 };
 
 } // namespace wsn
