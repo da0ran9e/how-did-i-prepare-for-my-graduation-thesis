@@ -8,6 +8,9 @@ bool WsnApp::SetProperty(const std::string &key, const std::string &value)
     if (key == "applicationID") {
         applicationID = value;
     }
+    else if (key == "collectTraceInfo") {
+        collectTraceInfo = (value == "true" || value == "1");
+    }
     else if (key == "priority") {
         priority = std::stoi(value);
     }
@@ -16,15 +19,6 @@ bool WsnApp::SetProperty(const std::string &key, const std::string &value)
     }
     else if (key == "constantDataPayload") {
         constantDataPayload = std::stoi(value);
-    }
-    else if (key == "isSink") {
-        isSink = (value == "true" || value == "1");
-    }
-    else if (key == "latencyMax") {
-        latencyMax = std::stod(value);
-    }
-    else if (key == "latencyBuckets") {
-        latencyBuckets = std::stoi(value);
     }
     else {
         return false;
