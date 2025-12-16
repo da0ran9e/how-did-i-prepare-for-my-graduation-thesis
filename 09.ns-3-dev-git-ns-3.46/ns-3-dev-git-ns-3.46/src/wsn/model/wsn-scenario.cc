@@ -76,7 +76,7 @@ void WsnScenario::configure(std::string iniFile)
 
     auto root = m_registry.GetRoot("SN");
     if (root)
-        std::ostream os
+        std::ostream os;
         root->DebugPrint(os);
 
     // // Debug print
