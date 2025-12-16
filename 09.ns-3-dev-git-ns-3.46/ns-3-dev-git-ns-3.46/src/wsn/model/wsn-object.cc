@@ -85,7 +85,7 @@ WsnObjectPtr WsnObject::GetChild(const std::string &name, bool createIfMissing) 
     }
     child->SetParent(this->shared_from_this());
     m_children[name].push_back(child);
-    NotifyChildAdded(child.get());
+    NotifyChildAdded(child);
     return child;
 }
 
@@ -101,7 +101,7 @@ WsnObjectPtr WsnObject::GetChildIndexed(const std::string &name, size_t idx, boo
         child->SetParent(this->shared_from_this());
         child->SetInstanceName(std::to_string(i));
         vec.push_back(child);
-        NotifyChildAdded(child.get());
+        NotifyChildAdded(child);
     }
     return vec[idx];
 }
@@ -110,7 +110,7 @@ void WsnObject::AddChild(const std::string &name, WsnObjectPtr child) {
     std::lock_guard<std::mutex> lock(m_mutex);
     child->SetParent(this->shared_from_this());
     m_children[name].push_back(child);
-    NotifyChildAdded(child.get());
+    NotifyChildAdded(child);
 }
 
 std::vector<std::string> WsnObject::GetChildNames() const {
@@ -131,7 +131,7 @@ bool WsnObject::SetProperty(const std::string &key, const std::string &value)
 {
     std::lock_guard<std::mutex> lock(m_mutex);
     m_properties[key] = value;
-    NotifyAttributeChange(key, value);
+    NotifyAttributeChanged(key, value);
     return true;
 }
 
