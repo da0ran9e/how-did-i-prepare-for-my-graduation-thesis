@@ -50,7 +50,7 @@ void WsnScenario::onKeyValue(const std::string &key,
     }
 }
 
-ParsedKey ParseIniKey(const std::string& key)
+ParsedKey WsnScenario::ParseIniKey(const std::string& key)
 {
     auto pos = key.rfind('.');
     if (pos == std::string::npos) {
