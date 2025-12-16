@@ -19,8 +19,8 @@ public:
         field_y(30),
         field_z(0),
         numNodes(0),
-        deployment(""),
         numPhysicalProcesses(1),
+        deployment(""),
         wirelessChannelName("WirelessChannel"),
         debugInfoFileName("Trace.txt")
     {
