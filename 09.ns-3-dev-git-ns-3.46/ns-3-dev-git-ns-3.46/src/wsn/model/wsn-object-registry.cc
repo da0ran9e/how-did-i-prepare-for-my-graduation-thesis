@@ -91,11 +91,11 @@ WsnObjectRegistry::ResolveOrCreate(const std::string& path)
         }
 
         // Child object
-        auto child = current->GetChild(seg.type, seg.name);
-        if (!child) {
-            child = m_factory.Create(seg.type, seg.name);
-            current->AddChild(child);
-        }
+        auto child = current->GetChild(seg.type, true);
+        // if (!child) {
+        //     child = m_factory.Create(seg.type, seg.name);
+        //     current->AddChild(child);
+        // }
         ApplyWildcardRules(child);
         current = child;
     }
