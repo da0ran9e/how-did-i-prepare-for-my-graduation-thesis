@@ -15,11 +15,11 @@ using WsnObjectPtr = std::shared_ptr<WsnObject>;
 using WeakWsnObjectPtr = std::weak_ptr<WsnObject>;
 using FactoryFunc = std::function<WsnObjectPtr(void)>;
 
-// static void PrintIndent(std::ostream& os, int indent)
-// {
-//     for (int i = 0; i < indent; ++i)
-//         os << "  ";
-// }
+static void PrintIndent(std::ostream& os, int indent)
+{
+    for (int i = 0; i < indent; ++i)
+        os << "  ";
+}
 
 
 // Base configurable object for WSN configuration tree
