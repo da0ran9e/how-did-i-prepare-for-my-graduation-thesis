@@ -25,7 +25,7 @@ public:
         numPhysicalProcesses(1),
         deployment(""),
         wirelessChannelName("WirelessChannel"),
-        debugInfoFileName("Castalia-Trace.txt")
+        debugInfoFileName("Trace.txt")
     {
     }
     ~SensorNetwork() override;

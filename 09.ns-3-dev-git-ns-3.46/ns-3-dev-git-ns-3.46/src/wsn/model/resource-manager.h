@@ -33,6 +33,7 @@ public:
     bool SetProperty(const std::string &key, const std::string &value) override;
     void Build() override;
     std::string GetTypeName() const override { return "ResourceManager"; }
+    
 private:
     bool collectTraceInfo; // = default (false);
 	double ramSize; // = default (0.0);			//in kB
