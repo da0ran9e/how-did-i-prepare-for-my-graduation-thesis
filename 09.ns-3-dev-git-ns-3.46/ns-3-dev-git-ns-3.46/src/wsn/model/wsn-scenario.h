@@ -30,7 +30,7 @@ class WsnScenario : public IniParser::Listener
 {
 public:
     void configure(std::string iniFile);
-    NodeContainer createNodesAndStack();
+
 private:
     // callbacks
     void onSection(const std::string &section) override;
