@@ -3,8 +3,6 @@
 #define SENSOR_NETWORK_H
 
 #include "wsn-object.h"
-#include "node.h"
-#include "wireless-channel.h"
 
 #include <string>
 #include <vector>
@@ -32,7 +30,7 @@ public:
 
     bool SetProperty(const std::string &key, const std::string &value) override;
     void Build() override;
-    
+
 private:
     int field_x; // default (30);			// the length of the deployment field
 	int field_y; // default (30);			// the width of the deployment field
