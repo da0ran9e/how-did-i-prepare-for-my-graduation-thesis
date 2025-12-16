@@ -10,7 +10,7 @@ namespace wsn {
 class Mobility : public ns3::wsn::WsnObject
 {
 public:
-    Mobility() : WsnObject("mobility", ""),
+    Mobility(const std::string& name) : WsnObject("mobility", name),
         updateInterval(1000),
         xCoorDestination(0.0),
         yCoorDestination(0.0),
