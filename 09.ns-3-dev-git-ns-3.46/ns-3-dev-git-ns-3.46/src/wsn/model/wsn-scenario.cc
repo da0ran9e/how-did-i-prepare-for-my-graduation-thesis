@@ -76,7 +76,7 @@ void WsnScenario::configure(std::string iniFile)
 
     auto root = m_registry.GetRoot("SN");
     if (root)
-        std::ostringstream os;
+        std::ostream os
         root->DebugPrint(os);
 
     // // Debug print
@@ -87,14 +87,6 @@ void WsnScenario::configure(std::string iniFile)
     //   - NodeContainer 
     //   - positions
     //   - MAC/PHY
-}
-
-NodeContainer WsnScenario::createNodesAndStack()
-{
-    // NodeContainer nodes;
-    // nodes.Create(m_numNodes);
-
-    // return nodes;
 }
 
 
