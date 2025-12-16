@@ -45,14 +45,13 @@ public:
         std::string type;   // e.g., "node"
         std::string name;   // e.g., "0"
     };
-    
+
     // Helpers
     static std::vector<PathSegment> ParsePath(const std::string& path);
     static PathSegment ParseSegment(const std::string& segment);
 
     std::shared_ptr<WsnObject> GetOrCreateRoot(const PathSegment& seg);
 
-private:
     std::unordered_map<std::string, std::shared_ptr<WsnObject>> m_roots;
     WsnObjectFactory m_factory;
     std::vector<WildcardRule> m_wildcardRules;
