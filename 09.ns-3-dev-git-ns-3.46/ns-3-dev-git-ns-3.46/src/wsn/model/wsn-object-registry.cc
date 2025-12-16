@@ -13,11 +13,11 @@
 #include "wsn-mobility.h"
 
 // Communication submodules
-#include "mac-protocol.h"
-#include "routing-protocol.h"
+#include "wsn-mac.h"
+#include "wsn-routing.h"
 
 // Upper layer
-#include "application-model.h"
+#include "wsn-app.h"
 
 // Resources
 #include "resource-manager.h"
