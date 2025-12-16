@@ -33,7 +33,7 @@ void RegisterWsnObjects()
 
     factory.RegisterType("SN",
         [](const std::string&) {
-            return std::make_shared<SensorNetwork>();
+            return std::make_shared<SensorNetwork>(name);
         });
 
     factory.RegisterType("WirelessChannel",
