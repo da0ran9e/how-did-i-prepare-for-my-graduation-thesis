@@ -31,8 +31,7 @@ public:
     
     bool SetProperty(const std::string &key, const std::string &value) override;
     void Build() override;
-    std::string GetTypeName() const override { return "Node"; }
-
+    
 private:
     double xCoor; // default (0);
 	double yCoor; // default (0);

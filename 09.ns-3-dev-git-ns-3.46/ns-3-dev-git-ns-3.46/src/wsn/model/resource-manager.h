@@ -32,8 +32,7 @@ public:
 
     bool SetProperty(const std::string &key, const std::string &value) override;
     void Build() override;
-    std::string GetTypeName() const override { return "ResourceManager"; }
-    
+
 private:
     bool collectTraceInfo; // = default (false);
 	double ramSize; // = default (0.0);			//in kB
@@ -48,7 +47,7 @@ private:
 	int cpuInitialPowerLevel; // = default (-1);	// index for the cpuPowerLevels array
 	double sigmaCPUClockDrift; // = default (0.00003);	// the standard deviation of the Drift of the CPU
 
-	double initialEnergy // = default (18720);
+	double initialEnergy; // = default (18720);
 	// energy of the node in Joules, default value corresponds to two AA batteries
 	// source http://www.allaboutbatteries.com/Energy-tables.html
 

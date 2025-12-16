@@ -32,8 +32,7 @@ public:
 
     bool SetProperty(const std::string &key, const std::string &value) override;
     void Build() override;
-    std::string GetTypeName() const override { return "SN"; }
-
+    
 private:
     int field_x; // default (30);			// the length of the deployment field
 	int field_y; // default (30);			// the width of the deployment field

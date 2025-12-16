@@ -47,7 +47,7 @@ bool WirelessChannel::SetProperty(const std::string &key, const std::string &val
         return false;
     }
 
-    NotifyAttributeChange(key, value);
+    NotifyAttributeChanged(key, value);
     return true;
 }
 

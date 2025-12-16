@@ -17,7 +17,7 @@ bool WsnMac::SetProperty(const std::string &key, const std::string &value)
         return false;
     }
 
-    NotifyAttributeChange(key, value);
+    NotifyAttributeChanged(key, value);
     return true;
 }
 void WsnMac::Build()

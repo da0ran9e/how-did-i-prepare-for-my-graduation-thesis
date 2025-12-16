@@ -38,7 +38,6 @@ public:
     void SetParent(WeakWsnObjectPtr parent);
     WeakWsnObjectPtr GetParent() const;
     std::string GetPath() const; // e.g. "SN.node[3].Communication.MAC"
-    virtual std::string GetTypeName() const { return "WsnObject"; }
     virtual void DebugPrint(std::ostream& os, int indent = 0) const;
     WsnObjectPtr GetChild(const std::string &name, bool createIfMissing = false);
     WsnObjectPtr GetChildIndexed(const std::string &name, size_t idx, bool createIfMissing = false);

@@ -22,8 +22,7 @@ public:
 
     bool SetProperty(const std::string &key, const std::string &value) override;
     void Build() override;
-    std::string GetTypeName() const override { return "Mobility"; }
-
+    
 private:
     double updateInterval; // = default (1000);
 	double xCoorDestination; // = default (0);

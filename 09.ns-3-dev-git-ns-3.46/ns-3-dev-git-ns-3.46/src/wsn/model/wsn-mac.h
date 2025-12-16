@@ -21,8 +21,7 @@ public:
 
     bool SetProperty(const std::string &key, const std::string &value) override;
     void Build() override;
-    std::string GetTypeName() const override { return "MAC"; }
-
+    
 private:
 	int macMaxPacketSize;	// in bytes
 	int macBufferSize;		// in number of messages

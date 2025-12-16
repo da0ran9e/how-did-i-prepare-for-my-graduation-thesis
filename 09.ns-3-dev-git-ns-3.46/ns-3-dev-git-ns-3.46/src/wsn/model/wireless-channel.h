@@ -32,8 +32,7 @@ public:
     
     bool SetProperty(const std::string &key, const std::string &value) override;
     void Build() override;
-    std::string GetTypeName() const override { return "WirelessChannel"; }
-
+    
 private:
     bool collectTraceInfo; // default (false);
 	bool onlyStaticNodes; // default (true);		// if NO mobility, set it to true for greater efficiency 
