@@ -76,8 +76,9 @@ void WsnScenario::configure(std::string iniFile)
 
     auto root = m_registry.GetRoot("SN");
     if (root)
-        std::ostream os;
+        std::ostringstream os;
         root->DebugPrint(os);
+        std::cout << os.str();
 
     // // Debug print
     // std::cout << "Number of nodes = " << m_numNodes << std::endl;
