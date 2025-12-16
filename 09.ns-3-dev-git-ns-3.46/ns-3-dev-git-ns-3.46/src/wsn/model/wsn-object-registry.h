@@ -41,14 +41,11 @@ public:
                         const std::string& value);
     void ApplyWildcardRules(std::shared_ptr<WsnObject> obj);
 
-
-private:
     struct PathSegment {
         std::string type;   // e.g., "node"
         std::string name;   // e.g., "0"
     };
-
-private:
+    
     // Helpers
     static std::vector<PathSegment> ParsePath(const std::string& path);
     static PathSegment ParseSegment(const std::string& segment);
