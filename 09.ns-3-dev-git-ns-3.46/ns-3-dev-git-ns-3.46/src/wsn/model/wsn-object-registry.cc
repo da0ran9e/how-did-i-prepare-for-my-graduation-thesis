@@ -32,7 +32,7 @@ void RegisterWsnObjects()
     auto& factory = WsnObjectFactory::Instance();
 
     factory.RegisterType("SN",
-        [](const std::string&) {
+        [](const std::string& name) {
             return std::make_shared<SensorNetwork>(name);
         });
 
