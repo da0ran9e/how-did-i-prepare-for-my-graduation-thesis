@@ -15,7 +15,7 @@ public:
         applicationID("defaultApp"),
         priority(0),
         packetHeaderOverhead(0),
-        constantDataPayload(0),
+        constantDataPayload(0)
         {}
 
     ~WsnApp() override = default;
