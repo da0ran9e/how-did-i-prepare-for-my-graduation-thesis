@@ -8,8 +8,8 @@ void WsnScenario::onSection(const std::string &section)
     m_currentSection = section;
     std::cout << "Callback Section: " << section << std::endl;
     m_trace.Trace("Section: " + section);
-    if (m_config.find(section) == m_config.end())
-        m_config[section] = {};
+    // if (m_config.find(section) == m_config.end())
+    //     m_config[section] = {};
 }
 
 bool HasWildcard(const std::string& path)
@@ -74,8 +74,9 @@ void WsnScenario::configure(std::string iniFile)
     
     iniParser.read(iniFile);
 
-    auto root = m_registry.GetRoot();
+    auto root = m_registry.GetRoot("SN");
     if (root)
+        std::ostringstream os;
         root->DebugPrint(os);
 
     // // Debug print
