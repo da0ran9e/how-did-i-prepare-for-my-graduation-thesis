@@ -31,3 +31,5 @@ private:
 
 } // namespace wsn
 } // namespace ns3
+
+#endif // WSN_MAC_H
