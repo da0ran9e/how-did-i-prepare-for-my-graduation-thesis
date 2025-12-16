@@ -1,28 +1,4 @@
 #include "wsn-object-registry.h"
-#include "wsn-object-factory.h"
-
-// Base
-#include "wsn-object.h"
-
-// Network-level
-#include "sensor-network.h"
-#include "wireless-channel.h"
-
-// Node-level
-#include "wsn-node.h"
-#include "wsn-mobility.h"
-
-// Communication submodules
-#include "wsn-mac.h"
-#include "wsn-routing.h"
-
-// Upper layer
-#include "wsn-app.h"
-
-// Resources
-#include "resource-manager.h"
-
-#include <memory>
 
 namespace ns3 {
 namespace wsn {
@@ -91,7 +67,7 @@ bool MatchWildcard(const std::string& pattern,
 
 WsnObjectRegistry::WsnObjectRegistry() = default;
 
-std::shared_ptr<WsnObject>
+std::shared_ptr<ns3::wsn::WsnObject>
 WsnObjectRegistry::ResolveOrCreate(const std::string& path)
 {
     if (path.empty())
@@ -101,7 +77,7 @@ WsnObjectRegistry::ResolveOrCreate(const std::string& path)
     if (segments.empty())
         return nullptr;
 
-    std::shared_ptr<WsnObject> current;
+    std::shared_ptr<ns3::wsn::WsnObject> current;
 
     for (size_t i = 0; i < segments.size(); ++i) {
         const auto& seg = segments[i];
@@ -134,7 +110,7 @@ void WsnObjectRegistry::AddWildcardRule(
 }
 
 void WsnObjectRegistry::ApplyWildcardRules(
-        std::shared_ptr<WsnObject> obj)
+        std::shared_ptr<ns3::wsn::WsnObject> obj)
 {
     std::string objPath = obj->GetPath();
 
