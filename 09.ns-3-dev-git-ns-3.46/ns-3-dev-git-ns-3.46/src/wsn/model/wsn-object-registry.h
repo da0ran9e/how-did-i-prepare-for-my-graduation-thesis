@@ -1,4 +1,6 @@
 #pragma once
+#ifndef WSN_OBJECT_REGISTRY_H
+#define WSN_OBJECT_REGISTRY_H
 
 namespace ns3 {
 namespace wsn {
@@ -58,3 +60,5 @@ public:
 
 } // namespace wsn
 } // namespace ns3
+
+#endif // WSN_OBJECT_REGISTRY_H
