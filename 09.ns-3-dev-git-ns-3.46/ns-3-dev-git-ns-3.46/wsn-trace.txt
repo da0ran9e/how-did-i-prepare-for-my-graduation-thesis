@@ -1,0 +1,2 @@
+==== WSN Trace Start ====
+Section: General
