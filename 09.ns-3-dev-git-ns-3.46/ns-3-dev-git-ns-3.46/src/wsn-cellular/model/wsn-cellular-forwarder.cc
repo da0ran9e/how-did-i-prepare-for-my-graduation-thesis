@@ -64,5 +64,12 @@ WsnCellularForwarder::HandlePacket(Ptr<Packet> packet, const Address& src)
   // Forwarding / routing decision will be added here later
 }
 
+void
+WsnCellularForwarder::SetRouting(Ptr<WsnCellularRouting> routing)
+{
+  m_routing = routing;
+}
+
+
 } // namespace wsncellular
 } // namespace ns3

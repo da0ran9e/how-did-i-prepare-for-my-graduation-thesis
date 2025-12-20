@@ -25,7 +25,8 @@ public:
 
   void SetNetDevice(Ptr<NetDevice> dev);
   void Send(Ptr<Packet> packet, const Address& dst);
-
+  
+  void SetRouting(Ptr<WsnCellularRouting> routing);
 private:
   bool ReceiveFromMac(Ptr<NetDevice> dev,
                       Ptr<const Packet> packet,
