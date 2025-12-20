@@ -1,5 +1,5 @@
 build_lib(
-  LIBNAME wsn
+  LIBNAME wsn-cellular
   SOURCE_FILES
     model/wsn-cellular-forwarder.cc
     model/wsn-cellular-header.cc
