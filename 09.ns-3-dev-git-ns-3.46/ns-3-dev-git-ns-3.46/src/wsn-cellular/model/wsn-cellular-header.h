@@ -21,32 +21,39 @@ enum WsnCellularMsgType : uint8_t
 class WsnCellularHeader : public Header
 {
 public:
-    WsnCellularHeader();
-    ~WsnCellularHeader() override;
+  enum MsgType : uint8_t
+  {
+    DATA = 1,
+    BEACON = 2
+  };
 
+  WsnCellularHeader();
 
-    void SetMsgType(WsnCellularMsgType type);
-    void SetSeq(uint32_t seq);
-    void SetSrcNodeId(uint32_t id);
+  static TypeId GetTypeId();
+  TypeId GetInstanceTypeId() const override;
 
+  void SetSrc(uint16_t src){ m_src = src; };
+  void SetDst(uint16_t dst){ m_dst = dst; };
+  void SetSeq(uint16_t seq){ m_seq = seq; };
+  void SetMsgType(MsgType type){ m_type = type; };
 
-    WsnCellularMsgType GetMsgType() const;
-    uint32_t GetSeq() const;
-    uint32_t GetSrcNodeId() const;
+  uint16_t GetSrc() { return m_src; };
+  uint16_t GetDst() { return m_dst; };
+  uint16_t GetSeq() { return m_seq; };
+  MsgType GetMsgType() { return m_type; };
 
-
-    static TypeId GetTypeId();
-    virtual TypeId GetInstanceTypeId() const override;
-    virtual void Serialize(Buffer::Iterator start) const override;
-    virtual uint32_t Deserialize(Buffer::Iterator start) override;
-    virtual uint32_t GetSerializedSize() const override;
-    virtual void Print(std::ostream &os) const override;
+  uint32_t GetSerializedSize() const override;
+  void Serialize(Buffer::Iterator start) const override;
+  uint32_t Deserialize(Buffer::Iterator start) override;
+  void Print(std::ostream &os) const override;
 
 private:
-    uint8_t m_msgType; // TIC / TOC
-    uint32_t m_seq; // sequence number
-    uint32_t m_srcNodeId; // sender node id
+  uint16_t m_src;
+  uint16_t m_dst;
+  uint16_t m_seq;
+  MsgType  m_type;
 };
+
 
 
 } // namespace wsncellular

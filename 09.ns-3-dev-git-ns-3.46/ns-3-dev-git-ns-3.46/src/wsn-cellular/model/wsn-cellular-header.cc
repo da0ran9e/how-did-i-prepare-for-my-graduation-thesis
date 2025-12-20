@@ -6,76 +6,40 @@ namespace wsncellular {
 NS_OBJECT_ENSURE_REGISTERED(WsnCellularHeader);
 
 WsnCellularHeader::WsnCellularHeader()
-    : m_msgType(0),
-      m_seq(0),
-      m_srcNodeId(0)
+  : m_src(0),
+    m_dst(0),
+    m_seq(0),
+    m_type(DATA)
 {
 }
 
 WsnCellularHeader::~WsnCellularHeader()
 {
 }
-    
-void
-WsnCellularHeader::SetSeq(uint32_t seq)
-{
-    m_seq = seq;
-}
-    
-
-void
-WsnCellularHeader::SetSrcNodeId(uint32_t id)
-{
-    m_srcNodeId = id;
-}
-
-
-WsnCellularMsgType
-WsnCellularHeader::GetMsgType() const
-{
-    return static_cast<WsnCellularMsgType>(m_msgType);
-}
-
-
-uint32_t
-WsnCellularHeader::GetSeq() const
-{
-    return m_seq;
-}
-
-
-uint32_t
-WsnCellularHeader::GetSrcNodeId() const
-{
-    return m_srcNodeId;
-}
-
 
 uint32_t
 WsnCellularHeader::GetSerializedSize() const
 {
-    return 1 + 4 + 4; // msgType + seq + srcNodeId
+  return 2 + 2 + 2 + 1;
 }
-
 
 void
-WsnCellularHeader::Serialize(Buffer::Iterator start) const
+WsnCellularHeader::Serialize(Buffer::Iterator i) const
 {
-    Buffer::Iterator i = start;
-    i.WriteU8(m_msgType);
-    i.WriteHtonU32(m_seq);
-    i.WriteHtonU32(m_srcNodeId);
+  i.WriteU16(m_src);
+  i.WriteU16(m_dst);
+  i.WriteU16(m_seq);
+  i.WriteU8(static_cast<uint8_t>(m_type));
 }
 
-
 uint32_t
-WsnCellularHeader::Deserialize(Buffer::Iterator start)
+WsnCellularHeader::Deserialize(Buffer::Iterator i)
 {
-    Buffer::Iterator i = start;
-    m_msgType = i.ReadU8();
-    m_seq = i.ReadNtohU32();
-    m_srcNodeId = i.ReadNtohU32();
-    return GetSerializedSize();
+  m_src = i.ReadU16();
+  m_dst = i.ReadU16();
+  m_seq = i.ReadU16();
+  m_type = static_cast<MsgType>(i.ReadU8());
+  return GetSerializedSize();
 }
 
 
