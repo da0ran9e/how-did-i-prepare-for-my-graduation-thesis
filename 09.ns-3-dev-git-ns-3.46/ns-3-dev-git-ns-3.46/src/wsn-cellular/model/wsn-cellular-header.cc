@@ -46,9 +46,9 @@ WsnCellularHeader::Deserialize(Buffer::Iterator i)
 void
 WsnCellularHeader::Print(std::ostream &os) const
 {
-os << "[WSN-CELLULAR hdr] type=" << uint32_t(m_msgType)
+os << "[WSN-CELLULAR hdr] type=" << uint32_t(m_type)
 << " seq=" << m_seq
-<< " srcNode=" << m_srcNodeId;
+<< " srcNode=" << m_src;
 }
 
 
