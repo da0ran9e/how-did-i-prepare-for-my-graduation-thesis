@@ -37,10 +37,10 @@ public:
   void SetSeq(uint16_t seq){ m_seq = seq; };
   void SetMsgType(MsgType type){ m_type = type; };
 
-  uint16_t GetSrc() { return m_src; };
-  uint16_t GetDst() { return m_dst; };
-  uint16_t GetSeq() { return m_seq; };
-  MsgType GetMsgType() { return m_type; };
+  uint16_t GetSrc() const { return m_src; };
+  uint16_t GetDst() const { return m_dst; };
+  uint16_t GetSeq() const { return m_seq; };
+  MsgType GetMsgType() const { return m_type; };
 
   uint32_t GetSerializedSize() const override;
   void Serialize(Buffer::Iterator start) const override;
