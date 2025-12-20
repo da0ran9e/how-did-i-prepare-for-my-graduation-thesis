@@ -1,7 +1,7 @@
 #include "wsn-cellular-header.h"
 
 namespace ns3 {
-namespace wsn {
+namespace wsn-cellular {
 
 NS_OBJECT_ENSURE_REGISTERED(WsnCellularHeader);
 
@@ -88,5 +88,5 @@ os << "[WSN-CELLULAR hdr] type=" << uint32_t(m_msgType)
 }
 
 
-} // namespace wsn
+} // namespace wsn-cellular
 } // namespace ns3

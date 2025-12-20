@@ -4,7 +4,7 @@
 #include "ns3/simulator.h"
 
 namespace ns3 {
-namespace wsn {
+namespace wsn-cellular {
 
 NS_LOG_COMPONENT_DEFINE("WsnCellularRouting");
 NS_OBJECT_ENSURE_REGISTERED(WsnCellularRouting);
@@ -103,5 +103,5 @@ WsnCellularRouting::SendData(uint16_t dst, Ptr<Packet> payload)
   m_forwarder->Send(payload, Mac16Address::GetBroadcast());
 }
 
-} // namespace wsn
+} // namespace wsn-cellular
 } // namespace ns3

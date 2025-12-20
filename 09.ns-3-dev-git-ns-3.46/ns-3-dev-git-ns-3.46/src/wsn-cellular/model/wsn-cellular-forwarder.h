@@ -13,7 +13,7 @@
 #include "wsn-cellular-header.h"
 
 namespace ns3 {
-namespace wsn {
+namespace wsn-cellular {
 
 class WsnCellularForwarder : public Object
 {
@@ -38,7 +38,7 @@ private:
   Ptr<NetDevice> m_dev;
 };
 
-} // namespace wsn
+} // namespace wsn-cellular
 } // namespace ns3
 
 #endif // WSN_CELLULAR_FORWARDER_H
