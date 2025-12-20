@@ -9,7 +9,7 @@
 
 
 namespace ns3 {
-namespace wsn-cellular {
+namespace wsncellular {
 
 enum WsnCellularMsgType : uint8_t
 {
@@ -49,7 +49,7 @@ private:
 };
 
 
-} // namespace wsn-cellular
+} // namespace wsncellular
 } // namespace ns3
 
 

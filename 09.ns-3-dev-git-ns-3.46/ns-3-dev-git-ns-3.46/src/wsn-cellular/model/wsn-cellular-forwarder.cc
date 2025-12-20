@@ -2,7 +2,7 @@
 #include "ns3/node.h"
 
 namespace ns3 {
-namespace wsn-cellular {
+namespace wsncellular {
 
 NS_LOG_COMPONENT_DEFINE("WsnCellularForwarder");
 NS_OBJECT_ENSURE_REGISTERED(WsnCellularForwarder);
@@ -64,5 +64,5 @@ WsnCellularForwarder::HandlePacket(Ptr<Packet> packet, const Address& src)
   // Forwarding / routing decision will be added here later
 }
 
-} // namespace wsn-cellular
+} // namespace wsncellular
 } // namespace ns3

@@ -10,7 +10,7 @@
 #include "wsn-cellular-header.h"
 
 namespace ns3 {
-namespace wsn-cellular {
+namespace wsncellular {
 
 class WsnCellularForwarder;
 
@@ -48,7 +48,7 @@ private:
   Ptr<WsnCellularForwarder> m_forwarder;
 };
 
-} // namespace wsn-cellular
+} // namespace wsncellular
 } // namespace ns3
 
 #endif // WSN_CELLULAR_ROUTING_H

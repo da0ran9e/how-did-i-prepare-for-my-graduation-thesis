@@ -8,7 +8,7 @@
 #include "ns3/wsn-cellular-forwarder.h"
 
 using namespace ns3;
-using namespace ns3::wsn-cellular;
+using namespace ns3::wsncellular;
 
 NS_LOG_COMPONENT_DEFINE("WsnCellularTicTocExample");
 
