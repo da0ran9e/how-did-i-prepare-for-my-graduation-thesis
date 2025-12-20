@@ -32,6 +32,9 @@ public:
   static TypeId GetTypeId();
   TypeId GetInstanceTypeId() const override;
 
+  void SetType(MsgType t) { m_type = t; }
+  MsgType GetType() const { return m_type; }
+
   void SetSrc(uint16_t src){ m_src = src; };
   void SetDst(uint16_t dst){ m_dst = dst; };
   void SetSeq(uint16_t seq){ m_seq = seq; };

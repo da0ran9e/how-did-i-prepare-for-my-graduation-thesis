@@ -6,6 +6,7 @@
 #include "ns3/packet.h"
 #include "ns3/node.h"
 #include "ns3/log.h"
+#include "ns3/mac16-address.h"
 
 #include "wsn-cellular-header.h"
 
