@@ -1,4 +1,4 @@
-
+#include "wsn-cellular-forwarder.h"
 #include "ns3/node.h"
 
 namespace ns3 {
