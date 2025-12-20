@@ -59,7 +59,7 @@ WsnCellularForwarder::HandlePacket(Ptr<Packet> packet, const Address& src)
   NS_LOG_INFO("Node " << nodeId
                 << " received packet type=" << uint32_t(hdr.GetMsgType())
                 << " seq=" << hdr.GetSeq()
-                << " from srcNode=" << hdr.GetSrcNodeId());
+                << " from srcNode=" << hdr.GetSrc());
 
   // Forwarding / routing decision will be added here later
 }
