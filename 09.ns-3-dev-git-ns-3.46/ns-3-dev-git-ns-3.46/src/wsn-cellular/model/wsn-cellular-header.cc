@@ -13,10 +13,6 @@ WsnCellularHeader::WsnCellularHeader()
 {
 }
 
-WsnCellularHeader::~WsnCellularHeader()
-{
-}
-
 uint32_t
 WsnCellularHeader::GetSerializedSize() const
 {
