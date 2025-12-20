@@ -11,8 +11,6 @@ build_lib(
     
   LIBRARIES_TO_LINK
     ${libcore}
-    ${libinternet}
-    ${libmobility}
-    ${libwifi}
-    ${libapplications}
+    ${libnetwork}
+    ${liblr-wpan}
 )
