@@ -26,7 +26,7 @@ public:
   void SetNetDevice(Ptr<NetDevice> dev);
   void Send(Ptr<Packet> packet, const Address& dst);
 
-  void SetRouting(Ptr<WsnCellularRouting> routing);
+  void SetRouting(Ptr<ns3::Object> routing);
 private:
   bool ReceiveFromMac(Ptr<NetDevice> dev,
                       Ptr<const Packet> packet,
@@ -37,7 +37,7 @@ private:
 
 private:
   Ptr<NetDevice> m_dev;
-  Ptr<WsnCellularRouting> m_routing;
+  Ptr<ns3::Object> m_routing;
 };
 
 } // namespace wsncellular

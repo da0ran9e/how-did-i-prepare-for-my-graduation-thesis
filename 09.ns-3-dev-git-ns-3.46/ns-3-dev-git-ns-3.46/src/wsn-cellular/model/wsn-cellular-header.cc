@@ -13,6 +13,22 @@ WsnCellularHeader::WsnCellularHeader()
 {
 }
 
+TypeId
+WsnCellularHeader::GetInstanceTypeId(void) const
+{
+  return GetTypeId();
+}
+
+TypeId
+WsnCellularHeader::GetTypeId(void)
+{
+  static TypeId tid = TypeId("ns3::wsncellular::WsnCellularHeader")
+    .SetParent<Header>()
+    .SetGroupName("WsnCellular")
+    .AddConstructor<WsnCellularHeader>();
+  return tid;
+}
+
 uint32_t
 WsnCellularHeader::GetSerializedSize() const
 {

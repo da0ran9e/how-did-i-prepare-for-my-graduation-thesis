@@ -13,7 +13,7 @@ WsnCellularForwarder::GetTypeId()
   static TypeId tid = TypeId("ns3::wsn::WsnCellularForwarder")
     .SetParent<Object>()
     .SetGroupName("Wsn")
-    .AddConstructor<WsnCellularForwarder>();
+    .AddConstructor<ns3::wsncellular::WsnCellularForwarder>();
   return tid;
 }
 
@@ -65,7 +65,7 @@ WsnCellularForwarder::HandlePacket(Ptr<Packet> packet, const Address& src)
 }
 
 void
-WsnCellularForwarder::SetRouting(Ptr<WsnCellularRouting> routing)
+WsnCellularForwarder::SetRouting(Ptr<ns3::Object> routing)
 {
   m_routing = routing;
 }
