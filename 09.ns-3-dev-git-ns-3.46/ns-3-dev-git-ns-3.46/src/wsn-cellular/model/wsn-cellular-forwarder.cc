@@ -1,5 +1,6 @@
 #include "wsn-cellular-forwarder.h"
 #include "ns3/node.h"
+#include "ns3/mac16-address.h"
 
 namespace ns3 {
 namespace wsncellular {
@@ -55,11 +56,36 @@ WsnCellularForwarder::HandlePacket(Ptr<Packet> packet, const Address& src)
 
   Ptr<Node> node = m_dev->GetNode();
   uint32_t nodeId = node ? node->GetId() : 0xffffffff;
+  uint32_t srcNodeId = hdr.GetSrc();
+  uint32_t dstNodeId = hdr.GetDst();
+  uint32_t seq = hdr.GetSeq();
+  uint32_t type = hdr.GetMsgType();
 
-  NS_LOG_INFO("Node " << nodeId
-                << " received packet type=" << uint32_t(hdr.GetMsgType())
-                << " seq=" << hdr.GetSeq()
-                << " from srcNode=" << hdr.GetSrc());
+  if (type == WsnCellularHeader::BEACON)
+  {
+    // Send data
+    hdr.SetSrc(nodeId);
+    hdr.SetDst(srcNodeId);
+    hdr.SetSeq(seq + 1);
+    hdr.SetMsgType(WsnCellularHeader::DATA);
+    Ptr<Packet> payload = Create<Packet>(100); // dummy payload
+    payload->AddHeader(hdr);
+    Send(payload, Mac16Address(srcNodeId+1));
+  } else {
+    // beacon
+    hdr.SetSrc(nodeId);
+    hdr.SetDst(srcNodeId);
+    hdr.SetSeq(seq + 1);
+    hdr.SetMsgType(WsnCellularHeader::BEACON);
+    Ptr<Packet> payload = Create<Packet>(50); // dummy payload
+    payload->AddHeader(hdr);
+    Send(payload, Mac16Address(srcNodeId+1));
+  }
+
+  std::cout << "[Forwarder] Node " << nodeId
+            << " received packet type=" << uint32_t(hdr.GetMsgType())
+            << " seq=" << hdr.GetSeq()
+            << " from srcNode=" << srcNodeId << std::endl;
 
   // Forwarding / routing decision will be added here later
 }

@@ -44,6 +44,8 @@ private:
   void ForwardPacket(Ptr<Packet> packet,
                      const WsnCellularHeader &header);
 
+  Mac16Address ResolveMacAddress(uint16_t nodeId);
+
 private:
   Ptr<Node> m_node;
   Ptr<WsnCellularForwarder> m_forwarder;
