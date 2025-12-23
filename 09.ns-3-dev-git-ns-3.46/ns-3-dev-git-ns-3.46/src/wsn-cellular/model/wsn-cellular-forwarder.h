@@ -27,17 +27,25 @@ public:
   void Send(Ptr<Packet> packet, const Address& dst);
 
   void SetRouting(Ptr<ns3::Object> routing);
+  class Listener
+  {
+  public:
+    virtual ~Listener() {}
+    virtual void FromMacLayer(Ptr<Packet> pkt,
+                              const uint16_t src) = 0;
+  };
+  Address ResolveMACAddress(uint16_t nodeId);
+  void AddListener(Listener* listener);
 private:
   bool ReceiveFromMac(Ptr<NetDevice> dev,
                       Ptr<const Packet> packet,
                       uint16_t protocol,
                       const Address& src);
 
-  void HandlePacket(Ptr<Packet> packet, const Address& src);
-
 private:
   Ptr<NetDevice> m_dev;
   Ptr<ns3::Object> m_routing;
+  std::vector<Listener*> m_listeners;
 };
 
 } // namespace wsncellular

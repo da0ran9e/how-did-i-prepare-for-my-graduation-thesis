@@ -8,6 +8,8 @@
 #include "ns3/log.h"
 #include "ns3/mac16-address.h"
 
+#include "wsn-cellular-forwarder.h"
+
 #include "wsn-cellular-header.h"
 
 namespace ns3 {
@@ -15,7 +17,8 @@ namespace wsncellular {
 
 class WsnCellularForwarder;
 
-class WsnCellularRouting : public Object
+class WsnCellularRouting : public Object,
+public ns3::wsncellular::WsnCellularForwarder::Listener
 {
 public:
   static TypeId GetTypeId();
@@ -36,7 +39,11 @@ public:
    * Called by application
    */
   void SendData(uint16_t dst, Ptr<Packet> payload);
-
+  void FromMacLayer(Ptr<Packet> pkt,
+                    const uint16_t src) override;
+  void ToMacLayer(Ptr<Packet> pkt,
+                    const uint16_t dst);
+                    
 private:
   void HandleData(Ptr<Packet> packet,
                   const WsnCellularHeader &header);

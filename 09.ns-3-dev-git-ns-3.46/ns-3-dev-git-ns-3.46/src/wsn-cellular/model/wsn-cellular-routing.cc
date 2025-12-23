@@ -1,5 +1,4 @@
 #include "wsn-cellular-routing.h"
-#include "wsn-cellular-forwarder.h"
 
 #include "ns3/simulator.h"
 
@@ -32,6 +31,7 @@ void
 WsnCellularRouting::SetForwarder(Ptr<WsnCellularForwarder> forwarder)
 {
   m_forwarder = forwarder;
+  m_forwarder->AddListener(this);
 }
 
 void
@@ -106,13 +106,6 @@ WsnCellularRouting::ForwardPacket(Ptr<Packet> packet,
 void
 WsnCellularRouting::SendData(uint16_t dst, Ptr<Packet> payload)
 {
-  WsnCellularHeader hdr;
-  hdr.SetSrc(m_node->GetId());
-  hdr.SetDst(dst);
-  hdr.SetType(WsnCellularHeader::DATA);
-
-  payload->AddHeader(hdr);
-
   Mac16Address nextHop = ResolveMacAddress(dst);
 
   std::cout << "[Routing] Node " << m_node->GetId()
@@ -128,6 +121,44 @@ WsnCellularRouting::ResolveMacAddress(uint16_t nodeId)
   return Mac16Address(nodeId + 1);
 }
 
+void
+WsnCellularRouting::FromMacLayer(Ptr<Packet> pkt,
+                                 const uint16_t src)
+{
+  WsnCellularHeader hdr;
+  pkt->RemoveHeader(hdr);
+
+  uint16_t sourceNode = hdr.GetSrc();
+  std::cout << "[Routing] Node " << m_node->GetId()
+            << " received type = " << hdr.GetType()
+            << " from node " << sourceNode 
+            << " seq = " << hdr.GetSeq()
+            << std::endl;
+  if (hdr.GetType() == WsnCellularHeader::DATA)
+  {
+    hdr.SetType(WsnCellularHeader::BEACON);
+  } 
+  else if (hdr.GetType() == WsnCellularHeader::BEACON)
+  {
+    hdr.SetType(WsnCellularHeader::DATA);    
+  }
+  
+  hdr.SetSrc(m_node->GetId());
+  hdr.SetDst(sourceNode);
+  hdr.SetSeq(hdr.GetSeq()+1);
+
+  Ptr<Packet> payload = Create<Packet>(50); // dummy payload
+    payload->AddHeader(hdr);
+    //SendData(sourceNode, pkt);
+    ToMacLayer(payload, sourceNode);
+}
+
+void 
+WsnCellularRouting::ToMacLayer(Ptr<Packet> pkt,
+                               const uint16_t dst)
+{
+  m_forwarder->Send(pkt, ResolveMacAddress(dst));
+}
 
 } // namespace wsncellular
 } // namespace ns3

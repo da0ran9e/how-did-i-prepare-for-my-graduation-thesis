@@ -39,61 +39,39 @@ WsnCellularForwarder::Send(Ptr<Packet> packet, const Address& dst)
 
 bool
 WsnCellularForwarder::ReceiveFromMac(Ptr<NetDevice> dev,
-                                     Ptr<const Packet> packet,
-                                     uint16_t protocol,
+                                     Ptr<const Packet> pkt,
+                                     uint16_t,
                                      const Address& src)
 {
-  Ptr<Packet> p = packet->Copy();
-  HandlePacket(p, src);
-  return true;
-}
-
-void
-WsnCellularForwarder::HandlePacket(Ptr<Packet> packet, const Address& src)
-{
   WsnCellularHeader hdr;
-  packet->RemoveHeader(hdr);
-
-  Ptr<Node> node = m_dev->GetNode();
-  uint32_t nodeId = node ? node->GetId() : 0xffffffff;
-  uint32_t srcNodeId = hdr.GetSrc();
-  uint32_t dstNodeId = hdr.GetDst();
-  uint32_t seq = hdr.GetSeq();
-  uint32_t type = hdr.GetMsgType();
-
-  if (type == WsnCellularHeader::BEACON)
+  pkt->PeekHeader(hdr);
+  for (auto l : m_listeners)
   {
-    // Send data
-    hdr.SetSrc(nodeId);
-    hdr.SetDst(srcNodeId);
-    hdr.SetSeq(seq + 1);
-    hdr.SetMsgType(WsnCellularHeader::DATA);
-    Ptr<Packet> payload = Create<Packet>(100); // dummy payload
-    payload->AddHeader(hdr);
-    Send(payload, Mac16Address(srcNodeId+1));
-  } else {
-    // beacon
-    hdr.SetSrc(nodeId);
-    hdr.SetDst(srcNodeId);
-    hdr.SetSeq(seq + 1);
-    hdr.SetMsgType(WsnCellularHeader::BEACON);
-    Ptr<Packet> payload = Create<Packet>(50); // dummy payload
-    payload->AddHeader(hdr);
-    Send(payload, Mac16Address(srcNodeId+1));
+    l->FromMacLayer(pkt->Copy(), hdr.GetSrc());
+    // std::cout << "[Forwarder] Node received pkt from node " << hdr.GetSrc()
+    //           << " type=" << (uint32_t)hdr.GetType() << " seq " << std::endl;
   }
 
-  std::cout << "[Forwarder] Node " << nodeId
-            << " received packet type=" << uint32_t(hdr.GetMsgType())
-            << " seq=" << hdr.GetSeq()
-            << " from srcNode=" << srcNodeId << std::endl;
-
-  // Forwarding / routing decision will be added here later
+  return true;
 }
 
 void
 WsnCellularForwarder::SetRouting(Ptr<ns3::Object> routing)
 {
   m_routing = routing;
+}
+
+Address
+WsnCellularForwarder::ResolveMACAddress(uint16_t nodeId)
+{
+  return Mac16Address(nodeId+1);
+}
+
+void
+WsnCellularForwarder::AddListener(Listener* listener)
+{
+  NS_ASSERT(listener);
+  m_listeners.push_back(listener);
 }
 
 
