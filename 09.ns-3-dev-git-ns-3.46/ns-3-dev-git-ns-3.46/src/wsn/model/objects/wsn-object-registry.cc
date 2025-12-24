@@ -72,13 +72,15 @@ WsnObjectRegistry::WsnObjectRegistry() : m_factory(WsnObjectFactory::Instance())
 std::shared_ptr<ns3::wsn::WsnObject>
 WsnObjectRegistry::ResolveOrCreate(const std::string& path)
 {
+     
     if (path.empty())
         return nullptr;
 
     auto segments = ParsePath(path);
     if (segments.empty())
         return nullptr;
-
+    
+    //std::cout << "obj: " << segments[segments.size()-1].type << "-" << segments[segments.size()-1].name << std::endl;
     std::shared_ptr<ns3::wsn::WsnObject> current;
 
     for (size_t i = 0; i < segments.size(); ++i) {
@@ -92,6 +94,9 @@ WsnObjectRegistry::ResolveOrCreate(const std::string& path)
 
         // Child object
         auto child = current->GetChild(seg.type, true);
+        if (seg.name != "") {
+            child = current->GetChildIndexed(seg.type, std::stoul(seg.name), true);
+        }
         // if (!child) {
         //     child = m_factory.Create(seg.type, seg.name);
         //     current->AddChild(child);

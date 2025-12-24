@@ -108,7 +108,7 @@ WsnCellularRouting::SendData(uint16_t dst, Ptr<Packet> payload)
 {
   Mac16Address nextHop = ResolveMacAddress(dst);
 
-  std::cout << "[Routing] Node " << m_node->GetId()
+  std::cout << "[" << Simulator::Now().GetSeconds() << "s] " << "[Routing] Node " << m_node->GetId()
             << " SEND data to node " << dst
             << " (MAC=" << nextHop << ")" << std::endl;
 
@@ -129,7 +129,8 @@ WsnCellularRouting::FromMacLayer(Ptr<Packet> pkt,
   pkt->RemoveHeader(hdr);
 
   uint16_t sourceNode = hdr.GetSrc();
-  std::cout << "[Routing] Node " << m_node->GetId()
+  std::cout << "[" << Simulator::Now().GetSeconds() << "s] " 
+            << "[Routing] Node " << m_node->GetId()
             << " received type = " << hdr.GetType()
             << " from node " << sourceNode 
             << " seq = " << hdr.GetSeq()

@@ -3,7 +3,7 @@
 
 #pragma once
 #include "ini-parser.h"
-#include "wsn-object-registry.h"
+#include "objects/wsn-object-registry.h"
 #include "wsn-trace.h"
 
 // #include "wsn-object.h"

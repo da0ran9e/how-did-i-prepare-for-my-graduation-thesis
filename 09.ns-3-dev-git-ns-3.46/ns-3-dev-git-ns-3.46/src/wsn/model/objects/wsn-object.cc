@@ -75,10 +75,11 @@ void WsnObject::DebugPrint(std::ostream& os, int indent) const
 
 
 WsnObjectPtr WsnObject::GetChild(const std::string &name, bool createIfMissing) {
+    //std::cout << "[obj] " << name << std::endl;
     std::lock_guard<std::mutex> lock(m_mutex);
     auto it = m_children.find(name);
     if (it != m_children.end() && !it->second.empty())
-        return it->second.front();
+        return it->second.front(); 
     if (!createIfMissing) return nullptr;
     // create via factory if available
     WsnObjectPtr child;
@@ -87,6 +88,7 @@ WsnObjectPtr WsnObject::GetChild(const std::string &name, bool createIfMissing) 
         // fallback to generic object
         child = std::make_shared<WsnObject>(name, "");
     }
+    std::cout << "[obj] Create obj " << name << std::endl;
     child->SetParent(this->shared_from_this());
     m_children[name].push_back(child);
     NotifyChildAdded(child);
