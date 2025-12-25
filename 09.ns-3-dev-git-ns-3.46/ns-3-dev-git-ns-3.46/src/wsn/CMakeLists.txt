@@ -13,6 +13,9 @@ build_lib(
     model/objects/wsn-object-registry.cc
     model/objects/wsn-object.cc
     model/objects/wsn-routing.cc
+    model/routing/wsn-forwarder.cc
+    model/routing/wsn-routing-header.cc
+    model/routing/wsn-routing-protocol.cc
     model/wsn-scenario.cc
     model/wsn-trace.cc
     
@@ -29,6 +32,9 @@ build_lib(
     model/objects/wsn-object-registry.h
     model/objects/wsn-object.h
     model/objects/wsn-routing.h
+    model/routing/wsn-forwarder.h
+    model/routing/wsn-routing-header.h
+    model/routing/wsn-routing-protocol.h
     model/wsn-scenario.h
     model/wsn-trace.h
 
