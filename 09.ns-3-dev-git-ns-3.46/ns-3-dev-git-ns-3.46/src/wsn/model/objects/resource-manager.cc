@@ -54,10 +54,10 @@ bool ResourceManager::SetProperty(const std::string &key, const std::string &val
     return true;
 }
 
-void ResourceManager::Build()
+void ResourceManager::Build(BuildContext& ctx)
 {
     // Implementation of the Build method
-    WsnObject::Build();
+    WsnObject::Build(ctx);
 }
 
 } // namespace wsn

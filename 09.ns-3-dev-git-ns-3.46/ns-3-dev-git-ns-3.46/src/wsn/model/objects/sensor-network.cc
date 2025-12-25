@@ -1,4 +1,5 @@
 #include "sensor-network.h"
+#include "wsn-object.h"
 
 namespace ns3 {
 namespace wsn {
@@ -36,12 +37,34 @@ bool SensorNetwork::SetProperty(const std::string &key, const std::string &value
     return true;
 }
 
-
-void SensorNetwork::Build()
+void SensorNetwork::Build(BuildContext& ctx)
 {
-    // Implementation of the Build method
-    WsnObject::Build();
+    std::cout << "=== Building Sensor Network ===" << std::endl;
+    std::cout << "Field size: "
+                << field_x << " x "
+                << field_y << " x "
+                << field_z << std::endl;
+    std::cout << "Number of nodes: " << numNodes << std::endl;
+
+    ctx.nodes.Create(numNodes);
+    for (uint32_t i = 0; i < numNodes; ++i) {
+        Ptr<ns3::Node> node = CreateObject<ns3::Node>();
+        ctx.nodes.Add(node);
+        std::cout << "Created Node " << i << " with ID " << node->GetId() << std::endl;
+        ctx.nodeAddr[node->GetId()] = i;
+    }
+
+    auto children = GetChildren("Node");
+
+    for (auto &child : children) {
+        // if (child->GetTypeName() == "node") {
+        //     //std::cout << "Building node: " << child->GetInstanceName() << std::endl;
+        //     child->Build(ctx);
+        // }
+        child->Build(ctx);
+    }
 }
+
 
 } // namespace wsn
 } // namespace ns3

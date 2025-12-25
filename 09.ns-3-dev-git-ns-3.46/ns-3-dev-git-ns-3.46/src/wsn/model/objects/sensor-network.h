@@ -28,7 +28,7 @@ public:
     ~SensorNetwork() override;
 
     bool SetProperty(const std::string &key, const std::string &value) override;
-    void Build() override;
+    void Build(BuildContext& ctx) override;
 
 private:
     int field_x; // default (30);			// the length of the deployment field

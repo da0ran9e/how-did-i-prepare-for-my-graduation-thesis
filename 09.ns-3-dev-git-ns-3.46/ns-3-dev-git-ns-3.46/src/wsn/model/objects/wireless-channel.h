@@ -31,7 +31,7 @@ public:
     ~WirelessChannel() override = default;
     
     bool SetProperty(const std::string &key, const std::string &value) override;
-    void Build() override;
+    void Build(BuildContext& ctx) override;
     
 private:
     bool collectTraceInfo; // default (false);

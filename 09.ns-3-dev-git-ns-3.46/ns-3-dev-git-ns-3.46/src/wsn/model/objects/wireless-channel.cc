@@ -51,10 +51,10 @@ bool WirelessChannel::SetProperty(const std::string &key, const std::string &val
     return true;
 }
 
-void WirelessChannel::Build()
+void WirelessChannel::Build(BuildContext& ctx)
 {
     // Implementation of the Build method
-    WsnObject::Build();
+    WsnObject::Build(ctx);
 }
 
 } // namespace wsn

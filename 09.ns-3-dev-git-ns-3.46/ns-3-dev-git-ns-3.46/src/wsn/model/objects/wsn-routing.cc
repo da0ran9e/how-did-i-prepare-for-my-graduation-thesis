@@ -25,10 +25,10 @@ bool WsnRouting::SetProperty(const std::string &key, const std::string &value)
     return true;
 }
 
-void WsnRouting::Build()
+void WsnRouting::Build(BuildContext& ctx)
 {
     // Implementation of the Build method
-    WsnObject::Build();
+    WsnObject::Build(ctx);
 }
 
 

@@ -1,6 +1,6 @@
 #pragma once
-#ifndef NODE_H
-#define NODE_H
+#ifndef WSN_NODE_H
+#define WSN_NODE_H
 
 #include <string>
 
@@ -14,6 +14,7 @@ class Node : public ns3::wsn::WsnObject
 public:
     explicit Node(const std::string& name)
         : WsnObject("node", name),
+          nodeAddr(-1),
           xCoor(0.0),
           yCoor(0.0),
           zCoor(0.0),
@@ -30,9 +31,12 @@ public:
     ~Node() override = default;
     
     bool SetProperty(const std::string &key, const std::string &value) override;
-    void Build() override;
+    void Build(BuildContext& ctx) override;
+
+    uint16_t GetAddr() const { return nodeAddr; }   
     
 private:
+    uint16_t nodeAddr; // default (-1);
     double xCoor; // default (0);
 	double yCoor; // default (0);
 	double zCoor; // default (0);
@@ -52,4 +56,4 @@ private:
 
 }// namespace wsn
 } // namespace ns3
-#endif // NODE_H
+#endif // WSN_NODE_H

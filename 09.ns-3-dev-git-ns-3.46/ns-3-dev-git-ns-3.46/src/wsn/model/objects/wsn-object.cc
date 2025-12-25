@@ -167,11 +167,11 @@ void WsnObject::Validate() {
     }
 }
 
-void WsnObject::Build() {
+void WsnObject::Build(BuildContext& ctx) {
     // default: no-op; subclasses override to create ns-3 runtime objects
     for (auto &pair : m_children) {
         for (auto &child : pair.second) {
-            child->Build();
+            child->Build(ctx);
         }
     }
 }

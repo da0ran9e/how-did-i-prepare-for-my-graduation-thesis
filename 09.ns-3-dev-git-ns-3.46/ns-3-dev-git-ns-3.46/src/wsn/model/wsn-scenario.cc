@@ -17,6 +17,20 @@ bool HasWildcard(const std::string& path)
     return path.find("[*]") != std::string::npos;
 }
 
+void ParseWildcard(const std::string& path,
+                   std::string& outPrefix,
+                   std::string& outSuffix)
+{
+    auto starPos = path.find("[*]");
+    if (starPos == std::string::npos) {
+        outPrefix = path;
+        outSuffix = "";
+        return;
+    }
+
+    outPrefix = path.substr(0, starPos);
+    outSuffix = path.substr(starPos + 4);
+}
 
 void WsnScenario::onKeyValue(const std::string &key,
                              const std::string &value,
@@ -28,9 +42,12 @@ void WsnScenario::onKeyValue(const std::string &key,
 
     ParsedKey parsed = ParseIniKey(key);
 
+    std::string outPrefix, outSuffix;
+    ParseWildcard(key, outPrefix, outSuffix);
+
     if (HasWildcard(parsed.objectPath)) {
-        m_registry.AddWildcardRule(parsed.objectPath,
-                                parsed.property,
+        m_registry.AddWildcardRule(outPrefix,
+                                outSuffix,
                                 value);
         return;
     }
@@ -75,10 +92,12 @@ void WsnScenario::configure(std::string iniFile)
     iniParser.read(iniFile);
 
     auto root = m_registry.GetRoot("SN");
+    BuildContext ctx{};
     if (root){
         std::ostringstream os;
         root->DebugPrint(os);
         std::cout << os.str();
+        root->Build(ctx);
     }
         
 

@@ -20,10 +20,10 @@ bool WsnMac::SetProperty(const std::string &key, const std::string &value)
     NotifyAttributeChanged(key, value);
     return true;
 }
-void WsnMac::Build()
+void WsnMac::Build(BuildContext& ctx)
 {
     // Implementation of the Build method
-    WsnObject::Build();
+    WsnObject::Build(ctx);
 }
 
 } // namespace wsn

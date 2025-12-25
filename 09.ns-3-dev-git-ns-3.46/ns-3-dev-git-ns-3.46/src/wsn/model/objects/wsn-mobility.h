@@ -21,7 +21,7 @@ public:
     ~Mobility() override = default;
 
     bool SetProperty(const std::string &key, const std::string &value) override;
-    void Build() override;
+    void Build(BuildContext& ctx) override;
     
 private:
     double updateInterval; // = default (1000);

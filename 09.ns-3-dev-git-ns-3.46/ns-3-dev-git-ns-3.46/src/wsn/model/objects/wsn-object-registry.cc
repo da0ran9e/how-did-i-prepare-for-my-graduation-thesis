@@ -9,58 +9,66 @@ void RegisterWsnObjects()
 
     factory.RegisterType("SN",
         [](const std::string& name) {
-            return std::make_shared<SensorNetwork>(name);
+            return std::make_shared<ns3::wsn::SensorNetwork>(name);
         });
 
     factory.RegisterType("WirelessChannel",
         [](const std::string& name) {
-            return std::make_shared<WirelessChannel>(name);
+            return std::make_shared<ns3::wsn::WirelessChannel>(name);
         });
 
     factory.RegisterType("node",
         [](const std::string& name) {
-            return std::make_shared<Node>(name);
+            return std::make_shared<ns3::wsn::Node>(name);
         });
 
     factory.RegisterType("Mobility",
         [](const std::string& name) {
-            return std::make_shared<Mobility>(name);
+            return std::make_shared<ns3::wsn::Mobility>(name);
         });
 
     factory.RegisterType("MAC",
         [](const std::string& name) {
-            return std::make_shared<WsnMac>(name);
+            return std::make_shared<ns3::wsn::WsnMac>(name);
         });
 
     factory.RegisterType("Routing",
         [](const std::string& name) {
-            return std::make_shared<WsnRouting>(name);
+            return std::make_shared<ns3::wsn::WsnRouting>(name);
         });
 
     factory.RegisterType("Application",
         [](const std::string& name) {
-            return std::make_shared<WsnApp>(name);
+            return std::make_shared<ns3::wsn::WsnApp>(name);
         });
 
     factory.RegisterType("ResourceManager",
         [](const std::string& name) {
-            return std::make_shared<ResourceManager>(name);
+            return std::make_shared<ns3::wsn::ResourceManager>(name);
         });
 }
 
 bool MatchWildcard(const std::string& pattern,
                    const std::string& path)
 {
+    std::string tempPath = path;
+    if (path[path.size() - 1] == ']'){
+        for (size_t i = path.size() - 1; i > 0; --i) {
+        if (path[i - 1] == '[') {
+            tempPath = path.substr(0, i - 1);
+            break;
+        }
+    }
+    }
     auto starPos = pattern.find("[*]");
     if (starPos == std::string::npos)
-        return pattern == path;
-
+        return pattern == tempPath;
     std::string prefix = pattern.substr(0, starPos);
     std::string suffix = pattern.substr(starPos + 3);
 
-    return path.compare(0, prefix.size(), prefix) == 0 &&
-           path.size() >= prefix.size() + suffix.size() &&
-           path.compare(path.size() - suffix.size(),
+    return tempPath.compare(0, prefix.size(), prefix) == 0 &&
+           tempPath.size() >= prefix.size() + suffix.size() &&
+           tempPath.compare(tempPath.size() - suffix.size(),
                          suffix.size(),
                          suffix) == 0;
 }
@@ -96,6 +104,7 @@ WsnObjectRegistry::ResolveOrCreate(const std::string& path)
         auto child = current->GetChild(seg.type, true);
         if (seg.name != "") {
             child = current->GetChildIndexed(seg.type, std::stoul(seg.name), true);
+            child->SetProperty("nodeAddr", seg.name);
         }
         // if (!child) {
         //     child = m_factory.Create(seg.type, seg.name);
@@ -113,7 +122,46 @@ void WsnObjectRegistry::AddWildcardRule(
         const std::string& property,
         const std::string& value)
 {
+    // std::cout << "Adding wildcard rule: "
+    //           << pathPattern << " -> "
+    //           << property << " = "
+    //           << value << std::endl;
+              
     m_wildcardRules.push_back({ pathPattern, property, value });
+}
+
+bool SplitSuffix(const std::string& suffix,
+                 std::vector<std::string>& objectPath,
+                 std::string& property)
+{
+    objectPath.clear();
+    property.clear();
+
+    if (suffix.empty())
+        return false;
+
+    size_t start = 0;
+    size_t pos;
+
+    std::vector<std::string> tokens;
+
+    while ((pos = suffix.find('.', start)) != std::string::npos) {
+        tokens.push_back(suffix.substr(start, pos - start));
+        start = pos + 1;
+    }
+    tokens.push_back(suffix.substr(start));
+
+    if (tokens.size() < 1)
+        return false;
+
+    // last token is property
+    property = tokens.back();
+    tokens.pop_back();
+
+    // remaining tokens are object path
+    objectPath = std::move(tokens);
+
+    return true;
 }
 
 void WsnObjectRegistry::ApplyWildcardRules(
@@ -123,7 +171,32 @@ void WsnObjectRegistry::ApplyWildcardRules(
 
     for (const auto& rule : m_wildcardRules) {
         if (MatchWildcard(rule.pathPattern, objPath)) {
-            obj->SetProperty(rule.property, rule.value);
+            std::vector<std::string> objName;
+            std::string property;
+            bool isObject = SplitSuffix(rule.property, objName, property);
+            std::shared_ptr<ns3::wsn::WsnObject> tempObj = obj;
+            if (isObject) {
+                for (const auto& name : objName) {
+                    tempObj = tempObj->GetChild(tempObj->GetPath() + "." + name, true);
+                }
+                tempObj->SetProperty(property, rule.value);
+            } else {
+                obj->SetProperty(rule.property, rule.value);
+            }
+            
+            // std::cout << "isObject: " << isObject 
+            //             << " |prop| " << property;
+            // for (const auto &n : objName) {
+            //     std::cout << " |objName:| " << n;
+            // }
+            // std::cout << std::endl;
+            // ResolveOrCreate(objPath);
+            // std::cout << "Applying wildcard rule: "
+            //           << rule.pathPattern << " -> "
+            //           << rule.property << " = "
+            //           << rule.value << " to object at path "
+            //           << objPath << std::endl;
+            // obj->SetProperty(rule.property, rule.value);
         }
     }
 }

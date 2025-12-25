@@ -6,6 +6,18 @@
 #include <functional>
 #include <mutex>
 #include <optional>
+#include "ns3/object.h"
+#include "ns3/ptr.h"
+#include "ns3/packet.h"
+#include "ns3/node.h"
+#include "ns3/log.h"
+#include "ns3/mac16-address.h"
+#include "ns3/simulator.h"
+#include "ns3/core-module.h"
+#include "ns3/network-module.h"
+#include "ns3/mobility-module.h"
+#include "ns3/lr-wpan-module.h"
+#include "ns3/spectrum-module.h"
 
 namespace ns3 {
 namespace wsn {
@@ -21,6 +33,13 @@ static void PrintIndent(std::ostream& os, int indent)
         os << "  ";
 }
 
+struct BuildContext {
+    std::map<uint16_t, uint16_t> nodeAddr;
+    ns3::NodeContainer nodes;
+    // Ptr<Channel>
+    // Ptr<MobilityHelper>
+    // Ptr<TraceManager>
+};
 
 // Base configurable object for WSN configuration tree
 class WsnObject : public std::enable_shared_from_this<WsnObject>
@@ -52,7 +71,7 @@ public:
     // Lifecycle hooks
     virtual void Initialize(); // called after parsing full tree
     virtual void Validate();   // validate parameters, throw or log errors
-    virtual void Build(); // Build() may convert config -> runtime (ns-3) objects; default: no-op      
+    virtual void Build(BuildContext& ctx); // Build() may convert config -> runtime (ns-3) objects; default: no-op      
 
     // Factory registry: register per-type factory
     static void RegisterFactory(const std::string &typeName, FactoryFunc f);
