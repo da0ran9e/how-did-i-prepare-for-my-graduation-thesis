@@ -3,6 +3,7 @@
 #define SENSOR_NETWORK_H
 
 #include "wsn-object.h"
+#include "wsn-node.h"
 
 #include <string>
 #include <vector>

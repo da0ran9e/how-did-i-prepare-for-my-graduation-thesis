@@ -9,17 +9,21 @@ void RegisterWsnObjects()
 
     factory.RegisterType("SN",
         [](const std::string& name) {
+            //std::cout << "Creating SensorNetwork with name: " << name << std::endl;
             return std::make_shared<ns3::wsn::SensorNetwork>(name);
         });
 
-    factory.RegisterType("WirelessChannel",
+    factory.RegisterType("wirelessChannel",
         [](const std::string& name) {
             return std::make_shared<ns3::wsn::WirelessChannel>(name);
         });
 
     factory.RegisterType("node",
         [](const std::string& name) {
-            return std::make_shared<ns3::wsn::Node>(name);
+            //std::cout << "Creating node with name: " << name << std::endl;
+            std::shared_ptr<ns3::wsn::Node> node = std::make_shared<ns3::wsn::Node>(name);
+            node->SetProperty("nodeAddr", name);
+            return node;
         });
 
     factory.RegisterType("Mobility",
@@ -101,10 +105,15 @@ WsnObjectRegistry::ResolveOrCreate(const std::string& path)
         }
 
         // Child object
-        auto child = current->GetChild(seg.type, true);
+        auto child = GetOrCreateChild(path);
+        if (!child) {
+            //std::cout << "Cannot create child object at path: " << path << std::endl;
+            // NS_LOG_WARN("Cannot create child object at path: " << path);
+            return nullptr;
+        }
         if (seg.name != "") {
             child = current->GetChildIndexed(seg.type, std::stoul(seg.name), true);
-            child->SetProperty("nodeAddr", seg.name);
+            //child->SetProperty("nodeAddr", seg.name);
         }
         // if (!child) {
         //     child = m_factory.Create(seg.type, seg.name);
@@ -134,6 +143,7 @@ bool SplitSuffix(const std::string& suffix,
                  std::vector<std::string>& objectPath,
                  std::string& property)
 {
+    //std::cout << "Suffix to split: " << suffix << std::endl;
     objectPath.clear();
     property.clear();
 
@@ -147,9 +157,11 @@ bool SplitSuffix(const std::string& suffix,
 
     while ((pos = suffix.find('.', start)) != std::string::npos) {
         tokens.push_back(suffix.substr(start, pos - start));
+        //std::cout << "Token : " << suffix.substr(start, pos - start) << std::endl;
         start = pos + 1;
     }
     tokens.push_back(suffix.substr(start));
+    
 
     if (tokens.size() < 1)
         return false;
@@ -170,33 +182,37 @@ void WsnObjectRegistry::ApplyWildcardRules(
     std::string objPath = obj->GetPath();
 
     for (const auto& rule : m_wildcardRules) {
+        //std::cout << "wildcard size: " << m_wildcardRules.size() << std::endl;
+        // std::cout << "Checking wildcard rule: "
+        //           << rule.pathPattern << " against object path: "
+        //           << objPath << std::endl;
         if (MatchWildcard(rule.pathPattern, objPath)) {
+            // std::cout << "Applying wildcard rule: "
+            //           << rule.pathPattern << " -> "
+            //           << rule.property << " = "
+            //           << rule.value << " to object at path: "
+            //           << objPath << std::endl;
             std::vector<std::string> objName;
             std::string property;
             bool isObject = SplitSuffix(rule.property, objName, property);
             std::shared_ptr<ns3::wsn::WsnObject> tempObj = obj;
             if (isObject) {
                 for (const auto& name : objName) {
-                    tempObj = tempObj->GetChild(tempObj->GetPath() + "." + name, true);
+                    //std::cout << "Creating object for wildcard rule: " << name << std::endl;
+                    tempObj = GetOrCreateChild(tempObj->GetPath() + "." + name);
+                    if (!tempObj) {
+                        // NS_LOG_WARN("Cannot create object for wildcard rule at path: "
+                        //              << objPath);
+                        break;
+                    }
                 }
-                tempObj->SetProperty(property, rule.value);
+                if (tempObj){
+                    tempObj->SetProperty(property, rule.value);
+                }
+                
             } else {
                 obj->SetProperty(rule.property, rule.value);
             }
-            
-            // std::cout << "isObject: " << isObject 
-            //             << " |prop| " << property;
-            // for (const auto &n : objName) {
-            //     std::cout << " |objName:| " << n;
-            // }
-            // std::cout << std::endl;
-            // ResolveOrCreate(objPath);
-            // std::cout << "Applying wildcard rule: "
-            //           << rule.pathPattern << " -> "
-            //           << rule.property << " = "
-            //           << rule.value << " to object at path "
-            //           << objPath << std::endl;
-            // obj->SetProperty(rule.property, rule.value);
         }
     }
 }
@@ -267,6 +283,55 @@ WsnObjectRegistry::GetOrCreateRoot(const PathSegment& seg)
     auto root = m_factory.Create(seg.type, seg.name);
     m_roots[seg.type] = root;
     return root;
+}
+
+std::shared_ptr<ns3::wsn::WsnObject>
+WsnObjectRegistry::GetOrCreateChild(const std::string& path)
+{
+    //std::cout << "***** " << path << std::endl;
+    auto segments = ParsePath(path);
+    if (segments.empty())
+        return nullptr;
+
+    // 1. Root
+    const PathSegment& rootSeg = segments[0];
+
+    if (!m_factory.HasType(rootSeg.type)) {
+        std::cout << "Dropped unknown object type: " << rootSeg.type << std::endl;
+        return nullptr;
+    }
+
+    auto current = GetOrCreateRoot(rootSeg);
+
+    // 2. Walk down the tree
+    for (size_t i = 1; i < segments.size(); ++i) {
+        const PathSegment& seg = segments[i];
+
+        // Nếu type chưa được register → bỏ qua toàn bộ subtree
+        if (!m_factory.HasType(seg.type)) {
+            // NS_LOG_WARN("Unknown object type: " << seg.type
+            //              << " at path " << current->GetPath()
+            //              << " (ignored)");
+            return nullptr;
+        }
+        ns3::wsn::WsnObjectPtr child;
+        if (seg.type == "node"){
+            int nodeId = atoi(strcpy(new char[seg.name.size() + 1], seg.name.c_str()));
+            child = current->GetChildIndexed(seg.type, nodeId, false);
+        } else {
+            child = current->GetChild(seg.type, false);
+        }
+        //std::cout << "Creating/getting child: " << seg.name << std::endl;
+        
+        if (!child) {
+            child = m_factory.Create(seg.type, seg.name);
+            current->AddChild(seg.type, child);
+        }
+
+        current = child;
+    }
+
+    return current;
 }
 
 } // namespace wsn

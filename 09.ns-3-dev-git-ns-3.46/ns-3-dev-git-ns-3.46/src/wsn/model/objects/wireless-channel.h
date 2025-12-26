@@ -12,7 +12,7 @@ namespace wsn {
 class WirelessChannel : public ns3::wsn::WsnObject
 {
 public:
-    explicit WirelessChannel(const std::string& name) : WsnObject("WirelessChannel", name),
+    explicit WirelessChannel(const std::string& name) : WsnObject("wirelessChannel", name),
         collectTraceInfo(false),
         onlyStaticNodes(true),
         xCellSize(5),

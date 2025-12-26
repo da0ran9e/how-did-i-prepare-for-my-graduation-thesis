@@ -32,7 +32,7 @@ namespace wsn {
 
 void RegisterWsnObjects();
 
-class WsnObjectRegistry
+class WsnObjectRegistry 
 {
 public:
 
@@ -75,9 +75,11 @@ public:
     static PathSegment ParseSegment(const std::string& segment);
 
     std::shared_ptr<ns3::wsn::WsnObject> GetOrCreateRoot(const PathSegment& seg);
+    std::shared_ptr<ns3::wsn::WsnObject> GetOrCreateChild(const std::string& path);
 
     std::unordered_map<std::string, std::shared_ptr<ns3::wsn::WsnObject>> m_roots;
     std::vector<WildcardRule> m_wildcardRules;
+
     private:
     WsnObjectFactory& m_factory;
 };

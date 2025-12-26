@@ -22,8 +22,9 @@ bool WsnMac::SetProperty(const std::string &key, const std::string &value)
 }
 void WsnMac::Build(BuildContext& ctx)
 {
+    std::cout << "Building MAC: " << GetInstanceName() << std::endl;
     // Implementation of the Build method
-    WsnObject::Build(ctx);
+    //WsnObject::Build(ctx);
 }
 
 } // namespace wsn

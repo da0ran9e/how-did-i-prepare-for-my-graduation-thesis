@@ -168,9 +168,12 @@ void WsnObject::Validate() {
 }
 
 void WsnObject::Build(BuildContext& ctx) {
+    //std::cout << "Building WsnObject: " << GetPath() << std::endl;
     // default: no-op; subclasses override to create ns-3 runtime objects
+    std::cout << "++BaseBuilder++" << std::endl;
     for (auto &pair : m_children) {
         for (auto &child : pair.second) {
+            // std::cout << "Building child: " << child->GetPath() << std::endl;
             child->Build(ctx);
         }
     }

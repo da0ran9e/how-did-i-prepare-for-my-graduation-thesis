@@ -9,7 +9,7 @@ namespace wsn {
 class WsnRouting : public ns3::wsn::WsnObject
 {
 public:
-    explicit WsnRouting(const std::string& name) : WsnObject("WsnRouting", name),
+    explicit WsnRouting(const std::string& name) : WsnObject("Routing", name),
         collectTraceInfo(false),
         maxNetFrameSize(0),
         netDataFrameOverhead(0),

@@ -56,7 +56,8 @@ bool ResourceManager::SetProperty(const std::string &key, const std::string &val
 
 void ResourceManager::Build(BuildContext& ctx)
 {
-    // Implementation of the Build method
+    std::cout << "Building Resource Manager: " << GetInstanceName() << std::endl;
+
     WsnObject::Build(ctx);
 }
 

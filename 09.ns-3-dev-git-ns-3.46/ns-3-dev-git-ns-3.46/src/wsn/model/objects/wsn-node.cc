@@ -50,27 +50,9 @@ bool Node::SetProperty(const std::string &key, const std::string &value)
 
 void Node::Build(BuildContext& ctx)
 {
-    std::cout << "Building node: " << GetAddr() << std::endl;
+    std::cout << "---------Building node: " << GetAddr() << "---------" << std::endl;
     
-
-    // // 2. Gắn mobility (tọa độ)
-    // MobilityHelper mobility;
-    // mobility.SetMobilityModel("ns3::ConstantPositionMobilityModel");
-    // mobility.Install(node);
-
-    // Ptr<MobilityModel> mob = node->GetObject<MobilityModel>();
-    // mob->SetPosition(Vector(xCoor, yCoor, zCoor));
-
-    // // 3. Lưu runtime object (rất quan trọng)
-    // m_runtimeNode = node;
-
-    // // 4. Add vào container chung
-    // ctx.nodes.Add(node);
-
-    // NS_LOG_INFO("Node built at position ("
-    //             << xCoor << ", "
-    //             << yCoor << ", "
-    //             << zCoor << ")");
+    WsnObject::Build(ctx);
 }
 
 } // namespace wsn

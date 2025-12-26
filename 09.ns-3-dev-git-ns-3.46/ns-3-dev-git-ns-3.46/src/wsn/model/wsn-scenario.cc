@@ -65,6 +65,15 @@ void WsnScenario::onKeyValue(const std::string &key,
         std::cout << "Warning: Unknown property '" << parsed.property
                   << "' for object at path '" << parsed.objectPath << "'" << std::endl;
     }
+
+    if (parsed.property == "numNodes" && parsed.objectPath == "SN") {
+        //m_numNodes = std::stoi(value);
+        for (int i = 0; i < std::stoi(value); ++i) {
+            auto nodeObj = m_registry.ResolveOrCreate("SN.node[" + std::to_string(i) + "]");
+            //obj->AddChild("node", nodeObj);
+            //obj->GetChildIndexed("node", i, true);
+        }
+    } 
 }
 
 ParsedKey WsnScenario::ParseIniKey(const std::string& key)

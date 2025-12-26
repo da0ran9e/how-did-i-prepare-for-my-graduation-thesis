@@ -50,19 +50,34 @@ void SensorNetwork::Build(BuildContext& ctx)
     for (uint32_t i = 0; i < numNodes; ++i) {
         Ptr<ns3::Node> node = CreateObject<ns3::Node>();
         ctx.nodes.Add(node);
-        std::cout << "Created Node " << i << " with ID " << node->GetId() << std::endl;
+        //std::cout << "Created Node " << i << " with ID " << node->GetId() << std::endl;
         ctx.nodeAddr[node->GetId()] = i;
     }
 
-    auto children = GetChildren("Node");
+    // auto children = GetChildren("node");
+    // for (auto &child : children) {
+    //     //std::cout << "Building child node: " << child->GetPath() << std::endl;
+    //     // if (auto node = dynamic_cast<Node*>(child.get())) {
+    //     //     node->Build(ctx);
+    //     //     //std::cout << "Building child node: " << node->GetAddr() << std::endl;
+    //     // }
+    //     if (child->GetTypeName() == "node"){
+    //         static_cast<Node*>(child.get())->Build(ctx);
+    //     }
+        
+    // }
+    
+     WsnObject::Build(ctx);
 
-    for (auto &child : children) {
-        // if (child->GetTypeName() == "node") {
-        //     //std::cout << "Building node: " << child->GetInstanceName() << std::endl;
-        //     child->Build(ctx);
-        // }
-        child->Build(ctx);
-    }
+    // for (auto &pair : m_children) {
+    //     for (auto &child : pair.second) {
+    //         //std::cout << "Building child: " << child->GetPath() << std::endl;
+    //         child->Build(ctx);
+            
+    //     }
+    // }
+    
+
 }
 
 
