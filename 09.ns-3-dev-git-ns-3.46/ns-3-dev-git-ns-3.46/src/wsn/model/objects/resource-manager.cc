@@ -58,7 +58,7 @@ void ResourceManager::Build(BuildContext& ctx)
 {
     std::cout << "Building Resource Manager: " << GetInstanceName() << std::endl;
 
-    WsnObject::Build(ctx);
+    //WsnObject::Build(ctx);
 }
 
 } // namespace wsn

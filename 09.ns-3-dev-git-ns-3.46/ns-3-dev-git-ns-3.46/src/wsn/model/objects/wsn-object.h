@@ -34,8 +34,16 @@ static void PrintIndent(std::ostream& os, int indent)
 }
 
 struct BuildContext {
+    bool netDevInitialized = false;
+    bool channelInitialized = false;
     std::map<uint16_t, uint16_t> nodeAddr;
     ns3::NodeContainer nodes;
+    ns3::MobilityHelper mobility;
+    ns3::Ptr<ns3::SpectrumChannel> spectrumChannel;
+    ns3::Ptr<ns3::PropagationLossModel> lossModel;
+    ns3::Ptr<ns3::PropagationDelayModel> delayModel;
+    ns3::NetDeviceContainer netDevices;
+    uint16_t initializedDev = 0;
     // Ptr<Channel>
     // Ptr<MobilityHelper>
     // Ptr<TraceManager>
@@ -47,6 +55,18 @@ class WsnObject : public std::enable_shared_from_this<WsnObject>
 public:
     WsnObject(const std::string &typeName = "WsnObject", const std::string &instanceName = "");
     virtual ~WsnObject();
+
+    template <typename T>
+    std::shared_ptr<T> FindAncestor()
+    {
+        auto cur = m_parent.lock();
+        while (cur) {
+            if (auto casted = std::dynamic_pointer_cast<T>(cur))
+                return casted;
+            cur = cur->m_parent.lock();
+        }
+        return nullptr;
+    }
 
     // Identification
     const std::string & GetTypeName() const { return m_typeName; }
@@ -130,6 +150,7 @@ protected:
     // Static factory registry
     static std::map<std::string, FactoryFunc> s_factoryRegistry;
 
+    bool m_built = false;
 private:
     std::vector<std::shared_ptr<Listener>> m_listeners;
 

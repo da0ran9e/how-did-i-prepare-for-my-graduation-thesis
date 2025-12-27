@@ -30,6 +30,10 @@ bool WsnApp::SetProperty(const std::string &key, const std::string &value)
 
 void WsnApp::Build(BuildContext& ctx)
 {
+    if(m_built) {
+        return;
+    }
+    m_built = true;
     std::cout << "Building App: " << GetInstanceName() << std::endl;
     // Implementation of the Build method
     //WsnObject::Build(ctx);

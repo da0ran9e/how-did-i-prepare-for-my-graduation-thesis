@@ -29,6 +29,10 @@ bool Mobility::SetProperty(const std::string &key, const std::string &value)
 
 void Mobility::Build(BuildContext& ctx)
 {
+    if(m_built) {
+        return;
+    }
+    m_built = true;
     std::cout << "Building Mobility: " << GetInstanceName() << std::endl;
     // Implementation of the Build method
     // WsnObject::Build(ctx);

@@ -36,6 +36,11 @@ void RegisterWsnObjects()
             return std::make_shared<ns3::wsn::WsnMac>(name);
         });
 
+    factory.RegisterType("Radio",
+        [](const std::string& name) {
+            return std::make_shared<ns3::wsn::Radio>(name);
+        });
+
     factory.RegisterType("Routing",
         [](const std::string& name) {
             return std::make_shared<ns3::wsn::WsnRouting>(name);

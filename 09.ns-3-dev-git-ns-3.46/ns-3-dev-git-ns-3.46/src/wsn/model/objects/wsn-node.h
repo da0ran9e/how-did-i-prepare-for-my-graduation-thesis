@@ -4,6 +4,8 @@
 
 #include <string>
 
+#include "ns3/node.h"
+#include "ns3/ptr.h"
 #include "wsn-object.h"
 
 namespace ns3 {
@@ -51,7 +53,9 @@ private:
 	std::string ApplicationName;										//the name of the implemented Application Module
 	std::string MACProtocolName;										//the name of the implemented MAC Protocol Module
     std::string RadioProtocolName;									//the name of the implemented Radio Protocol Module
-    std::string RoutingProtocolName;									//the name of the implemented Routing Protocol Module
+    std::string RoutingProtocolName;	
+    
+    Ptr<ns3::Node> m_selfNode; //the name of the implemented Routing Protocol Module
 };
 
 }// namespace wsn

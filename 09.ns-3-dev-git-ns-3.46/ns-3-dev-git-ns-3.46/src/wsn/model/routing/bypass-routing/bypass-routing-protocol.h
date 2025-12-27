@@ -2,6 +2,7 @@
 #define BYPASS_ROUTING_PROTOCOL_H
 
 #include "ns3/wsn-routing-protocol.h"
+#include "bypass-packet.h"
 
 namespace ns3 {
 namespace wsn {
@@ -17,6 +18,7 @@ public:
                       const uint16_t src) override;
     void StartRouting();
 private:
+    void SendBeacon();
 };
 
 } // namespace wsn

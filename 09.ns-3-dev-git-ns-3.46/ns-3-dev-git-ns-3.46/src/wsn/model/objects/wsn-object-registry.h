@@ -16,6 +16,7 @@
 // Node-level
 #include "wsn-node.h"
 #include "wsn-mobility.h"
+#include "wsn-radio.h"
 
 // Communication submodules
 #include "wsn-mac.h"

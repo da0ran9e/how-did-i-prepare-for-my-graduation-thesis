@@ -53,31 +53,9 @@ void SensorNetwork::Build(BuildContext& ctx)
         //std::cout << "Created Node " << i << " with ID " << node->GetId() << std::endl;
         ctx.nodeAddr[node->GetId()] = i;
     }
-
-    // auto children = GetChildren("node");
-    // for (auto &child : children) {
-    //     //std::cout << "Building child node: " << child->GetPath() << std::endl;
-    //     // if (auto node = dynamic_cast<Node*>(child.get())) {
-    //     //     node->Build(ctx);
-    //     //     //std::cout << "Building child node: " << node->GetAddr() << std::endl;
-    //     // }
-    //     if (child->GetTypeName() == "node"){
-    //         static_cast<Node*>(child.get())->Build(ctx);
-    //     }
-        
-    // }
     
-     WsnObject::Build(ctx);
-
-    // for (auto &pair : m_children) {
-    //     for (auto &child : pair.second) {
-    //         //std::cout << "Building child: " << child->GetPath() << std::endl;
-    //         child->Build(ctx);
-            
-    //     }
-    // }
-    
-
+    GetChild("wirelessChannel")->Build(ctx);
+    WsnObject::Build(ctx);
 }
 
 

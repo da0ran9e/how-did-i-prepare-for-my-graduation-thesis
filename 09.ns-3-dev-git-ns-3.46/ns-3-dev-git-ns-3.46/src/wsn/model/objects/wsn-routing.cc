@@ -27,6 +27,10 @@ bool WsnRouting::SetProperty(const std::string &key, const std::string &value)
 
 void WsnRouting::Build(BuildContext& ctx)
 {
+    if(m_built) {
+        return;
+    }
+    m_built = true;
     std::cout << "Building Routing: " << GetInstanceName() << std::endl;
     // Implementation of the Build method
     // WsnObject::Build(ctx);

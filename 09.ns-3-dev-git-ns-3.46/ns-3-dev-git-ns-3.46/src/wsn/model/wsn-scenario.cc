@@ -70,6 +70,12 @@ void WsnScenario::onKeyValue(const std::string &key,
         //m_numNodes = std::stoi(value);
         for (int i = 0; i < std::stoi(value); ++i) {
             auto nodeObj = m_registry.ResolveOrCreate("SN.node[" + std::to_string(i) + "]");
+            auto mobilityObj = m_registry.ResolveOrCreate("SN.node[" + std::to_string(i) + "].Mobility");
+            auto macObj = m_registry.ResolveOrCreate("SN.node[" + std::to_string(i) + "].MAC");
+            auto radioObj = m_registry.ResolveOrCreate("SN.node[" + std::to_string(i) + "].Radio");
+            auto appObj = m_registry.ResolveOrCreate("SN.node[" + std::to_string(i) + "].App");
+            auto routingObj = m_registry.ResolveOrCreate("SN.node[" + std::to_string(i) + "].Routing");
+            
             //obj->AddChild("node", nodeObj);
             //obj->GetChildIndexed("node", i, true);
         }

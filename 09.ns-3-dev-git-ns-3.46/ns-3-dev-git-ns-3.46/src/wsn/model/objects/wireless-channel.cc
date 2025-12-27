@@ -53,9 +53,25 @@ bool WirelessChannel::SetProperty(const std::string &key, const std::string &val
 
 void WirelessChannel::Build(BuildContext& ctx)
 {
+    if(m_built) {
+        return;
+    }
+    m_built = true;
+    
+    if (ctx.channelInitialized) {
+        return;
+    }
+    ctx.channelInitialized = true;
+
     std::cout << "Building Wireless Channel: " << GetInstanceName() << std::endl;
     // Implementation of the Build method
     // WsnObject::Build(ctx);
+    ctx.spectrumChannel = ns3::CreateObject<ns3::SingleModelSpectrumChannel>();
+    ctx.lossModel = ns3::CreateObject<ns3::LogDistancePropagationLossModel>();
+    ctx.delayModel = ns3::CreateObject<ns3::ConstantSpeedPropagationDelayModel>();
+
+    ctx.spectrumChannel->AddPropagationLossModel(ctx.lossModel);
+    ctx.spectrumChannel->SetPropagationDelayModel(ctx.delayModel);
 }
 
 } // namespace wsn
