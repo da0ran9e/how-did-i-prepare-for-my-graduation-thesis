@@ -14,6 +14,7 @@ build_lib(
     model/objects/wsn-object.cc
     model/objects/wsn-radio.cc
     model/objects/wsn-routing.cc
+    model/routing/bypass-routing/bypass-routing-protocol.cc
     model/routing/wsn-forwarder.cc
     model/routing/wsn-routing-header.cc
     model/routing/wsn-routing-protocol.cc
@@ -34,6 +35,7 @@ build_lib(
     model/objects/wsn-object.h
     model/objects/wsn-radio.h
     model/objects/wsn-routing.h
+    model/routing/bypass-routing/bypass-routing-protocol.h
     model/routing/wsn-forwarder.h
     model/routing/wsn-routing-header.h
     model/routing/wsn-routing-protocol.h

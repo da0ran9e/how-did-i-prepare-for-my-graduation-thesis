@@ -72,6 +72,10 @@ void Node::Build(BuildContext& ctx)
               << xCoor << ", " << yCoor << ", " << zCoor << ")" << std::endl;
     GetChild("MAC")->Build(ctx);
     GetChild("Routing")->Build(ctx);
+    m_selfNode->AggregateObject(ctx.forwarder);
+    m_selfNode->AggregateObject(ctx.routing);
+
+    ctx.routing->Start();
 }
 
 } // namespace wsn

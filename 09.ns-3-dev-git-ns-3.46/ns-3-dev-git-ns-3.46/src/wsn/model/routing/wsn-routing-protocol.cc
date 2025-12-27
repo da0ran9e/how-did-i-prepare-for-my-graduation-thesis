@@ -26,12 +26,17 @@ WsnRoutingProtocol::HandlePacket(Ptr<Packet> packet,
                                const WsnRoutingHeader &header)
 {
   int srcNodeId = header.GetSource();
-  std::cout << "[Routing] Node " << m_node->GetId()
+  std::cout << "[Routing] Node " << m_selfNodeProps.nodeId
               << " DELIVER packet from " << srcNodeId << std::endl;
 }
 
 void WsnRoutingProtocol::FromMacLayer(Ptr<Packet> pkt, const uint16_t src)
 {
+}
+
+void WsnRoutingProtocol::Start()
+{
+    std::cout << "[Routing] Starting base routing" << std::endl;
 }
 
 } // namespace wsn

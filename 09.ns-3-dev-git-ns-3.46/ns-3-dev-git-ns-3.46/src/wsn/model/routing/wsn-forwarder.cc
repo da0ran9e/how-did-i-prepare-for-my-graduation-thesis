@@ -47,8 +47,7 @@ WsnForwarder::ReceiveFromMac(Ptr<NetDevice> dev,
   for (auto l : m_listeners)
   {
     l->FromMacLayer(pkt->Copy(), hdr.GetSource());
-    // std::cout << "[Forwarder] Node received pkt from node " << hdr.GetSrc()
-    //           << " type=" << (uint32_t)hdr.GetType() << " seq " << std::endl;
+    std::cout << "[Forwarder] Node received pkt from node " << hdr.GetSource() << std::endl;
   }
 
   return true;
@@ -57,7 +56,10 @@ WsnForwarder::ReceiveFromMac(Ptr<NetDevice> dev,
 Address
 WsnForwarder::ResolveMACAddress(uint16_t nodeId)
 {
-  return Mac16Address(nodeId+1);
+    if (nodeId == 0xFFFF) {
+        return Mac16Address::GetBroadcast();
+    }
+    return Mac16Address(nodeId+1);
 }
 
 void

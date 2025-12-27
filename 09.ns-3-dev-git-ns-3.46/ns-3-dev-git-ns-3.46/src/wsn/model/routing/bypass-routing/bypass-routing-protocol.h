@@ -16,7 +16,7 @@ public:
     static TypeId GetTypeId();
     void FromMacLayer(Ptr<Packet> pkt,
                       const uint16_t src) override;
-    void StartRouting();
+    void Start() override;
 private:
     void SendBeacon();
 };

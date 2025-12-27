@@ -1,4 +1,5 @@
 #include "bypass-routing-protocol.h"
+#include "ns3/simulator.h"
 
 namespace ns3 {
 namespace wsn { 
@@ -18,17 +19,17 @@ TypeId BypassRoutingProtocol::GetTypeId()
     return tid;
 }
 
-void BypassRoutingProtocol::StartRouting(){
+void BypassRoutingProtocol::Start(){
 // Implementation of routing start logic
 // Beaconing in random statup delay
-    ns3::Simulator::Schedule(MilliSeconds(rand() % 1000), &BypassRoutingProtocol::SendBeacon, this);
+    ns3::Simulator::Schedule(Seconds(rand() % 10), &BypassRoutingProtocol::SendBeacon, this);
 
 }
 
 void BypassRoutingProtocol::FromMacLayer(Ptr<Packet> pkt,
                                         const uint16_t src)
 {
-    std::cout << "[BypassRouting] Node " << m_node->GetId()
+    std::cout << "[BypassRouting] Node " << m_selfNodeProps.nodeId
               << " received packet from MAC layer, src=" << src << std::endl;
 
     // Here we would normally parse the packet and decide what to do
@@ -37,14 +38,17 @@ void BypassRoutingProtocol::FromMacLayer(Ptr<Packet> pkt,
 
 void BypassRoutingProtocol::SendBeacon()
 {
-    std::cout << "[BypassRouting] Node " << m_node->Get()
+    std::cout << "[BypassRouting] Node " << m_selfNodeProps.nodeId
               << " is sending a beacon." << std::endl;
 
-    // Create a bypass packet (details omitted for brevity)
+    // // Create a bypass packet (details omitted for brevity)
     Ptr<Packet> beaconPacket = Create<Packet>(100); // Example size
-
-    // Send the packet to all neighbors (broadcast)
-    m_mac->Send(beaconPacket, 0xFFFF); // 0xFFFF is the broadcast address
+    ToMacLayer(beaconPacket, 0xFFFF); // Broadcast address
+    // // Send the packet to all neighbors (broadcast)
+    // m_mac->Send(beaconPacket, 0xFFFF); // 0xFFFF is the broadcast address
+    std::cout << "[BypassRouting] Node " << m_selfNodeProps.nodeId
+              << " beacon sent." << std::endl;
+}
 
 }
 }

@@ -14,6 +14,12 @@ namespace wsn {
 class Node : public ns3::wsn::WsnObject
 {
 public:
+    struct NodeProperties {
+        uint16_t nodeId;
+        double xCoord;
+        double yCoord;
+        double zCoord;
+    };
     explicit Node(const std::string& name)
         : WsnObject("node", name),
           nodeAddr(-1),
@@ -36,6 +42,14 @@ public:
     void Build(BuildContext& ctx) override;
 
     uint16_t GetAddr() const { return nodeAddr; }   
+    NodeProperties GetNodeProperties() const {
+        return {
+            nodeAddr,
+            xCoor,
+            yCoor,
+            zCoor
+        };
+    }
     
 private:
     uint16_t nodeAddr; // default (-1);

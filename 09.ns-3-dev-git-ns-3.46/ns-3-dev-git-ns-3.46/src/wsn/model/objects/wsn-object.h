@@ -18,6 +18,8 @@
 #include "ns3/mobility-module.h"
 #include "ns3/lr-wpan-module.h"
 #include "ns3/spectrum-module.h"
+#include "ns3/wsn-forwarder.h"
+#include "ns3/wsn-routing-protocol.h"
 
 namespace ns3 {
 namespace wsn {
@@ -44,6 +46,8 @@ struct BuildContext {
     ns3::Ptr<ns3::PropagationDelayModel> delayModel;
     ns3::NetDeviceContainer netDevices;
     uint16_t initializedDev = 0;
+    Ptr<ns3::wsn::WsnForwarder> forwarder;
+    Ptr<ns3::wsn::WsnRoutingProtocol> routing;
     // Ptr<Channel>
     // Ptr<MobilityHelper>
     // Ptr<TraceManager>
