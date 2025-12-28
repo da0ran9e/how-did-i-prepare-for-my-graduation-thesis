@@ -35,7 +35,10 @@ public:
   virtual ~WsnRoutingProtocol();
 
   //void SetNode(Ptr<Node> node){ m_node = node; }
-  void SetForwarder(Ptr<WsnForwarder> forwarder){ m_forwarder = forwarder; }
+  void SetForwarder(Ptr<WsnForwarder> forwarder){ 
+    m_forwarder = forwarder; 
+  m_forwarder->AddListener(this);
+  }
 
   void ToMacLayer(Ptr<Packet> packet, const uint16_t dst){
     m_forwarder->ToMacLayer(packet, dst);

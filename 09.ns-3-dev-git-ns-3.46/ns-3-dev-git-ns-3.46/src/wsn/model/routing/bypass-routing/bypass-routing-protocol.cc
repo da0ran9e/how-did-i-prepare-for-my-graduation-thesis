@@ -22,7 +22,9 @@ TypeId BypassRoutingProtocol::GetTypeId()
 void BypassRoutingProtocol::Start(){
 // Implementation of routing start logic
 // Beaconing in random statup delay
-    ns3::Simulator::Schedule(Seconds(rand() % 10), &BypassRoutingProtocol::SendBeacon, this);
+    std::cout << "[BypassRouting] Starting Bypass Routing Protocol on Node "
+              << m_selfNodeProps.nodeId << std::endl;
+    ns3::Simulator::Schedule(MilliSeconds(rand() % 1000), &BypassRoutingProtocol::SendBeacon, this);
 
 }
 
@@ -38,7 +40,7 @@ void BypassRoutingProtocol::FromMacLayer(Ptr<Packet> pkt,
 
 void BypassRoutingProtocol::SendBeacon()
 {
-    std::cout << "[BypassRouting] Node " << m_selfNodeProps.nodeId
+    std::cout << "[BypassRouting] Node " << Mac16Address(m_selfNodeProps.nodeId)   
               << " is sending a beacon." << std::endl;
 
     // // Create a bypass packet (details omitted for brevity)
@@ -46,8 +48,8 @@ void BypassRoutingProtocol::SendBeacon()
     ToMacLayer(beaconPacket, 0xFFFF); // Broadcast address
     // // Send the packet to all neighbors (broadcast)
     // m_mac->Send(beaconPacket, 0xFFFF); // 0xFFFF is the broadcast address
-    std::cout << "[BypassRouting] Node " << m_selfNodeProps.nodeId
-              << " beacon sent." << std::endl;
+    // std::cout << "[BypassRouting] Node " << m_selfNodeProps.nodeId
+    //           << " beacon sent." << std::endl;
 }
 
 }

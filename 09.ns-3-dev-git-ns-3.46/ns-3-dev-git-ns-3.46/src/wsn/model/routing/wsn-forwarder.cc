@@ -34,6 +34,7 @@ WsnForwarder::ToMacLayer(Ptr<Packet> packet, const uint16_t dst)
 {
   NS_ASSERT(m_dev);
   m_dev->Send(packet, ResolveMACAddress(dst), 0);
+  //std::cout << "[Forwarder] Node sent pkt to node " << Mac16Address(dst) << std::endl;
 }
 
 bool
@@ -42,6 +43,7 @@ WsnForwarder::ReceiveFromMac(Ptr<NetDevice> dev,
                                      uint16_t,
                                      const Address& src)
 {
+    //std::cout << "[Forwarder] Node received pkt from MAC layer." << std::endl;
   WsnRoutingHeader hdr;
   pkt->PeekHeader(hdr);
   for (auto l : m_listeners)
