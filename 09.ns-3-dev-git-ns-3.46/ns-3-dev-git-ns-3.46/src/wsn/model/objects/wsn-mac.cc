@@ -32,14 +32,14 @@ void WsnMac::Build(BuildContext& ctx)
     m_built = true;
     std::cout << "Building MAC: " << GetInstanceName() << std::endl;
     
-    std::shared_ptr<ns3::wsn::Node> node = FindAncestor<ns3::wsn::Node>();
-    NS_ASSERT(node);
-    uint32_t nodeId = node->GetAddr();
-    std::cout << "MAC built for Node ID: " << nodeId;
-    Ptr<NetDevice> dev = ctx.netDevices.Get(nodeId);
-    Ptr<lrwpan::LrWpanNetDevice> lrwpan = DynamicCast<lrwpan::LrWpanNetDevice>(dev);
-    lrwpan->GetMac()->SetShortAddress(Mac16Address(nodeId));  
-    std::cout << " with Short Address: " << ns3::Mac16Address(nodeId) << std::endl;
+    // std::shared_ptr<ns3::wsn::Node> node = FindAncestor<ns3::wsn::Node>();
+    // NS_ASSERT(node);
+    // uint32_t nodeId = node->GetAddr();
+    // std::cout << "MAC built for Node ID: " << nodeId;
+    // Ptr<NetDevice> dev = ctx.netDevices.Get(nodeId);
+    // Ptr<lrwpan::LrWpanNetDevice> lrwpan = DynamicCast<lrwpan::LrWpanNetDevice>(dev);
+    // lrwpan->GetMac()->SetShortAddress(Mac16Address(nodeId));  
+    // std::cout << " with Short Address: " << ns3::Mac16Address(nodeId) << std::endl;
 }
 
 } // namespace wsn

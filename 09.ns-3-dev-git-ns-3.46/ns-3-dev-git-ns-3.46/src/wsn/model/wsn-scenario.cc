@@ -97,7 +97,7 @@ ParsedKey WsnScenario::ParseIniKey(const std::string& key)
 }
 
 
-void WsnScenario::configure(std::string iniFile)
+void WsnScenario::configure(std::string iniFile, BuildContext &ctx)
 {
     RegisterWsnObjects();
     m_trace.Open(m_traceFile);
@@ -107,23 +107,13 @@ void WsnScenario::configure(std::string iniFile)
     iniParser.read(iniFile);
 
     auto root = m_registry.GetRoot("SN");
-    BuildContext ctx{};
+    //BuildContext ctx{};
     if (root){
         std::ostringstream os;
         root->DebugPrint(os);
         std::cout << os.str();
         root->Build(ctx);
     }
-        
-
-    // // Debug print
-    // std::cout << "Number of nodes = " << m_numNodes << std::endl;
-    // std::cout << "Field size = " << m_fieldX << " x " << m_fieldY << std::endl;
-
-    // TODO:
-    //   - NodeContainer 
-    //   - positions
-    //   - MAC/PHY
 }
 
 

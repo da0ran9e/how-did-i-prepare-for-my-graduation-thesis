@@ -36,21 +36,21 @@ void WsnRouting::Build(BuildContext& ctx)
     m_built = true;
     std::cout << "Building Routing: " << GetInstanceName() << std::endl;
     
-    ctx.forwarder = CreateObject<ns3::wsn::WsnForwarder>();
-    ctx.routing = CreateObject<ns3::wsn::BypassRoutingProtocol>();
+    // ctx.forwarder = CreateObject<ns3::wsn::WsnForwarder>();
+    // ctx.routing = CreateObject<ns3::wsn::BypassRoutingProtocol>();
     
-    std::shared_ptr<ns3::wsn::Node> node = FindAncestor<ns3::wsn::Node>();
-    NS_ASSERT(node);
-    uint16_t nodeId = node->GetAddr();
-    ctx.routing->SetSelfNodeProperties({
-        nodeId,
-        node->GetNodeProperties().xCoord,
-        node->GetNodeProperties().yCoord,
-        node->GetNodeProperties().zCoord
-    });
-    ctx.forwarder->SetNetDevice(ctx.netDevices.Get(nodeId));
-    ctx.routing->SetForwarder(ctx.forwarder);
-    std::cout << "Routing built for Node ID: " << nodeId << std::endl;
+    // std::shared_ptr<ns3::wsn::Node> node = FindAncestor<ns3::wsn::Node>();
+    // NS_ASSERT(node);
+    // uint16_t nodeId = node->GetAddr();
+    // ctx.routing->SetSelfNodeProperties({
+    //     nodeId,
+    //     node->GetNodeProperties().xCoord,
+    //     node->GetNodeProperties().yCoord,
+    //     node->GetNodeProperties().zCoord
+    // });
+    // ctx.forwarder->SetNetDevice(ctx.netDevices.Get(nodeId));
+    // ctx.routing->SetForwarder(ctx.forwarder);
+    // std::cout << "Routing built for Node ID: " << nodeId << std::endl;
 
 }
 

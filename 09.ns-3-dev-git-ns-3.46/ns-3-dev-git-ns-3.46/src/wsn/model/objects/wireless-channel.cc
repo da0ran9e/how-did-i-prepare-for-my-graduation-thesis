@@ -57,11 +57,6 @@ void WirelessChannel::Build(BuildContext& ctx)
         return;
     }
     m_built = true;
-    
-    if (ctx.channelInitialized) {
-        return;
-    }
-    ctx.channelInitialized = true;
 
     std::cout << "Building Wireless Channel: " << GetInstanceName() << std::endl;
     // Implementation of the Build method

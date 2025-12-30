@@ -2,6 +2,7 @@
 #include "ns3/node.h"
 #include "ns3/mac16-address.h"
 
+
 namespace ns3 {
 namespace wsn {
 
@@ -25,8 +26,16 @@ void
 WsnForwarder::SetNetDevice(Ptr<NetDevice> dev)
 {
   m_dev = dev;
-  m_dev->SetReceiveCallback(
-    MakeCallback(&WsnForwarder::ReceiveFromMac, this));
+
+  Ptr<lrwpan::LrWpanNetDevice> lrDev =
+      DynamicCast<lrwpan::LrWpanNetDevice>(dev);
+
+  NS_ABORT_MSG_IF(!lrDev, "Not an LR-WPAN device");
+
+  Ptr<lrwpan::LrWpanMac> mac = lrDev->GetMac();
+
+  mac->SetMcpsDataIndicationCallback(
+      MakeCallback(&WsnForwarder::ReceiveFromMac, this));
 }
 
 void
@@ -37,22 +46,24 @@ WsnForwarder::ToMacLayer(Ptr<Packet> packet, const uint16_t dst)
   //std::cout << "[Forwarder] Node sent pkt to node " << Mac16Address(dst) << std::endl;
 }
 
-bool
-WsnForwarder::ReceiveFromMac(Ptr<NetDevice> dev,
-                                     Ptr<const Packet> pkt,
-                                     uint16_t,
-                                     const Address& src)
+void
+WsnForwarder::ReceiveFromMac(
+    lrwpan::McpsDataIndicationParams params,
+    Ptr<Packet> pkt)
 {
-    //std::cout << "[Forwarder] Node received pkt from MAC layer." << std::endl;
-  WsnRoutingHeader hdr;
-  pkt->PeekHeader(hdr);
-  for (auto l : m_listeners)
-  {
-    l->FromMacLayer(pkt->Copy(), hdr.GetSource());
-    std::cout << "[Forwarder] Node received pkt from node " << hdr.GetSource() << std::endl;
-  }
+    // Peek routing header
+    WsnRoutingHeader hdr;
+    pkt->PeekHeader(hdr);
 
-  return true;
+    uint16_t srcNodeId = hdr.GetSource();
+
+    for (auto l : m_listeners)
+    {
+        l->FromMacLayer(pkt->Copy(), srcNodeId);
+    }
+
+    std::cout << "[Forwarder] Node received pkt from node "
+              << srcNodeId << std::endl;
 }
 
 Address

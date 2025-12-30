@@ -36,21 +36,19 @@ static void PrintIndent(std::ostream& os, int indent)
 }
 
 struct BuildContext {
-    bool netDevInitialized = false;
-    bool channelInitialized = false;
-    std::map<uint16_t, uint16_t> nodeAddr;
+    // ----- global topology -----
     ns3::NodeContainer nodes;
     ns3::MobilityHelper mobility;
-    ns3::Ptr<ns3::SpectrumChannel> spectrumChannel;
-    ns3::Ptr<ns3::PropagationLossModel> lossModel;
-    ns3::Ptr<ns3::PropagationDelayModel> delayModel;
+
+    ns3::Ptr<ns3::SingleModelSpectrumChannel> spectrumChannel;
+    ns3::Ptr<ns3::LogDistancePropagationLossModel> lossModel;
+    ns3::Ptr<ns3::ConstantSpeedPropagationDelayModel> delayModel;
+
+    ns3::LrWpanHelper lrwpan;
     ns3::NetDeviceContainer netDevices;
-    uint16_t initializedDev = 0;
-    Ptr<ns3::wsn::WsnForwarder> forwarder;
-    Ptr<ns3::wsn::WsnRoutingProtocol> routing;
-    // Ptr<Channel>
-    // Ptr<MobilityHelper>
-    // Ptr<TraceManager>
+
+    // ----- mapping / metadata -----
+    std::map<uint16_t, uint16_t> nodeAddr;
 };
 
 // Base configurable object for WSN configuration tree

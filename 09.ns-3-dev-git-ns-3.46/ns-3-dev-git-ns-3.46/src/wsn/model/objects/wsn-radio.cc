@@ -30,22 +30,15 @@ void Radio::Build(BuildContext& ctx)
         return;
     }
     m_built = true;
-    
+
     std::cout << "Building Radio: " << GetInstanceName() << std::endl;
     // Implementation of the Build method
     // WsnObject::Build(ctx);
-    ctx.mobility.SetMobilityModel("ns3::ConstantPositionMobilityModel");
-    ctx.mobility.Install(ctx.nodes); 
-
-    ns3::LrWpanHelper lrwpan;
-    lrwpan.SetChannel(ctx.spectrumChannel);
-    if (!ctx.netDevInitialized) {
-        ctx.netDevices = lrwpan.Install(ctx.nodes);
-        ctx.netDevInitialized = true;
-    }
-    int nodeAddr = ctx.initializedDev++;
-    m_selfDetDevice = ctx.netDevices.Get(nodeAddr);
-    std::cout << "Radio built for Node " << nodeAddr << " with NetDevice ID " << m_selfDetDevice->GetIfIndex() << std::endl;
+    // std::shared_ptr<ns3::wsn::Node> node = FindAncestor<ns3::wsn::Node>();
+    // NS_ASSERT(node);
+    // uint32_t nodeId = node->GetAddr();
+    // m_selfDetDevice = ctx.netDevices.Get(nodeId);
+    // std::cout << "Radio built for Node " << nodeId << " with NetDevice ID " << m_selfDetDevice->GetIfIndex() << std::endl;
 }
 
 } // namespace wsn

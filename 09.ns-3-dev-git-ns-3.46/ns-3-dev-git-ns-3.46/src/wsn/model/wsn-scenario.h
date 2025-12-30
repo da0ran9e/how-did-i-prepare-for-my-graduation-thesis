@@ -6,7 +6,7 @@
 #include "objects/wsn-object-registry.h"
 #include "wsn-trace.h"
 
-// #include "wsn-object.h"
+#include "ns3/wsn-object.h"
 // #include "sensor-network.h"
 // #include "wsn-routing.h"      
 // #include "wsn-app.h"          // app non-IP
@@ -29,7 +29,7 @@ struct ParsedKey {
 class WsnScenario : public IniParser::Listener 
 {
 public:
-    void configure(std::string iniFile);
+    void configure(std::string iniFile, BuildContext &ctx);
 
 private:
     // callbacks

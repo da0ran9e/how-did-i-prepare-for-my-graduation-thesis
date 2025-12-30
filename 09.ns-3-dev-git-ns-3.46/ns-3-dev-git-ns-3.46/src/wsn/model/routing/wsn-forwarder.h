@@ -11,6 +11,8 @@
 #include "ns3/log.h"
 
 #include "wsn-routing-header.h"
+#include "ns3/lr-wpan-net-device.h"
+#include "ns3/lr-wpan-mac.h"
 
 namespace ns3 {
 namespace wsn {
@@ -34,10 +36,9 @@ public:
     Address ResolveMACAddress(uint16_t nodeId);
     void AddListener(Listener* listener);
 private:
-  bool ReceiveFromMac(Ptr<NetDevice> dev,
-                      Ptr<const Packet> packet,
-                      uint16_t protocol,
-                      const Address& src);
+  void ReceiveFromMac(
+    lrwpan::McpsDataIndicationParams params,
+    Ptr<Packet> pkt);
 
 private:
   Ptr<NetDevice> m_dev;

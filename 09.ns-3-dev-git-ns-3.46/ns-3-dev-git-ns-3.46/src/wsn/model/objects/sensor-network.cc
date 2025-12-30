@@ -1,6 +1,9 @@
 #include "sensor-network.h"
 #include "wsn-object.h"
-
+#include "wsn-node.h"
+#include "ns3/bypass-routing-protocol.h"
+#include "ns3/ptr.h"
+ 
 namespace ns3 {
 namespace wsn {
 
@@ -45,19 +48,71 @@ void SensorNetwork::Build(BuildContext& ctx)
                 << field_y << " x "
                 << field_z << std::endl;
     std::cout << "Number of nodes: " << numNodes << std::endl;
-
+// Create nodes
     ctx.nodes.Create(numNodes);
-    for (uint32_t i = 0; i < numNodes; ++i) {
-        Ptr<ns3::Node> node = CreateObject<ns3::Node>();
-        ctx.nodes.Add(node);
-        //std::cout << "Created Node " << i << " with ID " << node->GetId() << std::endl;
-        ctx.nodeAddr[node->GetId()] = i;
+
+    // Setup mobility
+    ctx.mobility.SetMobilityModel("ns3::ConstantPositionMobilityModel");
+    ctx.mobility.Install(ctx.nodes);
+
+    // Set positions for all nodes 
+    for (uint32_t i = 0; i < ctx.nodes.GetN(); ++i) {
+        ns3::wsn::WsnObjectPtr wsnObj = this->GetChildIndexed("node", i);
+        double propsx = dynamic_cast<ns3::wsn::Node*>(wsnObj.get())->GetNodeProperties().xCoord;
+        double propsy = dynamic_cast<ns3::wsn::Node*>(wsnObj.get())->GetNodeProperties().yCoord;
+        double propsz = dynamic_cast<ns3::wsn::Node*>(wsnObj.get())->GetNodeProperties().zCoord;
+        //struct NodeProperties props = {propsx, propsy, propsz};
+        ctx.nodes.Get(i)->GetObject<ns3::MobilityModel>()->SetPosition(
+            Vector(propsx, propsy, propsz));
+    }
+
+    // Setup spectrum channel and propagation models
+    ctx.spectrumChannel = CreateObject<ns3::SingleModelSpectrumChannel>();
+    ctx.lossModel = CreateObject<ns3::LogDistancePropagationLossModel>();
+    ctx.delayModel = CreateObject<ns3::ConstantSpeedPropagationDelayModel>();
+    ctx.spectrumChannel->AddPropagationLossModel(ctx.lossModel);
+    ctx.spectrumChannel->SetPropagationDelayModel(ctx.delayModel);
+    
+    // Setup LR-WPAN helper
+    ctx.lrwpan.SetChannel(ctx.spectrumChannel);
+
+    // Install network devices
+    ctx.netDevices = ctx.lrwpan.Install(ctx.nodes);
+    
+    // Configure MAC addresses
+    for (uint32_t i = 0; i < ctx.netDevices.GetN(); ++i) {
+        Ptr<ns3::lrwpan::LrWpanNetDevice> dev =
+            ns3::DynamicCast<ns3::lrwpan::LrWpanNetDevice>(ctx.netDevices.Get(i));
+        dev->GetMac()->SetShortAddress(ns3::Mac16Address::Allocate());
     }
     
-    GetChild("wirelessChannel")->Build(ctx);
-    WsnObject::Build(ctx);
-}
+    
+    // Configure each node
+    for (uint32_t i = 0; i < ctx.nodes.GetN(); ++i)
+    {
+        // Create forwarder and routing protocol
+    Ptr<wsn::WsnForwarder> forwarder = CreateObject<wsn::WsnForwarder>();
+    Ptr<wsn::BypassRoutingProtocol> routing = CreateObject<wsn::BypassRoutingProtocol>();
+    
+        Ptr<ns3::Node> node = ctx.nodes.Get(i);
+        Ptr<ns3::NetDevice> dev = ctx.netDevices.Get(i);
 
+        routing->SetSelfNodeProperties({
+            static_cast<uint16_t>(i),
+            node->GetObject<ns3::MobilityModel>()->GetPosition().x,
+            node->GetObject<ns3::MobilityModel>()->GetPosition().y,
+            node->GetObject<ns3::MobilityModel>()->GetPosition().z
+        });
+
+        routing->SetForwarder(forwarder);
+        forwarder->SetNetDevice(dev);
+
+        node->AggregateObject(forwarder);
+        node->AggregateObject(routing);
+
+        routing->Start();
+    }
+}
 
 } // namespace wsn
 } // namespace ns3

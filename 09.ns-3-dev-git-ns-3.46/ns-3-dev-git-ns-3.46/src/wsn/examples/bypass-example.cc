@@ -11,6 +11,31 @@
 using namespace ns3;
 using namespace ns3::wsn;
 
+void TraceTxSpectrum(
+    Ptr<const SpectrumSignalParameters> params)
+{
+    std::cout << "[SensorNetwork] Transmission started at time "
+              << Simulator::Now().GetSeconds() << "s"
+              << std::endl;
+}
+
+void TraceMacTx(
+    Ptr<const Packet> packet)
+{
+    std::cout << "[SensorNetwork] MAC transmitted packet of size "
+              << packet->GetSize() << " bytes at time "
+              << Simulator::Now().GetSeconds() << "s"
+              << std::endl;
+}
+
+void TracePhyTx(
+    Ptr<const Packet> packet)
+{
+    std::cout << "[SensorNetwork] PHY transmitted packet of size "
+              << packet->GetSize() << " bytes at time "
+              << Simulator::Now().GetSeconds() << "s"
+              << std::endl;
+}
 
 int
 main(int argc, char *argv[])
@@ -44,7 +69,9 @@ main(int argc, char *argv[])
 
   channel->AddPropagationLossModel(loss);
   channel->SetPropagationDelayModel(delay);
-
+channel->TraceConnectWithoutContext(
+    "TxStart",
+    MakeCallback(&TraceTxSpectrum));
   // -----------------------------
   // 4. LR-WPAN
   // -----------------------------
@@ -58,6 +85,13 @@ main(int argc, char *argv[])
     Ptr<lrwpan::LrWpanNetDevice> dev =
         DynamicCast<lrwpan::LrWpanNetDevice>(devices.Get(i));
     dev->GetMac()->SetShortAddress(Mac16Address::Allocate());
+    dev->GetMac()->TraceConnectWithoutContext(
+    "McpsDataRequest",
+    MakeCallback(&TraceMacTx));
+    dev->GetPhy()->TraceConnectWithoutContext(
+    "TxBegin",
+    MakeCallback(&TracePhyTx));
+
   }
 
   // -----------------------------
