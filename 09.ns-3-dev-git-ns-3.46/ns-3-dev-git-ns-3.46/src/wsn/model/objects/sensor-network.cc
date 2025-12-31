@@ -52,7 +52,7 @@ void SensorNetwork::Build(BuildContext& ctx)
     ctx.nodes.Create(numNodes);
 
     // Setup mobility
-    ctx.mobility.SetMobilityModel("ns3::ConstantPositionMobilityModel");
+    ctx.mobility.SetMobilityModel("ns3::wsn::WsnMobilityModel");
     ctx.mobility.Install(ctx.nodes);
 
     // Set positions for all nodes 

@@ -1,7 +1,9 @@
 build_lib(
   LIBNAME wsn
   SOURCE_FILES
+    helper/wsn-energy-model-helper.cc
     model/ini-parser.cc
+    model/mobility/wsn-mobility-model.cc
     model/objects/resource-manager.cc
     model/objects/sensor-network.cc
     model/objects/wireless-channel.cc
@@ -14,6 +16,7 @@ build_lib(
     model/objects/wsn-object.cc
     model/objects/wsn-radio.cc
     model/objects/wsn-routing.cc
+    model/resource/wsn-energy-model.cc
     model/routing/bypass-routing/bypass-routing-protocol.cc
     model/routing/wsn-forwarder.cc
     model/routing/wsn-routing-header.cc
@@ -22,7 +25,9 @@ build_lib(
     model/wsn-trace.cc
     
   HEADER_FILES
+    helper/wsn-energy-model-helper.h
     model/ini-parser.h
+    model/mobility/wsn-mobility-model.h
     model/objects/resource-manager.h
     model/objects/sensor-network.h
     model/objects/wireless-channel.h
@@ -35,6 +40,7 @@ build_lib(
     model/objects/wsn-object.h
     model/objects/wsn-radio.h
     model/objects/wsn-routing.h
+    model/resource/wsn-energy-model.h
     model/routing/bypass-routing/bypass-routing-protocol.h
     model/routing/wsn-forwarder.h
     model/routing/wsn-routing-header.h
@@ -47,5 +53,6 @@ build_lib(
     ${libnetwork}
     ${libmobility}
     ${libspectrum}
+    ${libenergy}
     ${liblr-wpan}
 )
