@@ -5,6 +5,7 @@
 #include "../wsn-routing-header.h"
 #include <iostream>
 #include <iomanip>
+#include <sstream>
 
 using namespace std;
 
@@ -43,7 +44,7 @@ PeceeRoutingProtocol::PeceeRoutingProtocol()
       colorTimeSlot(100.0),
       sensorDataDub(1),
       numberOfNodes(0),
-      maxHopCount(30),
+    maxHopCount(60),
       initEnergy(2.0),
       dataFusion(false),
       isCH(false),
@@ -137,13 +138,12 @@ void PeceeRoutingProtocol::Start()
     
     // Note: CL status will be determined in PrecalculateSimulationResults() and updated via selectClusterHead()
     
-    // Schedule initial CH announcement with random delay ONLY for CH nodes
+    // Schedule initial CH announcement at a synchronized time for all CH nodes
     if (isCH) {
-        Ptr<UniformRandomVariable> rand = CreateObject<UniformRandomVariable>();
-        double startDelay = rand->GetValue(15.0, 20.0);  // Increase delay for MAC to be ready
+        double startDelay = 17.0;  // fixed to align all CH announcements
         Simulator::Schedule(Seconds(startDelay), &PeceeRoutingProtocol::sendCHAnnouncement, this);
         
-        std::cout << "#CH_NODE Node:" << self << " Cell:" << myCellId << " will send CHA at " << startDelay << "s" << std::endl;
+        std::cout << "#CH_NODE Node:" << self << " Cell:" << myCellId << " will send CHA at " << startDelay << "s (synchronized)" << std::endl;
         std::cout << "#DEBUG_GLOBAL_DATA Nodes:" << g_ssNodesDataList.size() 
                   << " Cells:" << g_ssCellDataList.size() 
                   << " RoutingTable:" << g_ssRoutingTable.size() << std::endl;
@@ -189,6 +189,10 @@ void PeceeRoutingProtocol::FromMacLayer(Ptr<Packet> pkt,
     PeceePacketType packetType = peceeHeader.GetPacketType();
     
     //NS_LOG_DEBUG("Node " << self << " received packet type " << packetType << " from " << src);
+    if (packetType == CH_ANNOUNCEMENT_PACKET) {
+        std::cout << "#PECEE_FROMMAC_CHA Node:" << self << " From:" << src
+                  << " Dest:" << dest << " Type:" << packetType << std::endl;
+    }
     
     switch (packetType) {
         case CH_ANNOUNCEMENT_PACKET:
@@ -579,6 +583,11 @@ void PeceeRoutingProtocol::sendCHAnnouncement()
     myCHId = self;
     myCellPathToCH[0] = myCellId;
     
+    std::ostringstream chPathInit;
+    chPathInit << myCellId;
+    std::cout << "#CHA_PATH_CH_INIT CH:" << self << " Cell:" << myCellId 
+              << " InitPath:" << chPathInit.str() << std::endl;
+    
         // std::cout << "#CH_ANNOUNCE_START CH:" << self << " Cell:" << myCellId 
         //           << " NeighborCells:";
     for (const int neighborCellId : cellData->neighbors) {
@@ -587,6 +596,8 @@ void PeceeRoutingProtocol::sendCHAnnouncement()
     // std::cout << std::endl;
     
     // Create packets for all neighbor cells
+    std::cout << "#CHA_CREATE_INTER Node:" << self << " Cell:" << myCellId 
+              << " NeighborCells:" << cellData->neighbors.size() << std::endl;
     for (const int neighborCellId : cellData->neighbors) {
         Ptr<Packet> pkt = Create<Packet>();
         PeceeHeader header;
@@ -606,11 +617,13 @@ void PeceeRoutingProtocol::sendCHAnnouncement()
         // Add header before queueing so TTL and fields persist
         pkt->AddHeader(header);
         announcementQueue.push({pkt, neighborCellId});
-        // std::cout << "#CHA_QUEUED Node:" << self << " Cell:" << myCellId 
-        //           << " -> NextCell:" << neighborCellId << std::endl;
+        std::cout << "#CHA_QUEUED_INTER Node:" << self << " Cell:" << myCellId 
+                  << " -> NextCell:" << neighborCellId << std::endl;
     }
     
     // Broadcast within own cell
+    std::cout << "#CHA_CREATE_INTRA Node:" << self << " Cell:" << myCellId 
+              << " Members:" << cellData->members.size() << std::endl;
     for (int memberId : cellData->members) {
         if (memberId != self) {
             Ptr<Packet> pkt = Create<Packet>();
@@ -632,6 +645,8 @@ void PeceeRoutingProtocol::sendCHAnnouncement()
             pkt->AddHeader(header);
             boardcastAnnouncementQueue.push(memberId);
             announcementQueue.push({pkt, myCellId});
+            std::cout << "#CHA_QUEUED_INTRA Node:" << self << " Cell:" << myCellId 
+                      << " -> Member:" << memberId << std::endl;
         }
     }
     
@@ -656,7 +671,12 @@ void PeceeRoutingProtocol::handleCHAnnouncementPacket(Ptr<Packet> pkt)
 {
     NS_LOG_FUNCTION(this);
     
+    // Trace reception for debugging
     // std::cout << "#CHA_RECV_START Node:" << self << " Cell:" << myCellId << std::endl;
+    
+    // Local trace variable to track CHA packet's journey through nodes
+    std::ostringstream packetTrace;
+    packetTrace << "[Node:" << self << " Cell:" << myCellId << " t:" << Simulator::Now().GetSeconds() << "s]";
     
     // Update CL status first if not already set
     if (!isCL) {
@@ -678,11 +698,18 @@ void PeceeRoutingProtocol::handleCHAnnouncementPacket(Ptr<Packet> pkt)
     SSCHAnnouncementInfo chInfo = header.GetCHAnnouncementData();
     int chId = chInfo.chId;
     int cellSent = header.GetCellSent();
+
+    std::cout << "#CHA_RECV Node:" << self << " Cell:" << myCellId
+              << " From:" << sourceId << " CellSrc:" << cellSource
+              << " CH:" << chId << " Hop:" << hopCount
+              << " TTL:" << ttl << " SentCell:" << cellSent << std::endl;
     
     // Check if we've already forwarded CHA from this CH from this specific cellSent
     // This prevents the same announcement from propagating multiple times through this node
     if (receivedCHAFromCells[chId].count(cellSent) > 0) {
         // Already forwarded from this cell, drop duplicate
+        std::cout << "#CHA_DROP_DUP Node:" << self << " CH:" << chId
+                  << " FromCell:" << cellSent << std::endl;
         return;
     }
     receivedCHAFromCells[chId].insert(cellSent);
@@ -690,9 +717,11 @@ void PeceeRoutingProtocol::handleCHAnnouncementPacket(Ptr<Packet> pkt)
     // Loop detection: check if myCellId already exists in the path (cell-level loop prevention)
     // Only check for inter-cell packets (cellSent != myCellId)
     if (cellSent != myCellId) {
-        for (int i = 0; i < hopCount && i < maxHopCount; ++i) {
+        for (int i = 0; i < hopCount && i < 3; ++i) {
             if (header.GetCellPath(i) == myCellId) {
                 // Cell loop detected - this cell already appeared in path
+                std::cout << "#CHA_DROP_LOOP Node:" << self << " Cell:" << myCellId
+                          << " CH:" << chId << " FromCell:" << cellSent << std::endl;
                 return;
             }
         }
@@ -709,22 +738,34 @@ void PeceeRoutingProtocol::handleCHAnnouncementPacket(Ptr<Packet> pkt)
             myCHId = chId;
             
             // Save path to CH
-            for (int i = 0; i < hopCount && i < maxHopCount; ++i) {
-                myCellPathToCH[i] = header.GetCellPath(i);
+            int dbgPath[3] = {-1, -1, -1};
+            for (int i = 0; i < hopCount && i < 3; ++i) {
+                dbgPath[i] = header.GetCellPath(i);
+                myCellPathToCH[i] = dbgPath[i];
             }
             myCellPathToCH[hopCount] = myCellId;
             
-            std::cout << "#CHA_CH_ACCEPT_CL Node:" << self << " (CL) CH:" << myCHId 
-                      << " PathLen:" << (hopCount + 1) << " Path:";
-            for (int i = 0; i <= hopCount && i < maxHopCount; ++i) {
-                std::cout << myCellPathToCH[i] << " ";
+            std::ostringstream pathOs;
+            for (int i = 0; i <= hopCount && i < 3; ++i) {
+                int v = myCellPathToCH[i];
+                if (v != -1 && v != 0xFFFF) {
+                    pathOs << v << ' ';
+                }
             }
-            std::cout << std::endl;
+            std::cout << "#CHA_CH_ACCEPT_CL Node:" << self << " (CL) CH:" << myCHId 
+                      << " PathLen:" << (hopCount + 1)
+                      << " SrcCell:" << cellSource
+                      << " SentCell:" << cellSent
+                      << " Hop:" << hopCount
+                      << " TTL:" << ttl
+                      << " Path:" << pathOs.str()
+                      << " Trace:" << packetTrace.str()
+                      << std::endl;
             
             selectClusterHead();
         } else {
-            // std::cout << "#CHA_IGNORE_CL Node:" << self << " (CL) Already has CH:" << myCHId 
-            //           << " (new CH:" << chId << " ignored)" << std::endl;
+            std::cout << "#CHA_IGNORE_CL Node:" << self << " (CL) Already has CH:" << myCHId 
+                      << " (new CH:" << chId << " ignored)" << std::endl;
             return; // Don't forward duplicate announcements
         }
     }
@@ -746,14 +787,38 @@ void PeceeRoutingProtocol::handleCHAnnouncementPacket(Ptr<Packet> pkt)
             
             dupHeader.SetCellSent(myCellId);
             dupHeader.SetCellHopCount(hopCount + 1);
-            dupHeader.SetCellPath(hopCount + 1, myCellId);
+            if (hopCount + 1 < 3) {
+                dupHeader.SetCellPath(hopCount + 1, myCellId);
+            }
             dupHeader.SetTtl(ttl - 1);
             dupHeader.SetSource(self);
             dupHeader.SetCellNext(neighborCellId);
             
+            std::ostringstream fwdPath;
+            for (int i = 0; i < hopCount + 1 && i < 3; ++i) {
+                int v = dupHeader.GetCellPath(i);
+                if (v != -1 && v != 0xFFFF) {
+                    fwdPath << v << ' ';
+                }
+            }
+            
+            // Update packet trace with current forward step
+            packetTrace << " -> [Node:" << self << " FwdTo:" << neighborCellId 
+                       << " Hop:" << (hopCount + 1) << " TTL:" << (ttl - 1) << "]";
+            
+            std::cout << "#CHA_PATH_FWD Node:" << self << " Cell:" << myCellId 
+                      << " -> NextCell:" << neighborCellId
+                      << " CH:" << chId << " Hop:" << (hopCount + 1) << " TTL:" << (ttl - 1)
+                      << " Path:" << fwdPath.str()
+                      << " Trace:" << packetTrace.str() << std::endl;
+            
             // Add updated header before queueing
             dupPkt->AddHeader(dupHeader);
             announcementQueue.push({dupPkt, neighborCellId});
+            
+            // Add small delay at each forward step to simulate node processing time
+            double fwdDelay = GetRandomDelay(0.05, 0.1);
+            ScheduleTimer(SEND_ANNOUNCEMENT_QUEUE, fwdDelay);
             
             // std::cout << "#CHA_FORWARD Node:" << self << (isCL ? " (CL)" : " (non-CL)")
             //           << " Cell:" << myCellId << " -> Cell:" << neighborCellId 
@@ -798,11 +863,15 @@ void PeceeRoutingProtocol::sendAnnouncementQueue()
     NS_LOG_FUNCTION(this);
     
     if (announcementQueue.empty()) {
+        std::cout << "#CHA_QUEUE_EMPTY Node:" << self << " Cell:" << myCellId << std::endl;
         return;
     }
     
     auto [pkt, nextCellId] = announcementQueue.front();
     announcementQueue.pop();
+    
+    std::cout << "#CHA_QUEUE_PROCESS Node:" << self << " Cell:" << myCellId 
+              << " NextCell:" << nextCellId << " QueueSize:" << announcementQueue.size() << std::endl;
 
     // Extract and modify header
     PeceeHeader header;
@@ -812,8 +881,12 @@ void PeceeRoutingProtocol::sendAnnouncementQueue()
     header.SetTtl(ttl);
     
     if (ttl <= 0) {
-        // std::cout << "#CHA_TTL_EXPIRED Node:" << self << " Cell:" << myCellId 
-        //           << " NextCell:" << nextCellId << std::endl;
+        std::cout << "#CHA_TTL_EXPIRED Node:" << self << " Cell:" << myCellId 
+                  << " NextCell:" << nextCellId << std::endl;
+        if (!announcementQueue.empty()) {
+            double delay = GetRandomDelay(0.1, 0.5);
+            ScheduleTimer(SEND_ANNOUNCEMENT_QUEUE, delay);
+        }
         return;
     }
     
@@ -824,8 +897,12 @@ void PeceeRoutingProtocol::sendAnnouncementQueue()
         nextHopId = g_ssRoutingTable[self][nextCellId];
         
         if (nextHopId == -1) {
-                // std::cout << "#CHA_NO_GATEWAY Node:" << self << " Cell:" << myCellId 
-                //           << " -> Cell:" << nextCellId << std::endl;
+            std::cout << "#CHA_NO_GATEWAY Node:" << self << " Cell:" << myCellId 
+                      << " -> Cell:" << nextCellId << std::endl;
+            if (!announcementQueue.empty()) {
+                double delay = GetRandomDelay(0.1, 0.5);
+                ScheduleTimer(SEND_ANNOUNCEMENT_QUEUE, delay);
+            }
             return;
         }
         
@@ -840,21 +917,33 @@ void PeceeRoutingProtocol::sendAnnouncementQueue()
             // std::cout << "#CHA_INTRA_CELL Node:" << self << " Cell:" << myCellId 
             //           << " -> Node:" << nextHopId << std::endl;
         } else {
-            //std::cout << "#CHA_NO_BROADCAST_TARGET Node:" << self << " Cell:" << myCellId << std::endl;
+            std::cout << "#CHA_NO_BROADCAST_TARGET Node:" << self << " Cell:" << myCellId << std::endl;
+            if (!announcementQueue.empty()) {
+                double delay = GetRandomDelay(0.1, 0.5);
+                ScheduleTimer(SEND_ANNOUNCEMENT_QUEUE, delay);
+            }
             return;
         }
     }
 
     if (nextHopId == -1) {
-        // std::cout << "#CHA_NO_NEXT_HOP Node:" << self << " Cell:" << myCellId 
-        //           << " NextCell:" << nextCellId << std::endl;
+        std::cout << "#CHA_NO_NEXT_HOP Node:" << self << " Cell:" << myCellId 
+                  << " NextCell:" << nextCellId << std::endl;
+        if (!announcementQueue.empty()) {
+            double delay = GetRandomDelay(0.1, 0.5);
+            ScheduleTimer(SEND_ANNOUNCEMENT_QUEUE, delay);
+        }
         return;
     }
     
     // Avoid sending to self
     if (nextHopId == self) {
-        // std::cout << "#CHA_SKIP_SELF Node:" << self << " Cell:" << myCellId 
-        //           << " NextCell:" << nextCellId << std::endl;
+        std::cout << "#CHA_SKIP_SELF Node:" << self << " Cell:" << myCellId 
+                  << " NextCell:" << nextCellId << std::endl;
+        if (!announcementQueue.empty()) {
+            double delay = GetRandomDelay(0.1, 0.5);
+            ScheduleTimer(SEND_ANNOUNCEMENT_QUEUE, delay);
+        }
         return;
     }
     
@@ -871,15 +960,19 @@ void PeceeRoutingProtocol::sendAnnouncementQueue()
     }
 
     if (!isInRange) {
-        // std::cout << "#CHA_NOT_IN_RANGE Node:" << self << " Cell:" << myCellId 
-        //           << " NextHop:" << nextHopId << " NextCell:" << nextCellId << std::endl;
+        std::cout << "#CHA_NOT_IN_RANGE Node:" << self << " Cell:" << myCellId 
+                  << " NextHop:" << nextHopId << " NextCell:" << nextCellId << std::endl;
+        if (!announcementQueue.empty()) {
+            double delay = GetRandomDelay(0.1, 0.5);
+            ScheduleTimer(SEND_ANNOUNCEMENT_QUEUE, delay);
+        }
         return;
     }
     
     // Send packet with trace
-    // std::cout << "#CHA_SEND Node:" << self << " Cell:" << myCellId 
-    //           << " -> Node:" << nextHopId << " Cell:" << nextCellId 
-    //           << " TTL:" << ttl << std::endl;
+    std::cout << "#CHA_SEND Node:" << self << " Cell:" << myCellId 
+              << " -> NextHop:" << nextHopId << " NextCell:" << nextCellId 
+              << " TTL:" << ttl << std::endl;
     
     SendPacket(pkt, header, nextHopId);
     
@@ -1085,9 +1178,10 @@ void PeceeRoutingProtocol::SendPacket(Ptr<Packet> packet, PeceeHeader& header, u
     }
     
     // Use BROADCAST address at MAC layer, filter at routing layer
-    //std::cout << "#PECEE_TOMAC Node:" << self << " -> Dst:" << destination << " (MAC_BROADCAST)" << std::endl;
+    std::cout << "#PECEE_TOMAC Node:" << self << " -> Dst:" << destination 
+              << " MAC:" << 0xFFFF << " PktSize:" << packet->GetSize() << std::endl;
     ToMacLayer(packet, 0xFFFF);
-    //std::cout << "#PECEE_TOMAC_DONE Node:" << self << " -> Dst:" << destination << std::endl;
+    std::cout << "#PECEE_TOMAC_DONE Node:" << self << " -> Dst:" << destination << std::endl;
 }
 
 int PeceeRoutingProtocol::GetPathLength()

@@ -32,7 +32,7 @@ struct SSCHAnnouncementInfo {
 
 struct SSCellHopAnnouncementInfo {
     int nextCell;
-    int cellPath[1000];
+    int cellPath[3];
 };
 
 struct SSSensorInfo {
@@ -61,7 +61,7 @@ public:
     void SetCellDestination(int cell) { m_cellDestination = cell; }
     void SetCellHopCount(int count) { m_cellHopCount = count; }
     void SetTtl(int ttl) { m_ttl = ttl; }
-    void SetCellPath(int index, int value) { if (index < 1000) m_cellPath[index] = value; }
+    void SetCellPath(int index, int value) { if (index < 3) m_cellPath[index] = value; }
     void SetSensorData(const SSSensorInfo& data) { m_sensorData = data; }
     void SetCHAnnouncementData(const SSCHAnnouncementInfo& data) { m_chAnnouncementData = data; }
     void SetSSCellHopAnnouncementData(const SSCellHopAnnouncementInfo& data) { m_cellHopAnnouncementData = data; }
@@ -76,7 +76,7 @@ public:
     int GetCellDestination() const { return m_cellDestination; }
     int GetCellHopCount() const { return m_cellHopCount; }
     int GetTtl() const { return m_ttl; }
-    int GetCellPath(int index) const { return (index < 1000) ? m_cellPath[index] : -1; }
+    int GetCellPath(int index) const { return (index < 3) ? m_cellPath[index] : -1; }
     SSSensorInfo GetSensorData() const { return m_sensorData; }
     SSCHAnnouncementInfo GetCHAnnouncementData() const { return m_chAnnouncementData; }
     SSCellHopAnnouncementInfo GetSSCellHopAnnouncementData() const { return m_cellHopAnnouncementData; }
@@ -96,7 +96,7 @@ private:
     int m_cellSource;
     int m_cellDestination;
     int m_cellHopCount;
-    int m_cellPath[1000];
+    int m_cellPath[3];
     int m_ttl;
     
     SSSensorInfo m_sensorData;

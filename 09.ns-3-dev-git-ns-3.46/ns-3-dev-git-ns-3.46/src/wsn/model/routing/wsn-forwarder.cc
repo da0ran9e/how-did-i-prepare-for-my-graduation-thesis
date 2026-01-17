@@ -42,18 +42,22 @@ void
 WsnForwarder::ToMacLayer(Ptr<Packet> packet, const uint16_t dst)
 {
   NS_ASSERT(m_dev);
-  m_dev->Send(packet, ResolveMACAddress(dst), 0);
-  //std::cout << "[Forwarder] Node sent pkt to node " << Mac16Address(dst) << std::endl;
+  Address macAddr = ResolveMACAddress(dst);
+  std::cout << "[Forwarder] ToMacLayer dst:" << dst
+            << " MAC:" << Mac16Address::ConvertFrom(macAddr)
+            << " pktSize:" << packet->GetSize() << std::endl;
+  m_dev->Send(packet, macAddr, 0);
 }
 
 void
 WsnForwarder::ReceiveFromMac(
-    lrwpan::McpsDataIndicationParams params,
-    Ptr<Packet> pkt)
+  lrwpan::McpsDataIndicationParams params,
+  Ptr<Packet> pkt)
 {
-    // Peek routing header
-    WsnRoutingHeader hdr;
-    pkt->PeekHeader(hdr);
+  std::cout << "[Forwarder] ReceiveFromMac pktSize:" << pkt->GetSize() << std::endl;
+  // Peek routing header
+  WsnRoutingHeader hdr;
+  pkt->PeekHeader(hdr);
 
     uint16_t srcNodeId = hdr.GetSource();
 

@@ -79,11 +79,16 @@ void SensorNetwork::Build(BuildContext& ctx)
     // Install network devices
     ctx.netDevices = ctx.lrwpan.Install(ctx.nodes);
     
-    // Configure MAC addresses
+    // Configure MAC addresses to match node IDs (node i → MAC i+1)
+    // Also set PAN ID and start RX for proper LR-WPAN operation
     for (uint32_t i = 0; i < ctx.netDevices.GetN(); ++i) {
         Ptr<ns3::lrwpan::LrWpanNetDevice> dev =
             ns3::DynamicCast<ns3::lrwpan::LrWpanNetDevice>(ctx.netDevices.Get(i));
-        dev->GetMac()->SetShortAddress(ns3::Mac16Address::Allocate());
+        dev->GetMac()->SetShortAddress(ns3::Mac16Address(i+1));
+        dev->GetMac()->SetPanId(0);  // Set PAN ID to 0 for all nodes
+        
+        // Start PHY in RX mode to listen for packets
+        dev->GetPhy()->PlmeSetTRXStateRequest(ns3::lrwpan::IEEE_802_15_4_PHY_RX_ON);
     }
     
     
@@ -91,18 +96,12 @@ void SensorNetwork::Build(BuildContext& ctx)
     for (uint32_t i = 0; i < ctx.nodes.GetN(); ++i)
     {
         // Create forwarder and routing protocol
-    Ptr<wsn::WsnForwarder> forwarder = CreateObject<wsn::WsnForwarder>();
-    Ptr<wsn::PeceeRoutingProtocol> routing = CreateObject<wsn::PeceeRoutingProtocol>();
-    
+        Ptr<wsn::WsnForwarder> forwarder = CreateObject<wsn::WsnForwarder>();
+        Ptr<wsn::PeceeRoutingProtocol> routing = CreateObject<wsn::PeceeRoutingProtocol>();
+        
         Ptr<ns3::Node> node = ctx.nodes.Get(i);
         Ptr<ns3::NetDevice> dev = ctx.netDevices.Get(i);
 
-        // Set CH status based on node ID
-        // Nodes 0 and 50 are CHs as defined in input-pecee.ini
-        bool isClusterHead = (i == 0 || i == 50);
-        routing->SetAttribute("isCH", ns3::BooleanValue(isClusterHead));
-        routing->SetAttribute("cellRadius", ns3::DoubleValue(20.0));
-        
         routing->SetSelfNodeProperties({
             static_cast<uint16_t>(i),
             node->GetObject<ns3::MobilityModel>()->GetPosition().x,
@@ -115,6 +114,16 @@ void SensorNetwork::Build(BuildContext& ctx)
 
         node->AggregateObject(forwarder);
         node->AggregateObject(routing);
+
+        // Set CH status based on node ID AFTER aggregating to node
+        // Nodes 0 and 99 are CHs as defined in input-pecee.ini
+        bool isClusterHead = (i == 0 || i == 99);
+        routing->SetAttribute("isCH", ns3::BooleanValue(isClusterHead));
+        routing->SetAttribute("cellRadius", ns3::DoubleValue(20.0));
+        
+        if (isClusterHead) {
+            std::cout << "Set Node " << i << " as Cluster Head" << std::endl;
+        }
 
         routing->Start();
     }
