@@ -1,0 +1,1119 @@
+#include "pecee-routing-protocol.h"
+#include "ns3/simulator.h"
+#include "ns3/random-variable-stream.h"
+#include "ns3/log.h"
+#include "../wsn-routing-header.h"
+#include <iostream>
+#include <iomanip>
+
+using namespace std;
+
+namespace ns3 {
+namespace wsn {
+
+NS_LOG_COMPONENT_DEFINE("PeceeRoutingProtocol");
+NS_OBJECT_ENSURE_REGISTERED(PeceeRoutingProtocol);
+
+TypeId PeceeRoutingProtocol::GetTypeId()
+{
+    static TypeId tid = TypeId("ns3::wsn::PeceeRoutingProtocol")
+        .SetParent<WsnRoutingProtocol>()
+        .SetGroupName("Wsn")
+        .AddConstructor<PeceeRoutingProtocol>()
+        .AddAttribute("isCH",
+                      "Whether this node is a Cluster Head",
+                      BooleanValue(false),
+                      MakeBooleanAccessor(&PeceeRoutingProtocol::isCH),
+                      MakeBooleanChecker())
+        .AddAttribute("cellRadius",
+                      "Cell radius for hexagonal grid",
+                      DoubleValue(20.0),
+                      MakeDoubleAccessor(&PeceeRoutingProtocol::cellRadius),
+                      MakeDoubleChecker<double>());
+    return tid;
+}
+
+PeceeRoutingProtocol::PeceeRoutingProtocol()
+    : WsnRoutingProtocol(),
+      traceMode(0),
+      grid_offset(100),
+      cellRadius(20.0),
+      sensingDuration(100),
+      reconfigurationTime(10000),
+      colorTimeSlot(100.0),
+      sensorDataDub(1),
+      numberOfNodes(0),
+      maxHopCount(30),
+      initEnergy(2.0),
+      dataFusion(false),
+      isCH(false),
+      isCL(false),
+      myCellId(-1),
+      myColor(-1),
+      myX(0.0),
+      myY(0.0),
+      myCLId(-1),
+      myCHId(-1),
+      self(-1),
+      levelInCell(-1),
+      ssSentHop(-1)
+{
+    NS_LOG_FUNCTION(this);
+    for (int i = 0; i < 1000; i++) {
+        myCellPathToCH[i] = -1;
+    }
+    for (int i = 0; i < 7; i++) {
+        neighborCells[i] = -1;
+    }
+    for (int i = 0; i < 6; i++) {
+        cellGateways[i] = -1;
+        neighborCellGateways[i] = -1;
+    }
+}
+
+PeceeRoutingProtocol::~PeceeRoutingProtocol()
+{
+    NS_LOG_FUNCTION(this);
+}
+
+void PeceeRoutingProtocol::Start()
+{
+    NS_LOG_FUNCTION(this);
+    
+    // Initialize node properties from base class
+    self = m_selfNodeProps.nodeId;
+    myX = m_selfNodeProps.xCoord;
+    myY = m_selfNodeProps.yCoord;
+    
+    NS_LOG_INFO("Node " << self << " starting at (" << myX << ", " << myY << ")");
+    
+    // Calculate cell information based on coordinates
+    calculateCellInfo();
+    
+    // Register this node in global node list
+    bool nodeExists = false;
+    for (auto& node : g_ssNodesDataList) {
+        if (node.id == self) {
+            nodeExists = true;
+            node.x = myX;
+            node.y = myY;
+            node.cellId = myCellId;
+            node.color = myColor;
+            break;
+        }
+    }
+    
+    if (!nodeExists) {
+        PeceeNodeData newNode;
+        newNode.id = self;
+        newNode.x = myX;
+        newNode.y = myY;
+        newNode.isCH = false;
+        newNode.isCL = false;
+        newNode.cellId = myCellId;
+        newNode.color = myColor;
+        newNode.clId = -1;
+        newNode.chId = -1;
+        newNode.numSent = 0;
+        newNode.numRecv = 0;
+        newNode.energyConsumtion = 0.0;
+        newNode.castaliaConsumtion = 0.0;
+        newNode.el = 100.0;
+        newNode.controlPacketCount = 0;
+        newNode.controlPacketsConsumtion = 0.0;
+        g_ssNodesDataList.push_back(newNode);
+        numberOfNodes = g_ssNodesDataList.size();
+    }
+    
+    // Pre-calculate simulation results if not done yet
+    if (!g_isPrecalculated) {
+        g_isPrecalculated = true;
+        // Delay to allow ALL nodes to register (startupRandomization=10s, so wait 12-13s)
+        Ptr<UniformRandomVariable> rand = CreateObject<UniformRandomVariable>();
+        double delay = rand->GetValue(12.0, 13.0);
+        Simulator::Schedule(Seconds(delay), &PeceeRoutingProtocol::PrecalculateSimulationResults, this);
+        std::cout << "#PRECALC_SCHEDULED at " << delay << "s" << std::endl;
+    }
+    
+    // Note: CL status will be determined in PrecalculateSimulationResults() and updated via selectClusterHead()
+    
+    // Schedule initial CH announcement with random delay ONLY for CH nodes
+    if (isCH) {
+        Ptr<UniformRandomVariable> rand = CreateObject<UniformRandomVariable>();
+        double startDelay = rand->GetValue(15.0, 20.0);  // Increase delay for MAC to be ready
+        Simulator::Schedule(Seconds(startDelay), &PeceeRoutingProtocol::sendCHAnnouncement, this);
+        
+        std::cout << "#CH_NODE Node:" << self << " Cell:" << myCellId << " will send CHA at " << startDelay << "s" << std::endl;
+        std::cout << "#DEBUG_GLOBAL_DATA Nodes:" << g_ssNodesDataList.size() 
+                  << " Cells:" << g_ssCellDataList.size() 
+                  << " RoutingTable:" << g_ssRoutingTable.size() << std::endl;
+    }
+    
+    NS_LOG_INFO("Node " << self << " in cell " << myCellId << " color " << myColor 
+                << (isCL ? " [CL]" : "") << (isCH ? " [CH]" : ""));
+}
+
+void PeceeRoutingProtocol::FromMacLayer(Ptr<Packet> pkt,
+                                        const uint16_t src)
+{
+    NS_LOG_FUNCTION(this << src);
+    
+    //std::cout << "#PECEE_FROMMAC Node:" << self << " From:" << src << std::endl;
+    
+    // Remove WsnRoutingHeader first (added by SendPacket for forwarder)
+    WsnRoutingHeader wsnHeader;
+    pkt->RemoveHeader(wsnHeader);
+    
+    // Filter: only process if destined for this node or broadcast
+    uint16_t dest = wsnHeader.GetDestination();
+    if (dest != self && dest != 0xFFFF) {
+        //std::cout << "#PECEE_FILTER_DROP Node:" << self << " Dest:" << dest << " (not for me)" << std::endl;
+        return;
+    }
+    
+    //std::cout << "#PECEE_ACCEPT Node:" << self << " From:" << src << " Dest:" << dest << std::endl;
+    
+    // Extract PECEE header from packet
+    PeceeHeader peceeHeader;
+    pkt->RemoveHeader(peceeHeader);
+    
+    //std::cout << "#PECEE_HEADER_TYPE Node:" << self << " Type:" << peceeHeader.GetPacketType() << std::endl;
+    
+    // Update statistics
+    PeceeNodeData* node = getNodeData(self);
+    if (node) {
+        node->numRecv++;
+    }
+    
+    // Route to appropriate handler based on packet type
+    PeceePacketType packetType = peceeHeader.GetPacketType();
+    
+    //NS_LOG_DEBUG("Node " << self << " received packet type " << packetType << " from " << src);
+    
+    switch (packetType) {
+        case CH_ANNOUNCEMENT_PACKET:
+            // Re-add header before passing to handler
+            pkt->AddHeader(peceeHeader);
+            handleCHAnnouncementPacket(pkt);
+            break;
+            
+        case ANNOUNCE_CELL_HOP:
+            pkt->AddHeader(peceeHeader);
+            handleCellHopAnnouncementPacket(pkt);
+            break;
+            
+        case SENSOR_DATA:
+            pkt->AddHeader(peceeHeader);
+            handleSensorDataPacket(pkt);
+            break;
+            
+        case FINALIZE_PKT:
+            NS_LOG_INFO("Node " << self << " received finalize packet");
+            break;
+            
+        default:
+            NS_LOG_WARN("Node " << self << " received unknown packet type: " << packetType);
+            break;
+    }
+}
+
+
+double PeceeRoutingProtocol::calculateDistance(double x1, double y1, double x2, double y2) {
+    return sqrt(pow(x1 - x2, 2) + pow(y1 - y2, 2));
+}
+
+PeceeNodeData* PeceeRoutingProtocol::getNodeData(int nodeId) {
+    for (auto& nodeData : g_ssNodesDataList) {
+            if (nodeData.id == nodeId) {
+                return &nodeData;
+            }
+        }
+        PeceeNodeData* emptyData = new PeceeNodeData();
+        return emptyData;
+}
+
+PeceeCellData* PeceeRoutingProtocol::getCellData(int cellId) {
+    for (auto& cellData : g_ssCellDataList) {
+        if (cellData.cellId == cellId) {
+            return &cellData;
+        }
+    }
+    PeceeCellData* emptyData = new PeceeCellData();
+    return emptyData;
+}
+
+bool PeceeRoutingProtocol::isNodeInList(int nodeId, const vector<int>& nodeList) {
+    for (int id : nodeList) {
+            if (id == nodeId) {
+                return true;
+            }
+        }
+        return false;
+}
+
+void PeceeRoutingProtocol::PrecalculateSimulationResults()
+{
+    g_ssSensorDataSent.clear();
+    g_ssSensorDataReceived.clear();
+    g_ssSensorDataSentCount = 0;
+    g_ssSensorDataReceivedCount = 0;
+     for (int i=0; i<numberOfNodes; i++) {
+         g_ssSensorData[i] = -1;
+         g_ssSensorDataArr[i] = -1;
+//         g_networkConsumption[i][0] = 0;
+//         g_networkConsumption[i][1] = 0;
+     }
+
+    for (auto &node : g_ssNodesDataList) {
+    node.neighbors.clear();
+    node.clId = -1;
+    }
+    g_ssCellDataList.clear();
+
+    // Calculate node neighbors
+    for (auto& nodeData : g_ssNodesDataList) {
+        for (auto& otherNodeData : g_ssNodesDataList) {
+            if (nodeData.id == otherNodeData.id) continue;
+            double distance = calculateDistance(nodeData.x, nodeData.y, otherNodeData.x, otherNodeData.y);
+            if (distance <= cellRadius) {
+                nodeData.neighbors.push_back(otherNodeData.id);
+                if (traceMode == 0) std::cout << "#NEIGHBOR " << nodeData.id << ": " << otherNodeData.id ;
+            }
+        }
+    }
+
+    // Calculate cell members
+    for (auto& nodeData : g_ssNodesDataList) {
+        // check if the cell already exists, add the node to the cell members
+        bool cellExists = false;
+        for (auto& cellData : g_ssCellDataList) {
+            if (cellData.cellId == nodeData.cellId) {
+                cellExists = true;
+                cellData.members.push_back(nodeData.id);
+                break;
+            }
+        }
+        // else create a new cell and add the node as a member
+        if (!cellExists) {
+            PeceeCellData cellData;
+            cellData.cellId = nodeData.cellId;
+            cellData.color = nodeData.color;
+            cellData.clId = nodeData.clId;
+            cellData.members.push_back(nodeData.id);
+            g_ssCellDataList.push_back(cellData);
+        }
+    }
+    //calculate cell neighbors
+    for (auto& cellData : g_ssCellDataList) { // for each cell
+        int thisCellId = cellData.cellId;
+        for (auto& nodeData : g_ssNodesDataList) { // for each node 
+            if (nodeData.cellId == thisCellId) { // in the cell
+                for (const int neighborId : nodeData.neighbors) { // for each neighbor
+                    PeceeNodeData* neighbor = getNodeData(neighborId);
+                    int neighborCellId = neighbor->cellId;
+                    if (neighborCellId != thisCellId) { // if different cell
+                        if (!isNodeInList(neighborCellId, cellData.neighbors)) {
+                            cellData.neighbors.push_back(neighborCellId);
+                            cellData.gateways[neighborCellId] = -1; // Initialize NGW ID
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Calculate cell leaders
+    for (auto& cellData : g_ssCellDataList) {
+        int bestFitness = -1;
+        int bestCLId = -1;
+        for (int memberId : cellData.members) {
+            PeceeNodeData* member = getNodeData(memberId);
+            int r = round((double)cellData.cellId / grid_offset);
+            int q = cellData.cellId - r * grid_offset;
+
+            double centerX = cellRadius * (sqrt(3.0) * q + sqrt(3.0) / 2.0 * r);
+            double centerY = cellRadius * (3.0 / 2.0 * r);
+
+            double distance = sqrt(pow(member->x - centerX, 2) + pow(member->y - centerY, 2));
+
+            int fitnessScore = static_cast<int>(1000 / (1 + distance));
+            if (fitnessScore > bestFitness) {
+                bestFitness = fitnessScore;
+                bestCLId = member->id;  
+            }
+        }
+        std::cout << "#CELL_LEADER Cell:" << cellData.cellId << " CL:" << bestCLId;
+        getCellData(cellData.cellId)->clId = bestCLId;
+        for (auto& nodeData : g_ssNodesDataList) {
+            if (isNodeInList(nodeData.id, cellData.members)) {
+                nodeData.clId = bestCLId;
+
+            }
+        }
+    }
+
+    // calculate gateway candidates for each pair of cell
+    for (auto& cellData : g_ssCellDataList) {
+        for (int neighborId : cellData.neighbors) {
+            //choose the best pair of CGW and NGW
+            double bestDistance = 9999.0;
+            int bestCGWId = -1;
+            int bestNGWId = -1;
+            if (cellData.gateways[neighborId] == -1) { // If NGW ID is not set
+                for (auto& nodeData : g_ssNodesDataList) {
+                    int nodeCellId = nodeData.cellId;
+                    if (nodeCellId == cellData.cellId) {
+                        for (int neighborNodeId : nodeData.neighbors) {
+                            PeceeNodeData* neighborNode = getNodeData(neighborNodeId);
+                            //if (cellData.cellId >= neighbor.cellId) continue;
+                            if (neighborNode->cellId == neighborId) {
+                                double linkDistance = sqrt(pow(nodeData.x - neighborNode->x, 2) + pow(nodeData.y - neighborNode->y, 2));
+                                const double EPS = 1e-6;
+                                if (linkDistance < bestDistance) {
+                                    bestDistance = linkDistance;
+                                    bestCGWId = nodeData.id;
+                                    bestNGWId = neighborNode->id;
+                                }
+                                else if (fabs(linkDistance - bestDistance) < EPS) {
+                                    // If the distance is equal, prefer the one with lower ID
+                                    if (nodeData.id < bestCGWId) {
+                                        bestCGWId = nodeData.id;
+                                        bestNGWId = neighborNode->id;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (bestCGWId != -1 && bestNGWId != -1) {
+                    cellData.gateways[neighborId] = bestCGWId;
+                    //std::cout << "#GATEWAY_PAIR Cell:" << cellData.cellId << " CGW:" << bestCGWId << " <-> NGW:" << bestNGWId << std::endl;
+                }
+            }
+            // update next hop ID for the CGW
+            for (auto& nodeData : g_ssNodesDataList) {
+                int nodeDataId = nodeData.id;
+                if (nodeDataId == cellData.gateways[neighborId]) {
+                    g_ssRoutingTable[nodeDataId][neighborId] = bestNGWId; // Set next hop to NGW
+                    if (traceMode == 0) std::cout << "#ROUTING_TABLE " << nodeDataId << " (" << cellData.cellId << ") -> " << g_ssRoutingTable[nodeDataId][neighborId] << " (" << neighborId << ")";
+                }
+            }
+        }
+    }
+
+    // calculate intra-cell routing table for each cell gateways and CL
+    for (auto& cellData : g_ssCellDataList) {
+        for (int neighborId : cellData.neighbors) {
+            int gatewayId = cellData.gateways[neighborId];
+            if (gatewayId != -1) {
+                PeceeNodeData* cellGateway = getNodeData(gatewayId);
+                for (int memberId : cellData.members) {
+                    PeceeNodeData* member = getNodeData(memberId);
+                    bool isGatewayInRange = false;
+                    if (memberId != gatewayId) {
+                        g_ssRoutingTable[memberId][neighborId] = -1;
+                        for (const int neighborNodeId : member->neighbors) {
+                            if (neighborNodeId == gatewayId) {
+                                isGatewayInRange = true;
+                                g_ssRoutingTable[memberId][neighborId] = gatewayId;
+                                if (traceMode == 0) std::cout << "#ROUTING_TABLE " << memberId << " (" << member->cellId << ") -> " << g_ssRoutingTable[memberId][neighborId] << " (" << neighborId << ")";
+                            }
+
+                        }
+                        if (!isGatewayInRange) {
+                            // If the gateway is not in range, find the best next hop
+                            double minDistance = 9999.0;
+                            int bestNextHopId = -1;
+
+                            for (const int neighborNodeId : member->neighbors) {
+                                bool isNeighborInRange = false;
+                                // continue if the neighbor is not in range of the gateway
+                                for (const auto& neighborNodeData : g_ssNodesDataList) {
+                                    if (neighborNodeData.id == neighborNodeId) {
+                                        for (const int neighborOfNeighborId : neighborNodeData.neighbors) {
+                                            if (neighborOfNeighborId == gatewayId) {
+                                                isNeighborInRange = true;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+                                if (isNeighborInRange) {
+                                    // save the distance and choose the best next hop based on total distance from this node to neighbor to gateway
+                                    PeceeNodeData* neighborNode = getNodeData(neighborNodeId);
+                                    double distanceNodeToNeighbor = sqrt(pow(member->x - neighborNode->x, 2) + pow(member->y - neighborNode->y, 2));
+                                    double distanceNeighborToGateway = sqrt(pow(neighborNode->x - cellGateway->x, 2) + pow(neighborNode->y - cellGateway->y, 2));
+                                    double totalDistance = distanceNodeToNeighbor + distanceNeighborToGateway;
+                                    if (totalDistance < minDistance) {
+                                        minDistance = totalDistance;
+                                        bestNextHopId = neighborNodeId;
+                                    } else if (totalDistance == minDistance) {
+                                        // If the distance is equal, prefer the one with lower ID
+                                        if (neighborNodeId < bestNextHopId) {
+                                            bestNextHopId = neighborNodeId;
+                                        }
+                                    }
+                                }
+                            }
+                            if (bestNextHopId != -1) {
+                                g_ssRoutingTable[member->id][neighborId] = bestNextHopId;
+                                if (traceMode == 0) std::cout << "#ROUTING_TABLE " << member->id << " (" << member->cellId << ") -> " << g_ssRoutingTable[member->id][neighborId] << " (" << neighborId << ")";
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // routing table for CL
+        for (const int memberId : cellData.members) {
+            if (memberId == cellData.clId) {
+                continue;
+            }
+            g_ssRoutingTable[memberId][cellData.cellId] = -1;
+            PeceeNodeData* member = getNodeData(memberId);
+            if (isNodeInList(cellData.clId, member->neighbors)) { // if CL is in range
+                g_ssRoutingTable[memberId][cellData.cellId] = cellData.clId;
+                if (traceMode == 0) std::cout << "#ROUTING_TABLE " << memberId << " (" << cellData.cellId << ") -> " << g_ssRoutingTable[memberId][cellData.cellId] << " (" << cellData.cellId << ")";
+            } else {
+                double minDistance = 9999.0;
+                int bestNextHopId = -1;
+
+                for (const int neighborId : member->neighbors) {
+                    // Check if the neighbor is in range of the CL
+                    bool isNeighborInRange = false;
+                    for (const auto& neighborNodeData : g_ssNodesDataList) {
+                        if (neighborNodeData.id == neighborId) {
+                            for (const int neighborOfNeighborId : neighborNodeData.neighbors) {
+                                if (neighborOfNeighborId == cellData.clId) {
+                                    isNeighborInRange = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    if (isNeighborInRange) {
+                        PeceeNodeData* clNode = getNodeData(cellData.clId);
+                        PeceeNodeData* neighbor = getNodeData(neighborId);
+                        double distanceNodeToNeighbor = sqrt(pow(member->x - neighbor->x, 2) + pow(member->y - neighbor->y, 2));
+                        double distanceNeighborToCL = sqrt(pow(neighbor->x - clNode->x, 2) + pow(neighbor->y - clNode->y, 2));
+                        double totalDistance = distanceNodeToNeighbor + distanceNeighborToCL;
+                        if (totalDistance < minDistance) {
+                            minDistance = totalDistance;
+                            bestNextHopId = neighborId;
+                        } else if (totalDistance == minDistance) {
+                            // If the distance is equal, prefer the one with lower ID
+                            if (neighborId < bestNextHopId) {
+                                bestNextHopId = neighborId;
+                            }
+                        }
+                    }
+                }
+                if (bestNextHopId != -1) {
+                    g_ssRoutingTable[member->id][cellData.cellId] = bestNextHopId;
+                    if (traceMode == 0) std::cout << "#ROUTING_TABLE " << member->id << " (" << cellData.cellId << ") -> " << g_ssRoutingTable[member->id][cellData.cellId] << " (" << cellData.cellId << ")";
+                }
+            }
+        }
+    }
+}
+
+Point PeceeRoutingProtocol::calculateCellCenter(int cell_id) {
+    int r = round((double)cell_id / grid_offset);
+    int q = cell_id - r * grid_offset;
+
+    Point center;
+    center.x = cellRadius * (sqrt(3.0) * q + sqrt(3.0) / 2.0 * r);
+    center.y = cellRadius * (3.0 / 2.0 * r);
+
+    return center;
+}
+
+void PeceeRoutingProtocol::calculateCellInfo()
+{
+    double frac_q = (sqrt(3.0)/3.0 * myX - 1.0/3.0 * myY) / cellRadius;
+    double frac_r = (2.0/3.0 * myY) / cellRadius;
+    double frac_s = -frac_q - frac_r;
+
+    int q = round(frac_q);
+    int r = round(frac_r);
+    int s = round(frac_s);
+
+    double q_diff = abs(q - frac_q);
+    double r_diff = abs(r - frac_r);
+    double s_diff = abs(s - frac_s);
+
+    if (q_diff > r_diff && q_diff > s_diff) {
+        q = -r - s;
+    } else if (r_diff > s_diff) {
+        r = -q - s;
+    } else {
+        s = -q - r;
+    }
+
+    myCellId = q + r * grid_offset;
+    myColor = ((q - r) % 3 + 3) % 3;
+}
+
+void PeceeRoutingProtocol::sendCHAnnouncement()
+{
+    NS_LOG_FUNCTION(this);
+    
+    // Only CH nodes can initiate CHA packets
+    if (!isCH) {
+        //std::cout << "#CHA_SKIP_NON_CH Node:" << self << " Cell:" << myCellId << " is not CH" << std::endl;
+        return;
+    }
+    
+    SSCHAnnouncementInfo chInfo;
+    chInfo.chId = self;
+
+    PeceeCellData* cellData = getCellData(myCellId);
+    if (!cellData || cellData->members.empty()) {
+        NS_LOG_WARN("Node " << self << " - Cannot find cell data for cell " << myCellId);
+        return;
+    }
+
+    // Cluster Head broadcasts CH announcement to neighbor cells
+    myCHId = self;
+    myCellPathToCH[0] = myCellId;
+    
+        // std::cout << "#CH_ANNOUNCE_START CH:" << self << " Cell:" << myCellId 
+        //           << " NeighborCells:";
+    for (const int neighborCellId : cellData->neighbors) {
+        // std::cout << neighborCellId << " ";
+    }
+    // std::cout << std::endl;
+    
+    // Create packets for all neighbor cells
+    for (const int neighborCellId : cellData->neighbors) {
+        Ptr<Packet> pkt = Create<Packet>();
+        PeceeHeader header;
+        
+        header.SetPacketType(CH_ANNOUNCEMENT_PACKET);
+        header.SetCellSource(myCellId);
+        header.SetCellHopCount(1);
+        header.SetCellDestination(-1);
+        header.SetCellPath(0, myCellId);
+        header.SetCellPath(1, -1);
+        header.SetTtl(maxHopCount);
+        header.SetCellSent(myCellId);
+        header.SetCHAnnouncementData(chInfo);
+        header.SetSource(self);
+        header.SetCellNext(neighborCellId);
+        
+        // Add header before queueing so TTL and fields persist
+        pkt->AddHeader(header);
+        announcementQueue.push({pkt, neighborCellId});
+        // std::cout << "#CHA_QUEUED Node:" << self << " Cell:" << myCellId 
+        //           << " -> NextCell:" << neighborCellId << std::endl;
+    }
+    
+    // Broadcast within own cell
+    for (int memberId : cellData->members) {
+        if (memberId != self) {
+            Ptr<Packet> pkt = Create<Packet>();
+            PeceeHeader header;
+            
+            header.SetPacketType(CH_ANNOUNCEMENT_PACKET);
+            header.SetCellSource(myCellId);
+            header.SetCellHopCount(1);
+            header.SetCellDestination(-1);
+            header.SetCellPath(0, myCellId);
+            header.SetCellPath(1, -1);
+            header.SetTtl(maxHopCount);
+            header.SetCellSent(myCellId);
+            header.SetCHAnnouncementData(chInfo);
+            header.SetSource(self);
+            header.SetCellNext(myCellId);
+            
+            // Add header and queue for intra-cell broadcast
+            pkt->AddHeader(header);
+            boardcastAnnouncementQueue.push(memberId);
+            announcementQueue.push({pkt, myCellId});
+        }
+    }
+    
+    NS_LOG_INFO("#CH_SELECTION " << self << ": " << myCHId);
+    selectClusterHead();
+    
+    // Schedule queue processing
+    double delay = GetRandomDelay(0.1, 0.5);
+    ScheduleTimer(SEND_ANNOUNCEMENT_QUEUE, delay);
+}
+
+// TODO: Convert to ns-3 style
+/*
+void PeceeRoutingProtocol::handleCHAnnouncementPacket(Ptr<Packet> pkt)
+{
+    // TEMPORARILY COMMENTED - NEEDS CONVERSION TO ns-3 Ptr<Packet> style
+    // Original OMNeT++ code needs refactoring
+}
+*/
+
+void PeceeRoutingProtocol::handleCHAnnouncementPacket(Ptr<Packet> pkt)
+{
+    NS_LOG_FUNCTION(this);
+    
+    // std::cout << "#CHA_RECV_START Node:" << self << " Cell:" << myCellId << std::endl;
+    
+    // Update CL status first if not already set
+    if (!isCL) {
+        PeceeCellData* cellData = getCellData(myCellId);
+        if (cellData && cellData->clId == self) {
+            isCL = true;
+            myCLId = self;
+        }
+    }
+    
+    // Extract header
+    PeceeHeader header;
+    pkt->RemoveHeader(header);
+    
+    uint16_t sourceId = header.GetSource();
+    int cellSource = header.GetCellSource();
+    int hopCount = header.GetCellHopCount();
+    int ttl = header.GetTtl();
+    SSCHAnnouncementInfo chInfo = header.GetCHAnnouncementData();
+    int chId = chInfo.chId;
+    int cellSent = header.GetCellSent();
+    
+    // Check if we've already forwarded CHA from this CH from this specific cellSent
+    // This prevents the same announcement from propagating multiple times through this node
+    if (receivedCHAFromCells[chId].count(cellSent) > 0) {
+        // Already forwarded from this cell, drop duplicate
+        return;
+    }
+    receivedCHAFromCells[chId].insert(cellSent);
+    
+    // Loop detection: check if myCellId already exists in the path (cell-level loop prevention)
+    // Only check for inter-cell packets (cellSent != myCellId)
+    if (cellSent != myCellId) {
+        for (int i = 0; i < hopCount && i < maxHopCount; ++i) {
+            if (header.GetCellPath(i) == myCellId) {
+                // Cell loop detected - this cell already appeared in path
+                return;
+            }
+        }
+    }
+    
+    // std::cout << "#CHA_RECV Node:" << self << " Cell:" << myCellId 
+    //           << " From:" << sourceId << "(Cell " << cellSource << ") CH:" << chId 
+    //           << " Hops:" << hopCount << " TTL:" << ttl << std::endl;
+    
+    // ONLY CL can accept and update CH information
+    if (isCL) {
+        // CL: Accept only the FIRST CH announcement
+        if (myCHId == -1) {
+            myCHId = chId;
+            
+            // Save path to CH
+            for (int i = 0; i < hopCount && i < maxHopCount; ++i) {
+                myCellPathToCH[i] = header.GetCellPath(i);
+            }
+            myCellPathToCH[hopCount] = myCellId;
+            
+            std::cout << "#CHA_CH_ACCEPT_CL Node:" << self << " (CL) CH:" << myCHId 
+                      << " PathLen:" << (hopCount + 1) << " Path:";
+            for (int i = 0; i <= hopCount && i < maxHopCount; ++i) {
+                std::cout << myCellPathToCH[i] << " ";
+            }
+            std::cout << std::endl;
+            
+            selectClusterHead();
+        } else {
+            // std::cout << "#CHA_IGNORE_CL Node:" << self << " (CL) Already has CH:" << myCHId 
+            //           << " (new CH:" << chId << " ignored)" << std::endl;
+            return; // Don't forward duplicate announcements
+        }
+    }
+    
+    // ALL nodes (CL and non-CL) forward CHA to neighbor cells until TTL expires
+    PeceeCellData* cellData = getCellData(myCellId);
+    
+    if (cellData && cellData->members.size() > 0) {
+        bool hasForwarded = false;
+        
+        // 1. Forward to neighbor cells (inter-cell)
+        for (const int neighborCellId : cellData->neighbors) {
+            if (neighborCellId == cellSent) {
+                continue;  // Don't send back to source cell
+            }
+            
+            Ptr<Packet> dupPkt = pkt->Copy();
+            PeceeHeader dupHeader = header;
+            
+            dupHeader.SetCellSent(myCellId);
+            dupHeader.SetCellHopCount(hopCount + 1);
+            dupHeader.SetCellPath(hopCount + 1, myCellId);
+            dupHeader.SetTtl(ttl - 1);
+            dupHeader.SetSource(self);
+            dupHeader.SetCellNext(neighborCellId);
+            
+            // Add updated header before queueing
+            dupPkt->AddHeader(dupHeader);
+            announcementQueue.push({dupPkt, neighborCellId});
+            
+            // std::cout << "#CHA_FORWARD Node:" << self << (isCL ? " (CL)" : " (non-CL)")
+            //           << " Cell:" << myCellId << " -> Cell:" << neighborCellId 
+            //           << " TTL:" << (ttl-1) << std::endl;
+            hasForwarded = true;
+        }
+        
+        // 2. Broadcast within own cell (intra-cell) - ONLY if packet came from different cell
+        // This prevents infinite loop: Node A → Node B (same cell) → Node A → ...
+        if (cellSent != myCellId) {
+            for (int memberId : cellData->members) {
+                if (memberId != self && memberId != sourceId) {  // Don't send back to source or self
+                    Ptr<Packet> dupPkt = pkt->Copy();
+                    PeceeHeader dupHeader = header;
+                    
+                    dupHeader.SetSource(self);
+                    dupHeader.SetCellNext(myCellId);
+                    dupHeader.SetCellSent(myCellId);  // Mark as sent from this cell
+                    
+                    // Add updated header before queueing
+                    dupPkt->AddHeader(dupHeader);
+                    boardcastAnnouncementQueue.push(memberId);
+                    announcementQueue.push({dupPkt, myCellId});
+                    
+                    // std::cout << "#CHA_INTRA_BROADCAST Node:" << self << (isCL ? " (CL)" : " (non-CL)")
+                    //           << " Cell:" << myCellId << " -> Member:" << memberId << std::endl;
+                    hasForwarded = true;
+                }
+            }
+        }
+        
+        if (hasForwarded) {
+            double delay = GetRandomDelay(0.1, 0.5);
+            ScheduleTimer(SEND_ANNOUNCEMENT_QUEUE, delay);
+        }
+    }
+}
+
+
+void PeceeRoutingProtocol::sendAnnouncementQueue()
+{
+    NS_LOG_FUNCTION(this);
+    
+    if (announcementQueue.empty()) {
+        return;
+    }
+    
+    auto [pkt, nextCellId] = announcementQueue.front();
+    announcementQueue.pop();
+
+    // Extract and modify header
+    PeceeHeader header;
+    pkt->RemoveHeader(header);
+    
+    int ttl = header.GetTtl() - 1;
+    header.SetTtl(ttl);
+    
+    if (ttl <= 0) {
+        // std::cout << "#CHA_TTL_EXPIRED Node:" << self << " Cell:" << myCellId 
+        //           << " NextCell:" << nextCellId << std::endl;
+        return;
+    }
+    
+    int nextHopId = -1;
+    
+    if (nextCellId != myCellId) {
+        // Inter-cell routing - look up gateway
+        nextHopId = g_ssRoutingTable[self][nextCellId];
+        
+        if (nextHopId == -1) {
+                // std::cout << "#CHA_NO_GATEWAY Node:" << self << " Cell:" << myCellId 
+                //           << " -> Cell:" << nextCellId << std::endl;
+            return;
+        }
+        
+        // std::cout << "#CHA_INTER_CELL Node:" << self << " Cell:" << myCellId 
+        //           << " -> Cell:" << nextCellId << " NextHop:" << nextHopId << std::endl;
+    } else {
+        // Intra-cell forward - pop from broadcast queue
+        if (!boardcastAnnouncementQueue.empty()) {
+            nextHopId = boardcastAnnouncementQueue.front();
+            boardcastAnnouncementQueue.pop();
+            
+            // std::cout << "#CHA_INTRA_CELL Node:" << self << " Cell:" << myCellId 
+            //           << " -> Node:" << nextHopId << std::endl;
+        } else {
+            //std::cout << "#CHA_NO_BROADCAST_TARGET Node:" << self << " Cell:" << myCellId << std::endl;
+            return;
+        }
+    }
+
+    if (nextHopId == -1) {
+        // std::cout << "#CHA_NO_NEXT_HOP Node:" << self << " Cell:" << myCellId 
+        //           << " NextCell:" << nextCellId << std::endl;
+        return;
+    }
+    
+    // Avoid sending to self
+    if (nextHopId == self) {
+        // std::cout << "#CHA_SKIP_SELF Node:" << self << " Cell:" << myCellId 
+        //           << " NextCell:" << nextCellId << std::endl;
+        return;
+    }
+    
+    // Check if next hop is in range
+    bool isInRange = false;
+    PeceeNodeData* selfData = getNodeData(self);
+    if (selfData) {
+        for (int neighborNodeId : selfData->neighbors) {
+            if (neighborNodeId == nextHopId) {
+                isInRange = true;
+                break;
+            }
+        }
+    }
+
+    if (!isInRange) {
+        // std::cout << "#CHA_NOT_IN_RANGE Node:" << self << " Cell:" << myCellId 
+        //           << " NextHop:" << nextHopId << " NextCell:" << nextCellId << std::endl;
+        return;
+    }
+    
+    // Send packet with trace
+    // std::cout << "#CHA_SEND Node:" << self << " Cell:" << myCellId 
+    //           << " -> Node:" << nextHopId << " Cell:" << nextCellId 
+    //           << " TTL:" << ttl << std::endl;
+    
+    SendPacket(pkt, header, nextHopId);
+    
+    // Schedule next queue processing only if queue is not empty
+    if (!announcementQueue.empty()) {
+        double delay = GetRandomDelay(0.1, 0.5);
+        ScheduleTimer(SEND_ANNOUNCEMENT_QUEUE, delay);
+    }
+}
+
+void PeceeRoutingProtocol::selectClusterHead()
+{
+    NS_LOG_FUNCTION(this);
+    
+    // Update CL status if this node is now the CL
+    PeceeCellData* cellData = getCellData(myCellId);
+    if (cellData && cellData->clId == self) {
+        isCL = true;
+        myCLId = self;
+    }
+    
+    NS_LOG_INFO("#CH_SELECTION " << self << ": " << myCHId << (isCL ? " [IS_CL]" : ""));
+    
+    PeceeNodeData* node = getNodeData(self);
+    if (node) {
+        node->chId = myCHId;
+    }
+    
+    double delay = GetRandomDelay(10, 20);
+    ScheduleTimer(ANNOUNCE_CELL_HOP_TIMER, delay);
+}
+
+// ============================================================================
+// TODO: METHODS BELOW NEED CONVERSION TO ns-3 STYLE
+// Temporarily commented out to allow compilation
+// ============================================================================
+
+/*
+void PeceeRoutingProtocol::sendCellHopAnnouncementPacket()
+{
+    // NEEDS CONVERSION - Uses PeceeRoutingProtocolPacket*
+}
+
+void PeceeRoutingProtocol::handleCellHopAnnouncementPacket(Ptr<Packet> pkt)
+{
+    // NEEDS CONVERSION - Uses packet methods that need header extraction
+}
+
+void PeceeRoutingProtocol::sendSensorDataPacket()
+{
+    // NEEDS CONVERSION - Uses PeceeRoutingProtocolPacket* and resModule
+}
+
+void PeceeRoutingProtocol::handleSensorDataPacket(Ptr<Packet> pkt)
+{
+    // NEEDS CONVERSION - Complex packet handling logic
+}
+
+void PeceeRoutingProtocol::sendCellPacket()
+{
+    // NEEDS CONVERSION - Complex queue management and packet operations
+}
+
+void PeceeRoutingProtocol::rotationCH()
+{
+    // NEEDS CONVERSION - CH rotation logic
+}
+
+void PeceeRoutingProtocol::savePacketCopy(Ptr<Packet> pkt, int des)
+{
+    // NEEDS CONVERSION - Packet data extraction
+}
+
+void PeceeRoutingProtocol::overhearingPacket()
+{
+    // NEEDS CONVERSION - Packet tracking logic
+}
+*/
+
+// Stub implementations to allow compilation
+void PeceeRoutingProtocol::sendCellHopAnnouncementPacket()
+{
+    NS_LOG_FUNCTION(this);
+    NS_LOG_WARN("sendCellHopAnnouncementPacket not yet implemented");
+    // TODO: Convert from OMNeT++ style
+}
+
+void PeceeRoutingProtocol::handleCellHopAnnouncementPacket(Ptr<Packet> pkt)
+{
+    NS_LOG_FUNCTION(this);
+    NS_LOG_WARN("handleCellHopAnnouncementPacket not yet implemented");
+    // TODO: Convert from OMNeT++ style  
+}
+
+void PeceeRoutingProtocol::sendSensorDataPacket()
+{
+    NS_LOG_FUNCTION(this);
+    NS_LOG_WARN("sendSensorDataPacket not yet implemented");
+    // TODO: Convert from OMNeT++ style
+}
+
+void PeceeRoutingProtocol::handleSensorDataPacket(Ptr<Packet> pkt)
+{
+    NS_LOG_FUNCTION(this);
+    NS_LOG_WARN("handleSensorDataPacket not yet implemented");
+    // TODO: Convert from OMNeT++ style
+}
+
+void PeceeRoutingProtocol::sendCellPacket()
+{
+    NS_LOG_FUNCTION(this);
+    NS_LOG_WARN("sendCellPacket not yet implemented");
+    // TODO: Convert from OMNeT++ style
+}
+
+void PeceeRoutingProtocol::rotationCH()
+{
+    NS_LOG_FUNCTION(this);
+    NS_LOG_WARN("rotationCH not yet implemented");
+    // TODO: Convert from OMNeT++ style
+}
+
+void PeceeRoutingProtocol::savePacketCopy(Ptr<Packet> pkt, int des)
+{
+    NS_LOG_FUNCTION(this << des);
+    // TODO: Convert from OMNeT++ style
+}
+
+void PeceeRoutingProtocol::overhearingPacket()
+{
+    NS_LOG_FUNCTION(this);
+    // TODO: Convert from OMNeT++ style
+}
+
+void PeceeRoutingProtocol::ScheduleTimer(PeceeTimerType timerType, double delaySeconds)
+{
+    NS_LOG_FUNCTION(this << timerType << delaySeconds);
+    
+    switch(timerType) {
+        case SEND_ANNOUNCEMENT_QUEUE:
+            Simulator::Schedule(Seconds(delaySeconds), 
+                              &PeceeRoutingProtocol::sendAnnouncementQueue, this);
+            break;
+        case ANNOUNCE_CELL_HOP_TIMER:
+            Simulator::Schedule(Seconds(delaySeconds), 
+                              &PeceeRoutingProtocol::sendCellHopAnnouncementPacket, this);
+            break;
+        case COLOR_SCHEDULING_TIMER:
+            Simulator::Schedule(Seconds(delaySeconds), 
+                              &PeceeRoutingProtocol::sendSensorDataPacket, this);
+            break;
+        case SEND_CELL_PACKET:
+            Simulator::Schedule(Seconds(delaySeconds), 
+                              &PeceeRoutingProtocol::sendCellPacket, this);
+            break;
+        case CH_ROTATION_TIMER:
+            Simulator::Schedule(Seconds(delaySeconds), 
+                              &PeceeRoutingProtocol::rotationCH, this);
+            break;
+        default:
+            NS_LOG_WARN("Unknown timer type: " << timerType);
+            break;
+    }
+}
+
+Ptr<Packet> PeceeRoutingProtocol::CreatePeceePacket(PeceePacketType type)
+{
+    Ptr<Packet> packet = Create<Packet>();
+    PeceeHeader header;
+    header.SetPacketType(type);
+    header.SetSource(self);
+    header.SetDestination(65535); // Broadcast by default
+    return packet;
+}
+
+PeceeHeader PeceeRoutingProtocol::ExtractPeceeHeader(Ptr<Packet> packet)
+{
+    PeceeHeader header;
+    packet->PeekHeader(header);
+    return header;
+}
+
+void PeceeRoutingProtocol::SendPacket(Ptr<Packet> packet, PeceeHeader& header, uint16_t destination)
+{
+    NS_LOG_FUNCTION(this << destination);
+    
+    std::cout << "#PECEE_SENDPACKET Node:" << self << " -> Dst:" << destination << std::endl;
+    
+    // Add PECEE header first
+    packet->AddHeader(header);
+    
+    // Add WsnRoutingHeader for forwarder compatibility
+    WsnRoutingHeader wsnHeader;
+    wsnHeader.SetSource(self);
+    wsnHeader.SetDestination(destination);
+    packet->AddHeader(wsnHeader);
+    
+    // Update statistics
+    PeceeNodeData* node = getNodeData(self);
+    if (node) {
+        node->numSent++;
+        node->energyConsumtion += calculateConsumption(destination, 1);
+    }
+    
+    // Use BROADCAST address at MAC layer, filter at routing layer
+    //std::cout << "#PECEE_TOMAC Node:" << self << " -> Dst:" << destination << " (MAC_BROADCAST)" << std::endl;
+    ToMacLayer(packet, 0xFFFF);
+    //std::cout << "#PECEE_TOMAC_DONE Node:" << self << " -> Dst:" << destination << std::endl;
+}
+
+int PeceeRoutingProtocol::GetPathLength()
+{
+    int length = 0;
+    for (int i = 0; i < maxHopCount; ++i) {
+        if (myCellPathToCH[i] == -1) {
+            break;
+        }
+        length++;
+    }
+    return length;
+}
+
+double PeceeRoutingProtocol::calculateConsumption(int desNode, int type)
+{
+    // TODO: Implement energy consumption calculation
+    // For now, return a placeholder value
+    return 0.001;  // 1mJ per packet
+}
+
+double PeceeRoutingProtocol::GetRandomDelay(double minMs, double maxMs)
+{
+    Ptr<UniformRandomVariable> rand = CreateObject<UniformRandomVariable>();
+    return rand->GetValue(minMs, maxMs) / 1000.0; // Convert to seconds
+}
+
+}
+}

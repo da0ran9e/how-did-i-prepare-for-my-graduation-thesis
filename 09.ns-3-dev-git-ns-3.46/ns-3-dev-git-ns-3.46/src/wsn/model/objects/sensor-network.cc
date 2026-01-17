@@ -1,7 +1,7 @@
 #include "sensor-network.h"
 #include "wsn-object.h"
 #include "wsn-node.h"
-#include "ns3/bypass-routing-protocol.h"
+#include "../routing/pecee-routing/pecee-routing-protocol.h"
 #include "ns3/ptr.h"
  
 namespace ns3 {
@@ -92,11 +92,17 @@ void SensorNetwork::Build(BuildContext& ctx)
     {
         // Create forwarder and routing protocol
     Ptr<wsn::WsnForwarder> forwarder = CreateObject<wsn::WsnForwarder>();
-    Ptr<wsn::BypassRoutingProtocol> routing = CreateObject<wsn::BypassRoutingProtocol>();
+    Ptr<wsn::PeceeRoutingProtocol> routing = CreateObject<wsn::PeceeRoutingProtocol>();
     
         Ptr<ns3::Node> node = ctx.nodes.Get(i);
         Ptr<ns3::NetDevice> dev = ctx.netDevices.Get(i);
 
+        // Set CH status based on node ID
+        // Nodes 0 and 50 are CHs as defined in input-pecee.ini
+        bool isClusterHead = (i == 0 || i == 50);
+        routing->SetAttribute("isCH", ns3::BooleanValue(isClusterHead));
+        routing->SetAttribute("cellRadius", ns3::DoubleValue(20.0));
+        
         routing->SetSelfNodeProperties({
             static_cast<uint16_t>(i),
             node->GetObject<ns3::MobilityModel>()->GetPosition().x,

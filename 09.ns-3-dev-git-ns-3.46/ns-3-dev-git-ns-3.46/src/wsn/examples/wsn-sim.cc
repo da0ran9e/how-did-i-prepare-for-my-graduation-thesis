@@ -8,7 +8,7 @@ int main(int argc, char *argv[])
 {
     ns3::wsn::BuildContext ctx{};
     wsn::WsnScenario scenario;
-    scenario.configure("input.ini", ctx);
+    scenario.configure("input-pecee.ini", ctx);
 
     Simulator::Stop(Seconds(100));
     Simulator::Run();

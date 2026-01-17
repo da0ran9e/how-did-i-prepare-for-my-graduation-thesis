@@ -18,6 +18,8 @@ build_lib(
     model/objects/wsn-routing.cc
     model/resource/wsn-energy-model.cc
     model/routing/bypass-routing/bypass-routing-protocol.cc
+    model/routing/pecee-routing/pecee-routing-protocol.cc
+    model/routing/pecee-routing/pecee-header.cc
     model/routing/wsn-forwarder.cc
     model/routing/wsn-routing-header.cc
     model/routing/wsn-routing-protocol.cc
@@ -42,6 +44,8 @@ build_lib(
     model/objects/wsn-routing.h
     model/resource/wsn-energy-model.h
     model/routing/bypass-routing/bypass-routing-protocol.h
+    model/routing/pecee-routing/pecee-routing-protocol.h
+    model/routing/pecee-routing/pecee-header.h
     model/routing/wsn-forwarder.h
     model/routing/wsn-routing-header.h
     model/routing/wsn-routing-protocol.h
