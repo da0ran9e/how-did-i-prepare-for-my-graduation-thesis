@@ -87,6 +87,8 @@ static vector<int> g_ssSensorDataReceived;
 static int g_ssSensorDataSentCount = 0;
 static int g_ssSensorDataReceivedCount = 0;
 static map<int, vector<PeceePacket>> g_ssSensorDataOverheared;
+static map<int, vector<int>> g_CHANodeTraces; // CH announcements traced by nodes
+static map<int, vector<int>> g_CHACellTraces; // CH announcements traced by cells
 
 // Timer types
 enum PeceeTimerType {
@@ -133,6 +135,7 @@ private:
     double myX = 0.0, myY = 0.0;
     int myCLId = -1;
     int myCHId = -1;
+    int myNextHopToCH = -1;  // Next hop toward CH (for members: their CL; for CL: gateway to next cell)
     int self;
 
     // Routing tables and queues
