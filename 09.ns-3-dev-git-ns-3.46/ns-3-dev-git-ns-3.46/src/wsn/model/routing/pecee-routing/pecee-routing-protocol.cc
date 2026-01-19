@@ -140,14 +140,23 @@ void PeceeRoutingProtocol::Start()
     
     // Schedule initial CH announcement at a synchronized time for all CH nodes
     if (isCH) {
-        double startDelay = 17.0;  // fixed to align all CH announcements
+        double startDelay = 17.0;  // Node 0 announces first
+        if (self == 99) {
+            startDelay = 20.0;  // Node 99 delays 3s to fully separate from Node 0's propagation
+        }
         Simulator::Schedule(Seconds(startDelay), &PeceeRoutingProtocol::sendCHAnnouncement, this);
         
-        //std::cout << "#CH_NODE Node:" << self << " Cell:" << myCellId << " will send CHA at " << startDelay << "s (synchronized)" << std::endl;
-        //std::cout << "#DEBUG_GLOBAL_DATA Nodes:" << g_ssNodesDataList.size() 
-        //          << " Cells:" << g_ssCellDataList.size() 
-        //          << " RoutingTable:" << g_ssRoutingTable.size() << std::endl;
+        if (self == 99) {
+            std::cout << "#CH99_SCHEDULED delay:" << startDelay << "s" << std::endl;
+        }
     }
+    
+    // Schedule data sending phase after CHA propagation completes
+    // Random offset to avoid collisions
+    Ptr<UniformRandomVariable> rand = CreateObject<UniformRandomVariable>();
+    double dataStartDelay = rand->GetValue(25.0, 30.0);  // Start after CHA completes
+    Simulator::Schedule(Seconds(dataStartDelay), &PeceeRoutingProtocol::sendSensorDataPacket, this);
+    std::cout << "#DATA_SCHEDULED Node:" << self << " delay:" << dataStartDelay << "s" << std::endl;
     
     NS_LOG_INFO("Node " << self << " in cell " << myCellId << " color " << myColor 
                 << (isCL ? " [CL]" : "") << (isCH ? " [CH]" : ""));
@@ -173,18 +182,19 @@ void PeceeRoutingProtocol::FromMacLayer(Ptr<Packet> pkt,
     WsnRoutingHeader wsnHeader;
     pkt->RemoveHeader(wsnHeader);
     
-    // Filter: only process if destined for this node or broadcast
+    // Extract PECEE header to check packet type
+    PeceeHeader peceeHeader;
+    pkt->RemoveHeader(peceeHeader);
+    PeceePacketType packetType = peceeHeader.GetPacketType();
+    
+    // Filter: only process if destined for this node, broadcast, or data packet (needs forwarding)
     uint16_t dest = wsnHeader.GetDestination();
-    if (dest != self && dest != 0xFFFF) {
-        //std::cout << "#PECEE_FILTER_DROP Node:" << self << " Dest:" << dest << " (not for me)" << std::endl;
+    if (dest != self && dest != 0xFFFF && packetType != SENSOR_DATA) {
+        //std::cout << "#PECEE_FILTER_DROP Node:" << self << " Dest:" << dest << " Type:" << packetType << std::endl;
         return;
     }
     
     //std::cout << "#PECEE_ACCEPT Node:" << self << " From:" << src << " Dest:" << dest << std::endl;
-    
-    // Extract PECEE header from packet
-    PeceeHeader peceeHeader;
-    pkt->RemoveHeader(peceeHeader);
     
     //std::cout << "#PECEE_HEADER_TYPE Node:" << self << " Type:" << peceeHeader.GetPacketType() << std::endl;
     
@@ -194,8 +204,7 @@ void PeceeRoutingProtocol::FromMacLayer(Ptr<Packet> pkt,
         node->numRecv++;
     }
     
-    // Route to appropriate handler based on packet type
-    PeceePacketType packetType = peceeHeader.GetPacketType();
+    // Route to appropriate handler based on packet type (already extracted above)
     
     if (self == 11 && packetType == CH_ANNOUNCEMENT_PACKET) {
         std::cout << "#DEBUG_NODE11_FROMMAC From:" << src << " Dest:" << dest 
@@ -578,14 +587,21 @@ void PeceeRoutingProtocol::sendCHAnnouncement()
 {
     NS_LOG_FUNCTION(this);
     
-    // if (self == 11) {
-    //     std::cout << "#DEBUG_NODE11_SEND_CHA_CALLED isCH:" << isCH << " myCellId:" << myCellId << std::endl;
-    // }
-    
     // Only CH nodes can initiate CHA packets
     if (!isCH) {
-        //std::cout << "#CHA_SKIP_NON_CH Node:" << self << " Cell:" << myCellId << " is not CH" << std::endl;
         return;
+    }
+    
+    if (self == 99) {
+        PeceeNodeData* node99 = getNodeData(99);
+        std::cout << "#CH99_ANNOUNCE neighbors:" << (node99 ? node99->neighbors.size() : 0) << std::endl;
+        if (node99) {
+            std::cout << "#CH99_NEIGHBORS ";
+            for (int n : node99->neighbors) {
+                std::cout << n << " ";
+            }
+            std::cout << std::endl;
+        }
     }
     
     SSCHAnnouncementInfo chInfo;
@@ -901,6 +917,20 @@ void PeceeRoutingProtocol::handleCHAnnouncementPacket(Ptr<Packet> pkt)
     
     // ALL nodes (CL and non-CL) forward CHA to neighbor cells until TTL expires
     PeceeCellData* cellData = getCellData(myCellId);
+    
+    // Debug Node 99
+    if (self == 99) {
+        PeceeNodeData* node99 = getNodeData(99);
+        std::cout << "#DEBUG_NODE99 neighbors:" << (node99 ? node99->neighbors.size() : 0) 
+                  << " cellData:" << (cellData ? "Y" : "N") << std::endl;
+        if (node99) {
+            std::cout << "#DEBUG_NODE99_NEIGHBORS ";
+            for (int n : node99->neighbors) {
+                std::cout << n << " ";
+            }
+            std::cout << std::endl;
+        }
+    }
     
     if (!cellData) {
         std::cout << "#CHA_NO_CELLDATA Node:" << self << " Cell:" << myCellId 
@@ -1252,15 +1282,115 @@ void PeceeRoutingProtocol::handleCellHopAnnouncementPacket(Ptr<Packet> pkt)
 void PeceeRoutingProtocol::sendSensorDataPacket()
 {
     NS_LOG_FUNCTION(this);
-    NS_LOG_WARN("sendSensorDataPacket not yet implemented");
-    // TODO: Convert from OMNeT++ style
+    
+    // Skip if routing table is empty or no CH assigned
+    if (g_ssRoutingTable.find(self) == g_ssRoutingTable.end() || 
+        g_ssRoutingTable[self].empty() || myCHId == -1) {
+        std::cout << "#DATA_SKIP Node:" << self << " NoRoutingTable or NoCH" << std::endl;
+        return;
+    }
+    
+    // Pick first non-self destination from routing table (or random)
+    int destination = -1;
+    for (const auto& entry : g_ssRoutingTable[self]) {
+        int cellId = entry.first;
+        int nextHop = entry.second;
+        if (cellId != myCellId && nextHop != -1 && nextHop != self) {
+            destination = cellId;  // Send to first valid cell
+            break;
+        }
+    }
+    
+    if (destination == -1) {
+        std::cout << "#DATA_SKIP Node:" << self << " NoValidDestination" << std::endl;
+        return;
+    }
+    
+    // Create data packet
+    Ptr<Packet> pkt = Create<Packet>(100);  // 100 bytes payload
+    PeceeHeader header;
+    
+    header.SetPacketType(SENSOR_DATA);
+    header.SetSource(self);
+    header.SetDestination(destination);
+    header.SetCellSource(myCellId);
+    header.SetCellDestination(destination);
+    header.SetTtl(30);
+    header.SetSequenceNumber(++g_ssSensorDataArr[self]);  // Increment sequence number
+    
+    std::cout << "#DATA_SEND Node:" << self << " Cell:" << myCellId 
+              << " -> Dst:" << destination << " Seq:" << g_ssSensorDataArr[self]
+              << " Time:" << Simulator::Now().GetSeconds() << "s" << std::endl;
+    
+    // Get next hop from routing table
+    int nextHop = g_ssRoutingTable[self][destination];
+    if (nextHop == -1 || nextHop == self) {
+        std::cout << "#DATA_NO_ROUTE Node:" << self << " -> Cell:" << destination << std::endl;
+        return;
+    }
+    
+    SendPacket(pkt, header, nextHop);
+    
+    // Schedule next data packet (periodic sending)
+    Ptr<UniformRandomVariable> rand = CreateObject<UniformRandomVariable>();
+    double nextDelay = rand->GetValue(5.0, 10.0);  // Send every 5-10 seconds
+    Simulator::Schedule(Seconds(nextDelay), &PeceeRoutingProtocol::sendSensorDataPacket, this);
 }
 
 void PeceeRoutingProtocol::handleSensorDataPacket(Ptr<Packet> pkt)
 {
     NS_LOG_FUNCTION(this);
-    NS_LOG_WARN("handleSensorDataPacket not yet implemented");
-    // TODO: Convert from OMNeT++ style
+    
+    PeceeHeader header;
+    pkt->PeekHeader(header);
+    
+    int source = header.GetSource();
+    int destination = header.GetCellDestination();
+    int ttl = header.GetTtl();
+    int seqNum = header.GetSequenceNumber();
+    
+    std::cout << "#DATA_RECV Node:" << self << " Cell:" << myCellId 
+              << " From:" << source << " Dst:" << destination 
+              << " Seq:" << seqNum << " TTL:" << ttl << std::endl;
+    
+    // Check if this node is the destination
+    if (destination == myCellId) {
+        std::cout << "#DATA_DELIVERED Node:" << self << " Cell:" << myCellId 
+                  << " From:" << source << " Seq:" << seqNum 
+                  << " Time:" << Simulator::Now().GetSeconds() << "s" << std::endl;
+        return;  // Packet delivered
+    }
+    
+    // TTL check
+    if (ttl <= 0) {
+        std::cout << "#DATA_TTL_EXPIRED Node:" << self << " From:" << source 
+                  << " Dst:" << destination << std::endl;
+        return;
+    }
+    
+    // Forward packet
+    if (g_ssRoutingTable.find(self) == g_ssRoutingTable.end() ||
+        g_ssRoutingTable[self].find(destination) == g_ssRoutingTable[self].end()) {
+        std::cout << "#DATA_NO_ROUTE Node:" << self << " -> Cell:" << destination << std::endl;
+        return;
+    }
+    
+    int nextHop = g_ssRoutingTable[self][destination];
+    if (nextHop == -1 || nextHop == self) {
+        std::cout << "#DATA_NO_NEXTHOP Node:" << self << " -> Cell:" << destination << std::endl;
+        return;
+    }
+    
+    // Create forwarded packet
+    Ptr<Packet> fwdPkt = pkt->Copy();
+    PeceeHeader fwdHeader = header;
+    fwdHeader.SetTtl(ttl - 1);
+    
+    std::cout << "#DATA_FORWARD Node:" << self << " Cell:" << myCellId 
+              << " -> NextHop:" << nextHop << " Dst:" << destination 
+              << " Seq:" << seqNum << " TTL:" << (ttl - 1) << std::endl;
+    
+    SendPacket(fwdPkt, fwdHeader, nextHop);
 }
 
 void PeceeRoutingProtocol::sendCellPacket()
