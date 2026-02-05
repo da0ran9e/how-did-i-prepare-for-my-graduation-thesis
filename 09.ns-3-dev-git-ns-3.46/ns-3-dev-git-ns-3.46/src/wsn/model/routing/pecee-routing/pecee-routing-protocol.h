@@ -76,6 +76,10 @@ struct PeceePacket {
 static bool g_isPrecalculated = false;
 static bool g_isCHRotation = true;
 static int g_rotationCount = 0;
+static bool g_enableDetailedDebug = false;  // Set to true to enable debug output (except rotation)
+static double g_rotationStartTime = 0.0;  // Track rotation start time for measurement
+static set<int> g_CHsProcessedCHA;  // Track which CHs have completed their CHA
+static double g_lastCHACompleteTime = 0.0;  // Track when last CHA was sent
 static vector<PeceeNodeData> g_ssNodesDataList;
 static vector<PeceeCellData> g_ssCellDataList;
 static map <int, map<int, int>> g_ssRoutingTable; // <node, <next-cell, next-hop>>
@@ -179,6 +183,7 @@ private:
     void handleCellHopAnnouncementPacket(Ptr<Packet> pkt);
     void sendSensorDataPacket();
     void handleSensorDataPacket(Ptr<Packet> pkt);
+    void checkCHACompletion();  // Check when CHA phase completes after rotation
     double calculateConsumption(int desNode, int type);
     void savePacketCopy(Ptr<Packet> pkt, int des);
     void overhearingPacket();

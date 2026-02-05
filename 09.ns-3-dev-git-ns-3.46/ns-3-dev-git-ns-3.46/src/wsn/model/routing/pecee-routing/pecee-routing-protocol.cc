@@ -158,6 +158,9 @@ void PeceeRoutingProtocol::Start()
     Simulator::Schedule(Seconds(dataStartDelay), &PeceeRoutingProtocol::sendSensorDataPacket, this);
     std::cout << "#DATA_SCHEDULED Node:" << self << " delay:" << dataStartDelay << "s" << std::endl;
     
+    // Schedule CH rotation (synchronized across all nodes)
+    Simulator::Schedule(Seconds(20.0), &PeceeRoutingProtocol::rotationCH, this);
+    
     NS_LOG_INFO("Node " << self << " in cell " << myCellId << " color " << myColor 
                 << (isCL ? " [CL]" : "") << (isCH ? " [CH]" : ""));
 }
@@ -712,7 +715,7 @@ void PeceeRoutingProtocol::sendCHAnnouncement()
 /*
 void PeceeRoutingProtocol::handleCHAnnouncementPacket(Ptr<Packet> pkt)
 {
-    // TEMPORARILY COMMENTED - NEEDS CONVERSION TO ns-3 Ptr<Packet> style
+    // TEMPORARILY COMMENTED - TODO TO ns-3 Ptr<Packet> style
     // Original OMNeT++ code needs refactoring
 }
 */
@@ -752,9 +755,9 @@ void PeceeRoutingProtocol::handleCHAnnouncementPacket(Ptr<Packet> pkt)
     int chId = chInfo.chId;
     int cellSent = header.GetCellSent();
 
-    std::cout << "#CHA_RECV Node:" << self << " \tCell:" << myCellId
-              << "  \tCH:" << chId << " \tHop:" << hopCount
-              << " \tTTL:" << ttl << " \tCellSent:" << cellSent << std::endl;
+    // std::cout << "#CHA_RECV Node:" << self << " \tCell:" << myCellId
+    //           << "  \tCH:" << chId << " \tHop:" << hopCount
+    //           << " \tTTL:" << ttl << " \tCellSent:" << cellSent << std::endl;
 
     // if (self == 11) {
     //     std::cout << "#DEBUG_NODE11_RECV From:" << sourceId << " CH:" << chId 
@@ -918,44 +921,44 @@ void PeceeRoutingProtocol::handleCHAnnouncementPacket(Ptr<Packet> pkt)
     // ALL nodes (CL and non-CL) forward CHA to neighbor cells until TTL expires
     PeceeCellData* cellData = getCellData(myCellId);
     
-    // Debug Node 99
-    if (self == 99) {
-        PeceeNodeData* node99 = getNodeData(99);
-        std::cout << "#DEBUG_NODE99 neighbors:" << (node99 ? node99->neighbors.size() : 0) 
-                  << " cellData:" << (cellData ? "Y" : "N") << std::endl;
-        if (node99) {
-            std::cout << "#DEBUG_NODE99_NEIGHBORS ";
-            for (int n : node99->neighbors) {
-                std::cout << n << " ";
-            }
-            std::cout << std::endl;
-        }
-    }
+    // // Debug Node 99
+    // if (self == 99) {
+    //     PeceeNodeData* node99 = getNodeData(99);
+    //     std::cout << "#DEBUG_NODE99 neighbors:" << (node99 ? node99->neighbors.size() : 0) 
+    //               << " cellData:" << (cellData ? "Y" : "N") << std::endl;
+    //     if (node99) {
+    //         std::cout << "#DEBUG_NODE99_NEIGHBORS ";
+    //         for (int n : node99->neighbors) {
+    //             std::cout << n << " ";
+    //         }
+    //         std::cout << std::endl;
+    //     }
+    // }
     
     if (!cellData) {
-        std::cout << "#CHA_NO_CELLDATA Node:" << self << " Cell:" << myCellId 
-                  << " CH:" << chId << std::endl;
+        // std::cout << "#CHA_NO_CELLDATA Node:" << self << " Cell:" << myCellId 
+        //           << " CH:" << chId << std::endl;
         return;
     }
     
     if (cellData->members.size() == 0) {
-        std::cout << "#CHA_NO_MEMBERS Node:" << self << " Cell:" << myCellId 
-                  << " CH:" << chId << std::endl;
+        // std::cout << "#CHA_NO_MEMBERS Node:" << self << " Cell:" << myCellId 
+        //           << " CH:" << chId << std::endl;
         return;
     }
     
     if (cellData) {
         bool hasForwarded = false;
         
-        if (self == 11) {
-            std::cout << "#DEBUG_NODE11_FORWARD isCL:" << isCL << " neighborCount:" 
-                      << cellData->neighbors.size() << " gatewayCount:"
-                      << cellData->gateways.size() << " gateways:";
-            for (const auto& gw : cellData->gateways) {
-                std::cout << gw.first << ":" << gw.second << " ";
-            }
-            std::cout << std::endl;
-        }
+        // if (self == 11) {
+        //     std::cout << "#DEBUG_NODE11_FORWARD isCL:" << isCL << " neighborCount:" 
+        //               << cellData->neighbors.size() << " gatewayCount:"
+        //               << cellData->gateways.size() << " gateways:";
+        //     for (const auto& gw : cellData->gateways) {
+        //         std::cout << gw.first << ":" << gw.second << " ";
+        //     }
+        //     std::cout << std::endl;
+        // }
         
         // 1. Forward to neighbor cells (inter-cell) - ONLY via GATEWAYS
         // Gateway nodes are the bridge between cells, NOT all neighbor cells
@@ -981,9 +984,9 @@ void PeceeRoutingProtocol::handleCHAnnouncementPacket(Ptr<Packet> pkt)
             //               << " Gateway:" << gatewayNodeId << " TTL:" << (ttl - 1) << std::endl;
             // }
             
-            std::cout << "#CHA_FORWARD_GATEWAY Node:" << self << " Cell:" << myCellId 
-                      << " -> Cell:" << neighborCellId << " via GW:" << gatewayNodeId 
-                      << " CH:" << chId << " TTL:" << (ttl - 1) << std::endl;
+            // std::cout << "#CHA_FORWARD_GATEWAY Node:" << self << " Cell:" << myCellId 
+            //           << " -> Cell:" << neighborCellId << " via GW:" << gatewayNodeId 
+            //           << " CH:" << chId << " TTL:" << (ttl - 1) << std::endl;
             Ptr<Packet> dupPkt = pkt->Copy();
             PeceeHeader dupHeader = header;
             
@@ -1106,8 +1109,8 @@ void PeceeRoutingProtocol::sendAnnouncementQueue()
         nextHopId = g_ssRoutingTable[self][nextCellId];
         
         if (nextHopId == -1) {
-            std::cout << "#CHA_SEND_NO_ROUTE Node:" << self << " Cell:" << myCellId 
-                      << " -> Cell:" << nextCellId << " QueueRemaining:" << announcementQueue.size() << std::endl;
+            // std::cout << "#CHA_SEND_NO_ROUTE Node:" << self << " Cell:" << myCellId 
+            //           << " -> Cell:" << nextCellId << " QueueRemaining:" << announcementQueue.size() << std::endl;
             if (!announcementQueue.empty()) {
                 double delay = GetRandomDelay(0.1, 0.5);
                 ScheduleTimer(SEND_ANNOUNCEMENT_QUEUE, delay);
@@ -1169,8 +1172,8 @@ void PeceeRoutingProtocol::sendAnnouncementQueue()
     }
 
     if (!isInRange) {
-        std::cout << "#CHA_NOT_IN_RANGE Node:" << self << " Cell:" << myCellId 
-                  << " NextHop:" << nextHopId << " NextCell:" << nextCellId << std::endl;
+        // std::cout << "#CHA_NOT_IN_RANGE Node:" << self << " Cell:" << myCellId 
+        //           << " NextHop:" << nextHopId << " NextCell:" << nextCellId << std::endl;
         if (!announcementQueue.empty()) {
             double delay = GetRandomDelay(0.1, 0.5);
             ScheduleTimer(SEND_ANNOUNCEMENT_QUEUE, delay);
@@ -1179,11 +1182,17 @@ void PeceeRoutingProtocol::sendAnnouncementQueue()
     }
     
     // Send packet with trace
-    std::cout << "#CHA_SEND Node:" << self << " Cell:" << myCellId 
-              << " -> NextHop:" << nextHopId << " NextCell:" << nextCellId 
-              << " TTL:" << ttl << std::endl;
+    // std::cout << "#CHA_SEND Node:" << self << " Cell:" << myCellId 
+    //           << " -> NextHop:" << nextHopId << " NextCell:" << nextCellId 
+    //           << " TTL:" << ttl << std::endl;
     
     SendPacket(pkt, header, nextHopId);
+    
+    // Track CHA timing for rotation measurement
+    if (g_rotationStartTime > 0) {
+        g_CHsProcessedCHA.insert(self);
+        g_lastCHACompleteTime = Simulator::Now().GetSeconds();
+    }
     
     // Schedule next queue processing only if queue is not empty
     if (!announcementQueue.empty()) {
@@ -1216,51 +1225,40 @@ void PeceeRoutingProtocol::selectClusterHead()
     double delay = GetRandomDelay(10, 20);
     ScheduleTimer(ANNOUNCE_CELL_HOP_TIMER, delay);
 }
-
-// ============================================================================
-// TODO: METHODS BELOW NEED CONVERSION TO ns-3 STYLE
-// Temporarily commented out to allow compilation
-// ============================================================================
-
 /*
 void PeceeRoutingProtocol::sendCellHopAnnouncementPacket()
 {
-    // NEEDS CONVERSION - Uses PeceeRoutingProtocolPacket*
+    // TODO - Uses PeceeRoutingProtocolPacket*
 }
 
 void PeceeRoutingProtocol::handleCellHopAnnouncementPacket(Ptr<Packet> pkt)
 {
-    // NEEDS CONVERSION - Uses packet methods that need header extraction
+    // TODO - Uses packet methods that need header extraction
 }
 
 void PeceeRoutingProtocol::sendSensorDataPacket()
 {
-    // NEEDS CONVERSION - Uses PeceeRoutingProtocolPacket* and resModule
+    // TODO - Uses PeceeRoutingProtocolPacket* and resModule
 }
 
 void PeceeRoutingProtocol::handleSensorDataPacket(Ptr<Packet> pkt)
 {
-    // NEEDS CONVERSION - Complex packet handling logic
+    // TODO - Complex packet handling logic
 }
 
 void PeceeRoutingProtocol::sendCellPacket()
 {
-    // NEEDS CONVERSION - Complex queue management and packet operations
-}
-
-void PeceeRoutingProtocol::rotationCH()
-{
-    // NEEDS CONVERSION - CH rotation logic
+    // TODO - Complex queue management and packet operations
 }
 
 void PeceeRoutingProtocol::savePacketCopy(Ptr<Packet> pkt, int des)
 {
-    // NEEDS CONVERSION - Packet data extraction
+    // TODO - Packet data extraction
 }
 
 void PeceeRoutingProtocol::overhearingPacket()
 {
-    // NEEDS CONVERSION - Packet tracking logic
+    // TODO - Packet tracking logic
 }
 */
 
@@ -1318,9 +1316,9 @@ void PeceeRoutingProtocol::sendSensorDataPacket()
     header.SetTtl(30);
     header.SetSequenceNumber(++g_ssSensorDataArr[self]);  // Increment sequence number
     
-    std::cout << "#DATA_SEND Node:" << self << " Cell:" << myCellId 
-              << " -> Dst:" << destination << " Seq:" << g_ssSensorDataArr[self]
-              << " Time:" << Simulator::Now().GetSeconds() << "s" << std::endl;
+    // std::cout << "#DATA_SEND Node:" << self << " Cell:" << myCellId 
+    //           << " -> Dst:" << destination << " Seq:" << g_ssSensorDataArr[self]
+    //           << " Time:" << Simulator::Now().GetSeconds() << "s" << std::endl;
     
     // Get next hop from routing table
     int nextHop = g_ssRoutingTable[self][destination];
@@ -1400,13 +1398,6 @@ void PeceeRoutingProtocol::sendCellPacket()
     // TODO: Convert from OMNeT++ style
 }
 
-void PeceeRoutingProtocol::rotationCH()
-{
-    NS_LOG_FUNCTION(this);
-    NS_LOG_WARN("rotationCH not yet implemented");
-    // TODO: Convert from OMNeT++ style
-}
-
 void PeceeRoutingProtocol::savePacketCopy(Ptr<Packet> pkt, int des)
 {
     NS_LOG_FUNCTION(this << des);
@@ -1417,6 +1408,104 @@ void PeceeRoutingProtocol::overhearingPacket()
 {
     NS_LOG_FUNCTION(this);
     // TODO: Convert from OMNeT++ style
+}
+
+void PeceeRoutingProtocol::rotationCH()
+{
+    NS_LOG_FUNCTION(this);
+    
+    // Only node 0 manages rotation state
+    if (self == 0) {
+        g_rotationCount++;
+        g_rotationStartTime = Simulator::Now().GetSeconds();
+        g_CHsProcessedCHA.clear();
+        std::cout << "\n======== CH ROTATION #" << g_rotationCount 
+                  << " START at " << g_rotationStartTime << "s ========" << std::endl;
+    }
+    
+    // Random CH selection per cell
+    Ptr<UniformRandomVariable> rand = CreateObject<UniformRandomVariable>();
+    
+    for (auto& cellData : g_ssCellDataList) {
+        if (cellData.members.empty()) {
+            continue;
+        }
+        
+        int randomIndex = rand->GetInteger(0, cellData.members.size() - 1);
+        int newCHId = cellData.members[randomIndex];
+        int oldCHId = cellData.chId;
+        
+        // Update cell CH
+        cellData.chId = newCHId;
+        
+        // Update all nodes in this cell
+        for (auto& nodeData : g_ssNodesDataList) {
+            if (nodeData.cellId == cellData.cellId) {
+                if (nodeData.id == oldCHId) {
+                    nodeData.isCH = false;
+                    nodeData.chId = newCHId;
+                }
+                if (nodeData.id == newCHId) {
+                    nodeData.isCH = true;
+                    nodeData.chId = newCHId;
+                }
+                // All members point to new CH
+                nodeData.chId = newCHId;
+            }
+        }
+        
+        if (self == 0) {
+            std::cout << "#CH_ROTATE Cell:" << cellData.cellId 
+                      << " OldCH:" << oldCHId << " NewCH:" << newCHId << std::endl;
+        }
+    }
+    
+    // Update local node state
+    PeceeNodeData* myNodeData = getNodeData(self);
+    if (myNodeData) {
+        isCH = myNodeData->isCH;
+        myCHId = myNodeData->chId;
+        
+        // Reset rotation-related state
+        receivedCHAFromCells.clear();
+        announcementQueue = std::queue<std::pair<Ptr<Packet>, int>>();
+        
+        if (self == 0) {
+            std::cout << "#NODE_UPDATE Node:" << self << " isCH:" << isCH 
+                      << " myCHId:" << myCHId << std::endl;
+        }
+    }
+    
+    // New CHs broadcast announcement
+    if (isCH) {
+        Simulator::Schedule(Seconds(2.0), &PeceeRoutingProtocol::sendCHAnnouncement, this);
+        //std::cout << "#CHA_SCHEDULED_ROTATION Node:" << self << " as new CH" << std::endl;
+    }
+    
+    // Schedule next rotation
+    Simulator::Schedule(Seconds(20.0), &PeceeRoutingProtocol::rotationCH, this);
+    
+    // Schedule completion check (only node 0)
+    if (self == 0) {
+        Simulator::Schedule(Seconds(5.0), &PeceeRoutingProtocol::checkCHACompletion, this);
+        std::cout << "======== CH ROTATION #" << g_rotationCount 
+                  << " STATE_UPDATED at " << Simulator::Now().GetSeconds() 
+                  << "s ========\n" << std::endl;
+    }
+}
+
+void PeceeRoutingProtocol::checkCHACompletion()
+{
+    NS_LOG_FUNCTION(this);
+    
+    if (g_rotationStartTime > 0 && g_lastCHACompleteTime > g_rotationStartTime) {
+        double duration = g_lastCHACompleteTime - g_rotationStartTime;
+        std::cout << "#CHA_COMPLETED_ROTATION #" << g_rotationCount 
+                  << " Duration:" << duration << "s (LastSendAt:" 
+                  << g_lastCHACompleteTime << "s, CHsActive:" 
+                  << g_CHsProcessedCHA.size() << ")" << std::endl;
+        g_rotationStartTime = 0.0;
+    }
 }
 
 void PeceeRoutingProtocol::ScheduleTimer(PeceeTimerType timerType, double delaySeconds)

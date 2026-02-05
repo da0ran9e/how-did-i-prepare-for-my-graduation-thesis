@@ -1,8 +1,8 @@
 # Generate node coordinates with 15m spacing
 spacing = 15
 start = 1
-num_nodes = 100
-nodes_per_row = 10
+num_nodes = 2025
+nodes_per_row = 45
 
 output = []
 for i in range(num_nodes):
